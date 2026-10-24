@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      alunos: {
+        Row: {
+          bairro: string
+          cidade: string
+          codigo: string
+          created_at: string
+          curso: string
+          dataMatricula: string
+          dataPagamentoMatricula: string | null
+          dataStatus: string | null
+          desconto: number
+          descontoTipo: string
+          diaLimiteDesconto: number
+          diaVencimento: number
+          horario: string
+          id: string
+          import_raw: Json | null
+          import_row: number | null
+          matriculaPaga: string | null
+          nome: string
+          observacoes: string | null
+          primeiraCobranca: string
+          qtdMensalidades: number
+          responsavel: string
+          status: string
+          turma: string
+          valorMensal: number | null
+        }
+        Insert: {
+          bairro?: string
+          cidade?: string
+          codigo?: string
+          created_at?: string
+          curso?: string
+          dataMatricula?: string
+          dataPagamentoMatricula?: string | null
+          dataStatus?: string | null
+          desconto?: number
+          descontoTipo?: string
+          diaLimiteDesconto?: number
+          diaVencimento?: number
+          horario?: string
+          id?: string
+          import_raw?: Json | null
+          import_row?: number | null
+          matriculaPaga?: string | null
+          nome: string
+          observacoes?: string | null
+          primeiraCobranca?: string
+          qtdMensalidades?: number
+          responsavel?: string
+          status?: string
+          turma?: string
+          valorMensal?: number | null
+        }
+        Update: {
+          bairro?: string
+          cidade?: string
+          codigo?: string
+          created_at?: string
+          curso?: string
+          dataMatricula?: string
+          dataPagamentoMatricula?: string | null
+          dataStatus?: string | null
+          desconto?: number
+          descontoTipo?: string
+          diaLimiteDesconto?: number
+          diaVencimento?: number
+          horario?: string
+          id?: string
+          import_raw?: Json | null
+          import_row?: number | null
+          matriculaPaga?: string | null
+          nome?: string
+          observacoes?: string | null
+          primeiraCobranca?: string
+          qtdMensalidades?: number
+          responsavel?: string
+          status?: string
+          turma?: string
+          valorMensal?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
