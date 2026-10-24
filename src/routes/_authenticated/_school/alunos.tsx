@@ -58,7 +58,7 @@ function Alunos() {
     const val = (a: Aluno) => (sort.col === "valor" ? valorComDesconto(a) : a[sort.col]);
     return r.sort((x, y) => {
       const a = val(x), b = val(y);
-      const c = typeof a === "number" ? a - (b as number) : String(a).localeCompare(String(b), "pt-BR");
+      const c = typeof a === "number" ? a - Number(b ?? 0) : String(a ?? '').localeCompare(String(b ?? ''), "pt-BR");
       return sort.asc ? c : -c;
     });
   }, [alunos, q, fStatus, fCurso, sort]);
@@ -131,7 +131,7 @@ function Alunos() {
                 <td className="px-3 py-3">{formatData(a.dataMatricula)}</td>
                 <td className="px-3 py-3">
                   <div className="font-medium">{brl(valorComDesconto(a))}</div>
-                  <div className="text-xs text-muted-foreground line-through">{brl(a.valorMensal)}</div>
+                  {a.desconto > 0 && <div className="text-xs text-muted-foreground line-through">{brl(a.valorMensal)}</div>}
                 </td>
                 <td className="space-y-1 px-3 py-3">
                   <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusTone[a.status]}`}>{a.status}</span>
@@ -150,15 +150,16 @@ function Alunos() {
         <AlunoForm
           aluno={editando}
           onClose={() => setEditando(null)}
-          onSave={(a) => { salvar(a); setEditando(null); toast.success("Aluno salvo"); }}
+          onSave={async (a) => { await salvar(a); setEditando(null); toast.success("Aluno salvo"); }}
         />
       )}
     </div>
   );
 }
 
-function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => void; onSave: (a: Aluno) => void }) {
+function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => void; onSave: (a: Aluno) => Promise<void> }) {
   const [f, setF] = useState(aluno);
+  const [saving, setSaving] = useState(false);
   const set = <K extends keyof Aluno>(k: K, v: Aluno[K]) => setF((p) => ({ ...p, [k]: v }));
   const txt = (k: keyof Aluno, label: string, type = "text") => (
     <div className="space-y-1.5">
@@ -166,7 +167,7 @@ function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => vo
       <Input
         type={type}
         value={String(f[k] ?? "")}
-        onChange={(e) => set(k, (type === "number" ? Number(e.target.value) : e.target.value) as never)}
+        onChange={(e) => set(k, (type === "number" ? (k === 'valorMensal' && e.target.value === '' ? null : Number(e.target.value)) : e.target.value) as never)}
       />
     </div>
   );
@@ -177,10 +178,12 @@ function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => vo
         <DialogHeader><DialogTitle className="font-display text-2xl">{aluno.nome ? "Editar aluno" : "Novo aluno"}</DialogTitle></DialogHeader>
         <form
           className="space-y-6"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             if (!f.nome.trim() || !f.curso.trim()) { toast.error("Preencha nome e curso"); return; }
-            onSave(f);
+            setSaving(true);
+            try { await onSave(f); } catch { toast.error('Não foi possível salvar o aluno. Tente novamente.'); }
+            finally { setSaving(false); }
           }}
         >
           <section className="grid gap-4 sm:grid-cols-3">
@@ -225,12 +228,12 @@ function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => vo
             {txt("qtdMensalidades", "Quantidade de mensalidades", "number")}
             {txt("primeiraCobranca", "Mês da 1ª cobrança", "month")}
             <Resumo label="Valor com desconto" value={brl(valorComDesconto(f))} />
-            <Resumo label="Previsão da última mensalidade" value={f.primeiraCobranca ? formatMes(ultimaMensalidade(f.primeiraCobranca, f.qtdMensalidades)) : "—"} />
+            <Resumo label="Previsão da última mensalidade" value={f.primeiraCobranca && f.qtdMensalidades > 0 ? formatMes(ultimaMensalidade(f.primeiraCobranca, f.qtdMensalidades)) : "—"} />
           </section>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

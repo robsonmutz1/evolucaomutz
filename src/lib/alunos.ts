@@ -13,7 +13,7 @@ export interface Aluno {
   horario: string;
   status: Status;
   dataStatus?: string | undefined; // YYYY-MM-DD (cancelamento/conclusão)
-  valorMensal: number;
+  valorMensal: number | null;
   descontoTipo: "percentual" | "valor";
   desconto: number;
   diaLimiteDesconto: number;
@@ -24,7 +24,8 @@ export interface Aluno {
 }
 
 /** Valor da mensalidade com desconto (pago até o dia limite). Nunca negativo. */
-export function valorComDesconto(a: Pick<Aluno, "valorMensal" | "descontoTipo" | "desconto">): number {
+export function valorComDesconto(a: Pick<Aluno, "valorMensal" | "descontoTipo" | "desconto">): number | null {
+  if (a.valorMensal === null) return null;
   const d = a.descontoTipo === "percentual" ? (a.valorMensal * a.desconto) / 100 : a.desconto;
   return Math.max(0, Math.round((a.valorMensal - d) * 100) / 100);
 }
@@ -43,7 +44,7 @@ export function alertaConclusao(
   a: Pick<Aluno, "status" | "primeiraCobranca" | "qtdMensalidades">,
   mesAtual: string,
 ): Alerta {
-  if (a.status !== "Ativo") return null;
+  if (a.status !== "Ativo" || !a.primeiraCobranca || a.qtdMensalidades < 1) return null;
   const ultima = ultimaMensalidade(a.primeiraCobranca, a.qtdMensalidades);
   if (mesAtual === ultima) return "Verificar conclusão";
   if (mesAtual > ultima) return "Prazo de conclusão vencido";
@@ -54,7 +55,7 @@ export function mesAtualISO(d = new Date()): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export const brl = (v: number | null) => v === null ? 'Não informado' : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export const formatMes = (ym: string) => {
   const [y, m] = ym.split("-");

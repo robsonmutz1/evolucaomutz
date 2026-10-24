@@ -8,6 +8,13 @@
       "when": 1792864787732,
       "tag": "0000_restricted_owner_access",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792865306212,
+      "tag": "0001_school_students_import",
+      "breakpoints": true
     }
   ]
 }
