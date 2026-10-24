@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStore } from "@/lib/store";
 import { financeiroMensal } from "@/lib/mock-data";
+import { AlertaBadge } from "@/components/AlertaBadge";
 import { alertaConclusao, brl, mesAtualISO } from "@/lib/alunos";
 
 export const Route = createFileRoute("/")({
@@ -114,15 +115,5 @@ function Painel() {
         </Link>
       </Card>
     </div>
-  );
-}
-
-export function AlertaBadge({ alerta }: { alerta: string | null }) {
-  if (!alerta) return null;
-  const vencido = alerta.startsWith("Prazo");
-  return (
-    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${vencido ? "bg-destructive text-destructive-foreground" : "bg-warning text-warning-foreground"}`}>
-      {alerta}
-    </span>
   );
 }
