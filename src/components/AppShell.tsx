@@ -50,7 +50,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <Button variant="ghost" className="mx-3 justify-start text-sidebar-foreground" onClick={sair}><LogOut /> Sair</Button>
-        <p className="mt-auto hidden p-6 text-xs opacity-60 md:block">Dados fictícios · etapa de revisão</p>
+        <p className="mt-auto hidden p-6 text-xs opacity-60 md:block">Acesso restrito · Evolução Mutz</p>
       </aside>
       <main className="flex-1 p-4 md:p-8">{children}</main>
     </div>

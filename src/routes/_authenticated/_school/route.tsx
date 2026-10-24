@@ -6,12 +6,16 @@ import { AppShell } from '@/components/AppShell';
 import { Button } from '@/components/ui/button';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import { alunosQuery } from '@/lib/alunos-query';
 
 export const Route = createFileRoute('/_authenticated/_school')({
   beforeLoad: async () => {
     const { data, error } = await supabase.from('user_roles').select('role');
     if (error) throw new Error('Não foi possível verificar seu acesso. Tente novamente.');
     return { ownerAllowed: acessoPermitido(data) };
+  },
+  loader: async ({ context }) => {
+    if (context.ownerAllowed) await context.queryClient.ensureQueryData(alunosQuery);
   },
   component: SchoolLayout,
 });
