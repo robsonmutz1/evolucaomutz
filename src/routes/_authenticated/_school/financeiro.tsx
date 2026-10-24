@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Receipt, ShoppingBag, Building2, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-export const Route = createFileRoute("/financeiro")({
+export const Route = createFileRoute("/_authenticated/_school/financeiro")({
   head: () => ({
     meta: [
       { title: "Financeiro da escola · Evolução Mutz" },

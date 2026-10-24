@@ -10,53 +10,108 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AlunosRouteImport } from './routes/alunos'
-import { Route as FinanceiroRouteImport } from './routes/financeiro'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedSchoolRouteRouteImport } from './routes/_authenticated/_school/route'
+import { Route as AuthenticatedSchoolAlunosRouteImport } from './routes/_authenticated/_school/alunos'
+import { Route as AuthenticatedSchoolDashboardRouteImport } from './routes/_authenticated/_school/dashboard'
+import { Route as AuthenticatedSchoolFinanceiroRouteImport } from './routes/_authenticated/_school/financeiro'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AlunosRoute = AlunosRouteImport.update({
-  id: '/alunos',
-  path: '/alunos',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FinanceiroRoute = FinanceiroRouteImport.update({
-  id: '/financeiro',
-  path: '/financeiro',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSchoolRouteRoute =
+  AuthenticatedSchoolRouteRouteImport.update({
+    id: '/_school',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSchoolAlunosRoute =
+  AuthenticatedSchoolAlunosRouteImport.update({
+    id: '/alunos',
+    path: '/alunos',
+    getParentRoute: () => AuthenticatedSchoolRouteRoute,
+  } as any)
+const AuthenticatedSchoolDashboardRoute =
+  AuthenticatedSchoolDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedSchoolRouteRoute,
+  } as any)
+const AuthenticatedSchoolFinanceiroRoute =
+  AuthenticatedSchoolFinanceiroRouteImport.update({
+    id: '/financeiro',
+    path: '/financeiro',
+    getParentRoute: () => AuthenticatedSchoolRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/alunos': typeof AlunosRoute
-  '/financeiro': typeof FinanceiroRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/alunos': typeof AuthenticatedSchoolAlunosRoute
+  '/dashboard': typeof AuthenticatedSchoolDashboardRoute
+  '/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/alunos': typeof AlunosRoute
-  '/financeiro': typeof FinanceiroRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/alunos': typeof AuthenticatedSchoolAlunosRoute
+  '/dashboard': typeof AuthenticatedSchoolDashboardRoute
+  '/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/alunos': typeof AlunosRoute
-  '/financeiro': typeof FinanceiroRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/_school': typeof AuthenticatedSchoolRouteRouteWithChildren
+  '/_authenticated/_school/alunos': typeof AuthenticatedSchoolAlunosRoute
+  '/_authenticated/_school/dashboard': typeof AuthenticatedSchoolDashboardRoute
+  '/_authenticated/_school/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alunos' | '/financeiro'
+  fullPaths:
+    '/' | '/auth' | '/reset-password' | '/alunos' | '/dashboard' | '/financeiro'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alunos' | '/financeiro'
-  id: '__root__' | '/' | '/alunos' | '/financeiro'
+  to:
+    '/' | '/auth' | '/reset-password' | '/alunos' | '/dashboard' | '/financeiro'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/_school'
+    | '/_authenticated/_school/alunos'
+    | '/_authenticated/_school/dashboard'
+    | '/_authenticated/_school/financeiro'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AlunosRoute: typeof AlunosRoute
-  FinanceiroRoute: typeof FinanceiroRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,27 +123,92 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/alunos': {
-      id: '/alunos'
-      path: '/alunos'
-      fullPath: '/alunos'
-      preLoaderRoute: typeof AlunosRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/financeiro': {
-      id: '/financeiro'
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_school': {
+      id: '/_authenticated/_school'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedSchoolRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_school/alunos': {
+      id: '/_authenticated/_school/alunos'
+      path: '/alunos'
+      fullPath: '/alunos'
+      preLoaderRoute: typeof AuthenticatedSchoolAlunosRouteImport
+      parentRoute: typeof AuthenticatedSchoolRouteRoute
+    }
+    '/_authenticated/_school/dashboard': {
+      id: '/_authenticated/_school/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedSchoolDashboardRouteImport
+      parentRoute: typeof AuthenticatedSchoolRouteRoute
+    }
+    '/_authenticated/_school/financeiro': {
+      id: '/_authenticated/_school/financeiro'
       path: '/financeiro'
       fullPath: '/financeiro'
-      preLoaderRoute: typeof FinanceiroRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedSchoolFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedSchoolRouteRoute
     }
   }
 }
 
+interface AuthenticatedSchoolRouteRouteChildren {
+  AuthenticatedSchoolAlunosRoute: typeof AuthenticatedSchoolAlunosRoute
+  AuthenticatedSchoolDashboardRoute: typeof AuthenticatedSchoolDashboardRoute
+  AuthenticatedSchoolFinanceiroRoute: typeof AuthenticatedSchoolFinanceiroRoute
+}
+
+const AuthenticatedSchoolRouteRouteChildren: AuthenticatedSchoolRouteRouteChildren =
+  {
+    AuthenticatedSchoolAlunosRoute: AuthenticatedSchoolAlunosRoute,
+    AuthenticatedSchoolDashboardRoute: AuthenticatedSchoolDashboardRoute,
+    AuthenticatedSchoolFinanceiroRoute: AuthenticatedSchoolFinanceiroRoute,
+  }
+
+const AuthenticatedSchoolRouteRouteWithChildren =
+  AuthenticatedSchoolRouteRoute._addFileChildren(
+    AuthenticatedSchoolRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedSchoolRouteRoute: typeof AuthenticatedSchoolRouteRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedSchoolRouteRoute: AuthenticatedSchoolRouteRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AlunosRoute: AlunosRoute,
-  FinanceiroRoute: FinanceiroRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

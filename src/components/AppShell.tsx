@@ -1,22 +1,32 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 import { useState, type ReactNode } from "react";
-import { LayoutDashboard, Users, Wallet, Menu, X, GraduationCap } from "lucide-react";
+import { LayoutDashboard, Users, Wallet, Menu, X, GraduationCap, LogOut } from "lucide-react";
 
 const nav = [
-  { to: "/", label: "Painel", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Painel", icon: LayoutDashboard },
   { to: "/alunos", label: "Alunos", icon: Users },
   { to: "/financeiro", label: "Financeiro da escola", icon: Wallet },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  async function sair() {
+    await queryClient.cancelQueries(); queryClient.clear();
+    await supabase.auth.signOut();
+    await navigate({ to: '/auth', replace: true });
+  }
   return (
     <div className="min-h-screen md:flex">
       <header className="flex items-center justify-between bg-sidebar px-4 py-3 text-sidebar-foreground md:hidden">
         <Brand />
-        <button aria-label="Menu" onClick={() => setOpen(!open)}>
+        <Button variant="ghost" size="icon" aria-label="Menu" onClick={() => setOpen(!open)}>
           {open ? <X /> : <Menu />}
-        </button>
+        </Button>
       </header>
       <aside
         className={`${open ? "block" : "hidden"} bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:flex md:h-screen md:w-64 md:flex-col`}
@@ -30,7 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               key={to}
               to={to}
               onClick={() => setOpen(false)}
-              activeOptions={{ exact: to === "/" }}
+              activeOptions={{ exact: to === "/dashboard" }}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-sidebar-accent"
               activeProps={{ className: "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary" }}
             >
@@ -39,6 +49,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
+        <Button variant="ghost" className="mx-3 justify-start text-sidebar-foreground" onClick={sair}><LogOut /> Sair</Button>
         <p className="mt-auto hidden p-6 text-xs opacity-60 md:block">Dados fictícios · etapa de revisão</p>
       </aside>
       <main className="flex-1 p-4 md:p-8">{children}</main>
