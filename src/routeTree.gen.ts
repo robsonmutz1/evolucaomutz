@@ -9,86 +9,93 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AlunosRouteImport } from './routes/alunos'
-import { Route as FinanceiroRouteImport } from './routes/financeiro'
+import { Route as AuthenticatedSchoolAlunosRouteImport } from './routes/_authenticated/_school/alunos'
+import { Route as AuthenticatedSchoolDashboardRouteImport } from './routes/_authenticated/_school/dashboard'
+import { Route as AuthenticatedSchoolFinanceiroRouteImport } from './routes/_authenticated/_school/financeiro'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AlunosRoute = AlunosRouteImport.update({
-  id: '/alunos',
-  path: '/alunos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FinanceiroRoute = FinanceiroRouteImport.update({
-  id: '/financeiro',
-  path: '/financeiro',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedSchoolAlunosRoute =
+  AuthenticatedSchoolAlunosRouteImport.update({
+    id: '/_authenticated/_school/alunos',
+    path: '/alunos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedSchoolDashboardRoute =
+  AuthenticatedSchoolDashboardRouteImport.update({
+    id: '/_authenticated/_school/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedSchoolFinanceiroRoute =
+  AuthenticatedSchoolFinanceiroRouteImport.update({
+    id: '/_authenticated/_school/financeiro',
+    path: '/financeiro',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/alunos': typeof AlunosRoute
-  '/financeiro': typeof FinanceiroRoute
+  '/alunos': typeof AuthenticatedSchoolAlunosRoute
+  '/dashboard': typeof AuthenticatedSchoolDashboardRoute
+  '/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/alunos': typeof AlunosRoute
-  '/financeiro': typeof FinanceiroRoute
+  '/alunos': typeof AuthenticatedSchoolAlunosRoute
+  '/dashboard': typeof AuthenticatedSchoolDashboardRoute
+  '/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/alunos': typeof AlunosRoute
-  '/financeiro': typeof FinanceiroRoute
+  '/_authenticated/_school/alunos': typeof AuthenticatedSchoolAlunosRoute
+  '/_authenticated/_school/dashboard': typeof AuthenticatedSchoolDashboardRoute
+  '/_authenticated/_school/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alunos' | '/financeiro'
+  fullPaths: '/alunos' | '/dashboard' | '/financeiro'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alunos' | '/financeiro'
-  id: '__root__' | '/' | '/alunos' | '/financeiro'
+  to: '/alunos' | '/dashboard' | '/financeiro'
+  id:
+    | '__root__'
+    | '/_authenticated/_school/alunos'
+    | '/_authenticated/_school/dashboard'
+    | '/_authenticated/_school/financeiro'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AlunosRoute: typeof AlunosRoute
-  FinanceiroRoute: typeof FinanceiroRoute
+  AuthenticatedSchoolAlunosRoute: typeof AuthenticatedSchoolAlunosRoute
+  AuthenticatedSchoolDashboardRoute: typeof AuthenticatedSchoolDashboardRoute
+  AuthenticatedSchoolFinanceiroRoute: typeof AuthenticatedSchoolFinanceiroRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alunos': {
-      id: '/alunos'
+    '/_authenticated/_school/alunos': {
+      id: '/_authenticated/_school/alunos'
       path: '/alunos'
       fullPath: '/alunos'
-      preLoaderRoute: typeof AlunosRouteImport
+      preLoaderRoute: typeof AuthenticatedSchoolAlunosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/financeiro': {
-      id: '/financeiro'
+    '/_authenticated/_school/dashboard': {
+      id: '/_authenticated/_school/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedSchoolDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_school/financeiro': {
+      id: '/_authenticated/_school/financeiro'
       path: '/financeiro'
       fullPath: '/financeiro'
-      preLoaderRoute: typeof FinanceiroRouteImport
+      preLoaderRoute: typeof AuthenticatedSchoolFinanceiroRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AlunosRoute: AlunosRoute,
-  FinanceiroRoute: FinanceiroRoute,
+  AuthenticatedSchoolAlunosRoute: AuthenticatedSchoolAlunosRoute,
+  AuthenticatedSchoolDashboardRoute: AuthenticatedSchoolDashboardRoute,
+  AuthenticatedSchoolFinanceiroRoute: AuthenticatedSchoolFinanceiroRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

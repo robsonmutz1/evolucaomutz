@@ -8,7 +8,7 @@ import { financeiroMensal } from "@/lib/mock-data";
 import { AlertaBadge } from "@/components/AlertaBadge";
 import { alertaConclusao, brl, mesAtualISO } from "@/lib/alunos";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/_school/dashboard")({
   head: () => ({
     meta: [
       { title: "Painel · Evolução Mutz" },

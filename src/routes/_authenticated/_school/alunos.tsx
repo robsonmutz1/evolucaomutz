@@ -15,7 +15,7 @@ import {
   type Aluno, type Status,
 } from "@/lib/alunos";
 
-export const Route = createFileRoute("/alunos")({
+export const Route = createFileRoute("/_authenticated/_school/alunos")({
   head: () => ({
     meta: [
       { title: "Alunos · Evolução Mutz" },
