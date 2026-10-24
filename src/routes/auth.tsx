@@ -53,7 +53,9 @@ function Auth() {
         setMessage(error ? 'Não foi possível enviar o e-mail. Tente novamente.' : 'Se a conta existir, você receberá o link para redefinir a senha.');
       } else if (mode === 'signup') {
         const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth` } });
-        if (error) setMessage('Não foi possível criar a conta. Verifique os dados e tente novamente.');
+        if (error) setMessage(error.code === 'weak_password' || error.message.includes('weak')
+          ? 'Essa senha é conhecida por ser insegura. Escolha uma senha diferente, longa e exclusiva.'
+          : 'Não foi possível criar a conta. Verifique os dados e tente novamente.');
         else if (data.session) await finish();
         else setMessage('Confira seu e-mail para confirmar a conta. O acesso à escola depende de autorização.');
       } else {
