@@ -31,7 +31,7 @@ export function valorComDesconto(a: Pick<Aluno, "valorMensal" | "descontoTipo" |
 
 /** Mês (YYYY-MM) previsto da última mensalidade. */
 export function ultimaMensalidade(primeiraCobranca: string, qtd: number): string {
-  const [y, m] = primeiraCobranca.split("-").map(Number);
+  const [y = 0, m = 1] = primeiraCobranca.split("-").map(Number);
   const total = y * 12 + (m - 1) + Math.max(1, qtd) - 1;
   return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, "0")}`;
 }

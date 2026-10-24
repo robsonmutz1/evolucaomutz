@@ -179,7 +179,7 @@ function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => vo
           className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!f.nome.trim() || !f.curso.trim()) return toast.error("Preencha nome e curso");
+            if (!f.nome.trim() || !f.curso.trim()) { toast.error("Preencha nome e curso"); return; }
             onSave(f);
           }}
         >
