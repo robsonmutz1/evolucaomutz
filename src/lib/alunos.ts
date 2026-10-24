@@ -12,7 +12,7 @@ export interface Aluno {
   turma: string;
   horario: string;
   status: Status;
-  dataStatus?: string; // YYYY-MM-DD (cancelamento/conclusão)
+  dataStatus?: string | undefined; // YYYY-MM-DD (cancelamento/conclusão)
   valorMensal: number;
   descontoTipo: "percentual" | "valor";
   desconto: number;
