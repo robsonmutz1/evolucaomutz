@@ -4,7 +4,6 @@ import { Users, UserPlus, UserX, Award, TrendingUp, TrendingDown, AlertTriangle 
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStore } from "@/lib/store";
-import { financeiroMensal } from "@/lib/mock-data";
 import { AlertaBadge } from "@/components/AlertaBadge";
 import { alertaConclusao, brl, mesAtualISO } from "@/lib/alunos";
 
@@ -33,14 +32,13 @@ function Painel() {
 
   const k = useMemo(() => {
     const noPeriodo = (d?: string) => !!d && d.startsWith(prefixo);
-    const fin = Object.entries(financeiroMensal).filter(([m]) => m.startsWith(prefixo));
     return {
       ativos: alunos.filter((a) => a.status === "Ativo").length,
       novas: alunos.filter((a) => noPeriodo(a.dataMatricula)).length,
       canc: alunos.filter((a) => a.status === "Cancelado" && noPeriodo(a.dataStatus)).length,
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
-      fat: fin.reduce((s, [, v]) => s + v.faturamento, 0),
-      desp: fin.reduce((s, [, v]) => s + v.despesas, 0),
+      fat: null,
+      desp: null,
       alertas: alunos.filter((a) => alertaConclusao(a, hoje)),
     };
   }, [alunos, prefixo, hoje]);
