@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { alunosQuery } from '@/lib/alunos-query';
+import { faturamentoQuery } from '@/lib/faturamento.functions';
 
 export const Route = createFileRoute('/_authenticated/_school')({
   beforeLoad: async () => {
@@ -15,7 +16,10 @@ export const Route = createFileRoute('/_authenticated/_school')({
     return { ownerAllowed: acessoPermitido(data) };
   },
   loader: async ({ context }) => {
-    if (context.ownerAllowed) await context.queryClient.ensureQueryData(alunosQuery);
+    if (context.ownerAllowed) await Promise.all([
+      context.queryClient.ensureQueryData(alunosQuery),
+      context.queryClient.ensureQueryData(faturamentoQuery),
+    ]);
   },
   component: SchoolLayout,
 });

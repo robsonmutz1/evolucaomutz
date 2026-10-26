@@ -1,11 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { Users, UserPlus, UserX, Award, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStore } from "@/lib/store";
 import { AlertaBadge } from "@/components/AlertaBadge";
 import { alertaConclusao, brl, mesAtualISO } from "@/lib/alunos";
+import { faturamentoQuery } from "@/lib/faturamento.functions";
+
+const chartConfig = {
+  faturamento: { label: "Faturamento", color: "var(--primary)" },
+  matriculas: { label: "Matrículas", color: "var(--accent)" },
+} satisfies ChartConfig;
 
 export const Route = createFileRoute("/_authenticated/_school/dashboard")({
   head: () => ({
@@ -25,23 +34,39 @@ const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "O
 
 function Painel() {
   const { alunos } = useStore();
+  const { data: faturamento } = useSuspenseQuery(faturamentoQuery);
   const [ano, setAno] = useState("2026");
   const [mes, setMes] = useState("todos");
   const prefixo = mes === "todos" ? ano : `${ano}-${mes}`;
   const hoje = mesAtualISO();
+  const anos = useMemo(() => {
+    const s = new Set<string>(faturamento.map((f) => f.mes.slice(0, 4)));
+    alunos.forEach((a) => a.dataMatricula && s.add(a.dataMatricula.slice(0, 4)));
+    return [...s].filter((y) => /^\d{4}$/.test(y)).sort().reverse();
+  }, [faturamento, alunos]);
 
   const k = useMemo(() => {
-    const noPeriodo = (d?: string) => !!d && d.startsWith(prefixo);
+    const noPeriodo = (d?: string | null) => !!d && d.startsWith(prefixo);
+    const fats = faturamento.filter((f) => f.mes.startsWith(prefixo));
     return {
       ativos: alunos.filter((a) => a.status === "Ativo").length,
       novas: alunos.filter((a) => noPeriodo(a.dataMatricula)).length,
       canc: alunos.filter((a) => a.status === "Cancelado" && noPeriodo(a.dataStatus)).length,
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
-      fat: null,
+      fat: fats.length ? fats.reduce((s, f) => s + f.valor, 0) : null,
       desp: null,
       alertas: alunos.filter((a) => alertaConclusao(a, hoje)),
     };
-  }, [alunos, prefixo, hoje]);
+  }, [alunos, faturamento, prefixo, hoje]);
+
+  const serie = useMemo(() => meses.map((m, i) => {
+    const mm = `${ano}-${String(i + 1).padStart(2, "0")}`;
+    return {
+      mes: m,
+      faturamento: faturamento.find((f) => f.mes === mm)?.valor ?? null,
+      matriculas: alunos.filter((a) => a.dataMatricula?.startsWith(mm)).length,
+    };
+  }), [ano, faturamento, alunos]);
 
   const cards = [
     { label: "Alunos ativos", value: k.ativos, icon: Users, tone: "bg-primary text-primary-foreground" },

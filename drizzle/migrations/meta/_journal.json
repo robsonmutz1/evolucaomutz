@@ -15,6 +15,13 @@
       "when": 1792865306212,
       "tag": "0001_school_students_import",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793039297112,
+      "tag": "0002_school_monthly_revenue",
+      "breakpoints": true
     }
   ]
 }
