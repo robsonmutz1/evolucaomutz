@@ -30,6 +30,29 @@ export const Route = createFileRoute("/_authenticated/_school/alunos")({
 });
 
 type Col = "codigo" | "nome" | "curso" | "turma" | "dataMatricula" | "status" | "valor";
+type P = { de: string; ate: string };
+const vazio: P = { de: "", ate: "" };
+const ativo = (p: P) => !!(p.de || p.ate);
+const naFaixa = (d: string | undefined | null, p: P) => {
+  if (!ativo(p)) return true;
+  if (!d) return false;
+  const x = d.slice(0, 10);
+  return (!p.de || x >= p.de) && (!p.ate || x <= p.ate);
+};
+
+function Filtro({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="space-y-1"><Label className="text-xs text-muted-foreground">{label}</Label>{children}</div>;
+}
+function Periodo({ label, v, set }: { label: string; v: P; set: (p: P) => void }) {
+  return (
+    <Filtro label={label}>
+      <div className="flex gap-2">
+        <Input type="date" aria-label={`${label} de`} value={v.de} onChange={(e) => set({ ...v, de: e.target.value })} />
+        <Input type="date" aria-label={`${label} até`} value={v.ate} onChange={(e) => set({ ...v, ate: e.target.value })} />
+      </div>
+    </Filtro>
+  );
+}
 
 const statusTone: Record<Status, string> = {
   Ativo: "bg-success text-success-foreground",
@@ -42,26 +65,41 @@ function Alunos() {
   const [q, setQ] = useState("");
   const [fStatus, setFStatus] = useState("todos");
   const [fCurso, setFCurso] = useState("todos");
+  const [fTurma, setFTurma] = useState("todos");
+  const [vMin, setVMin] = useState("");
+  const [vMax, setVMax] = useState("");
+  const [pMat, setPMat] = useState<P>(vazio);
+  const [pCanc, setPCanc] = useState<P>(vazio);
+  const [pConc, setPConc] = useState<P>(vazio);
   const [sort, setSort] = useState<{ col: Col; asc: boolean }>({ col: "nome", asc: true });
   const [editando, setEditando] = useState<Aluno | null>(null);
   const hoje = mesAtualISO();
-  const cursos = [...new Set(alunos.map((a) => a.curso))].sort();
+  const cursos = useMemo(() => [...new Set(alunos.map((a) => a.curso).filter(Boolean))].sort(), [alunos]);
+  const turmas = useMemo(() => [...new Set(alunos.map((a) => a.turma).filter(Boolean))].sort(), [alunos]);
+  const limpar = () => { setQ(""); setFStatus("todos"); setFCurso("todos"); setFTurma("todos"); setVMin(""); setVMax(""); setPMat(vazio); setPCanc(vazio); setPConc(vazio); };
 
   const lista = useMemo(() => {
     const t = q.toLowerCase();
-    const r = alunos.filter(
-      (a) =>
-        (fStatus === "todos" || a.status === fStatus) &&
-        (fCurso === "todos" || a.curso === fCurso) &&
-        [a.nome, a.codigo, a.responsavel, a.bairro, a.cidade, a.turma].some((v) => v.toLowerCase().includes(t)),
-    );
+    const r = alunos.filter((a) => {
+      const v = valorComDesconto(a);
+      if (fStatus !== "todos" && a.status !== fStatus) return false;
+      if (fCurso !== "todos" && a.curso !== fCurso) return false;
+      if (fTurma !== "todos" && a.turma !== fTurma) return false;
+      if ((vMin !== "" || vMax !== "") && v == null) return false;
+      if (vMin !== "" && v! < Number(vMin)) return false;
+      if (vMax !== "" && v! > Number(vMax)) return false;
+      if (!naFaixa(a.dataMatricula, pMat)) return false;
+      if (ativo(pCanc) && !(a.status === "Cancelado" && naFaixa(a.dataStatus, pCanc))) return false;
+      if (ativo(pConc) && !(a.status === "Concluído" && naFaixa(a.dataStatus, pConc))) return false;
+      return [a.nome, a.codigo, a.responsavel, a.bairro, a.cidade, a.turma].some((x) => (x ?? "").toLowerCase().includes(t));
+    });
     const val = (a: Aluno) => (sort.col === "valor" ? valorComDesconto(a) : a[sort.col]);
     return r.sort((x, y) => {
       const a = val(x), b = val(y);
       const c = typeof a === "number" ? a - Number(b ?? 0) : String(a ?? '').localeCompare(String(b ?? ''), "pt-BR");
       return sort.asc ? c : -c;
     });
-  }, [alunos, q, fStatus, fCurso, sort]);
+  }, [alunos, q, fStatus, fCurso, fTurma, vMin, vMax, pMat, pCanc, pConc, sort]);
 
   const novo = (): Aluno => ({
     id: crypto.randomUUID(), codigo: `EM${1001 + alunos.length}`, nome: "", responsavel: "", bairro: "", cidade: "",
@@ -88,25 +126,52 @@ function Alunos() {
         <Button onClick={() => setEditando(novo())}><Plus /> Novo aluno</Button>
       </div>
 
-      <Card className="flex flex-col gap-3 p-4 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className="pl-9" placeholder="Pesquisar por nome, código, responsável, bairro…" value={q} onChange={(e) => setQ(e.target.value)} />
+      <Card className="space-y-3 p-4">
+        <div className="flex flex-col gap-3 md:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input className="pl-9" placeholder="Pesquisar por nome, código, responsável, bairro…" value={q} onChange={(e) => setQ(e.target.value)} />
+          </div>
+          <Button variant="outline" onClick={limpar}>Limpar filtros</Button>
         </div>
-        <Select value={fStatus} onValueChange={setFStatus}>
-          <SelectTrigger className="md:w-40"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os status</SelectItem>
-            {(["Ativo", "Concluído", "Cancelado"] as const).map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={fCurso} onValueChange={setFCurso}>
-          <SelectTrigger className="md:w-48"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os cursos</SelectItem>
-            {cursos.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Filtro label="Status">
+            <Select value={fStatus} onValueChange={setFStatus}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os status</SelectItem>
+                {(["Ativo", "Concluído", "Cancelado"] as const).map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </Filtro>
+          <Filtro label="Curso">
+            <Select value={fCurso} onValueChange={setFCurso}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os cursos</SelectItem>
+                {cursos.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </Filtro>
+          <Filtro label="Turma">
+            <Select value={fTurma} onValueChange={setFTurma}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todas as turmas</SelectItem>
+                {turmas.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </Filtro>
+          <Filtro label="Mensalidade (R$)">
+            <div className="flex gap-2">
+              <Input type="number" placeholder="Mín." value={vMin} onChange={(e) => setVMin(e.target.value)} />
+              <Input type="number" placeholder="Máx." value={vMax} onChange={(e) => setVMax(e.target.value)} />
+            </div>
+          </Filtro>
+          <Periodo label="Data de matrícula" v={pMat} set={setPMat} />
+          <Periodo label="Data de cancelamento" v={pCanc} set={setPCanc} />
+          <Periodo label="Data de conclusão" v={pConc} set={setPConc} />
+        </div>
       </Card>
 
       <Card className="overflow-x-auto p-0">
