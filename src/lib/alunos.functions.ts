@@ -11,7 +11,10 @@ export const listarAlunos = createServerFn({ method: 'GET' })
         .select('id,codigo,nome,responsavel,bairro,cidade,dataMatricula,curso,turma,horario,status,dataStatus,valorMensal,descontoTipo,desconto,diaLimiteDesconto,diaVencimento,qtdMensalidades,primeiraCobranca,observacoes')
         .order('id').range(start, start + 499);
       if (error) throw new Error('Não foi possível carregar os alunos.');
-      for (const row of data) rows.push({ ...row, status: row.status as Aluno['status'], descontoTipo: row.descontoTipo as Aluno['descontoTipo'], dataStatus: row.dataStatus ?? undefined, observacoes: row.observacoes ?? undefined });
+      for (const row of data) {
+        const { observacoes, ...student } = row;
+        rows.push({ ...student, status: row.status as Aluno['status'], descontoTipo: row.descontoTipo as Aluno['descontoTipo'], dataStatus: row.dataStatus ?? undefined, ...(observacoes === null ? {} : { observacoes }) });
+      }
       if (data.length < 500) break;
     }
     return rows;
