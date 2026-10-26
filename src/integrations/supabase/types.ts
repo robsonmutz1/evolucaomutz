@@ -98,6 +98,24 @@ export type Database = {
         }
         Relationships: []
       }
+      faturamento_mensal: {
+        Row: {
+          mes: string
+          unidade: string
+          valor: number
+        }
+        Insert: {
+          mes: string
+          unidade?: string
+          valor: number
+        }
+        Update: {
+          mes?: string
+          unidade?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
