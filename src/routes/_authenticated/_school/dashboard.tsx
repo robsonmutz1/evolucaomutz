@@ -97,7 +97,7 @@ function Painel() {
           <Select value={ano} onValueChange={setAno}>
             <SelectTrigger className="w-28 bg-card"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {["2025", "2026"].map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+              {anos.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -111,6 +111,33 @@ function Painel() {
             <div className="text-sm opacity-80">{label}</div>
           </Card>
         ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="p-5">
+          <h2 className="mb-3 text-xl font-semibold">Faturamento mensal · {ano}</h2>
+          <ChartContainer config={chartConfig} className="h-64 w-full">
+            <LineChart data={serie}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="mes" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} width={50} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
+              <ChartTooltip content={<ChartTooltipContent formatter={(v) => brl(Number(v))} />} />
+              <Line dataKey="faturamento" stroke="var(--color-faturamento)" strokeWidth={2} dot connectNulls={false} />
+            </LineChart>
+          </ChartContainer>
+        </Card>
+        <Card className="p-5">
+          <h2 className="mb-3 text-xl font-semibold">Matrículas por mês · {ano}</h2>
+          <ChartContainer config={chartConfig} className="h-64 w-full">
+            <BarChart data={serie}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="mes" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} width={30} allowDecimals={false} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar dataKey="matriculas" fill="var(--color-matriculas)" radius={4} />
+            </BarChart>
+          </ChartContainer>
+        </Card>
       </div>
 
       <Card className="p-5">
