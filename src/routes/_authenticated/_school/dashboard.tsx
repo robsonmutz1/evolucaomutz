@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, XAxis, YAxis } from "recharts";
 import { Users, UserPlus, UserX, Award, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
@@ -10,6 +10,8 @@ import { useStore } from "@/lib/store";
 import { AlertaBadge } from "@/components/AlertaBadge";
 import { alertaConclusao, brl, mesAtualISO } from "@/lib/alunos";
 import { faturamentoQuery } from "@/lib/faturamento.functions";
+import { totalAnual } from "@/lib/relatorios";
+import { ProjecaoFaturamento } from "@/components/ProjecaoFaturamento";
 
 const chartConfig = {
   faturamento: { label: "Faturamento", color: "var(--primary)" },
@@ -35,29 +37,28 @@ const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "O
 function Painel() {
   const { alunos } = useStore();
   const { data: faturamento } = useSuspenseQuery(faturamentoQuery);
-  const [ano, setAno] = useState("2026");
+  const [ano, setAno] = useState(() => String(new Date().getFullYear()));
   const [mes, setMes] = useState("todos");
   const prefixo = mes === "todos" ? ano : `${ano}-${mes}`;
   const hoje = mesAtualISO();
   const anos = useMemo(() => {
-    const s = new Set<string>(faturamento.map((f) => f.mes.slice(0, 4)));
+    const s = new Set<string>([String(new Date().getFullYear()), ...faturamento.map((f) => f.mes.slice(0, 4))]);
     alunos.forEach((a) => a.dataMatricula && s.add(a.dataMatricula.slice(0, 4)));
     return [...s].filter((y) => /^\d{4}$/.test(y)).sort().reverse();
   }, [faturamento, alunos]);
 
   const k = useMemo(() => {
     const noPeriodo = (d?: string | null) => !!d && d.startsWith(prefixo);
-    const fats = faturamento.filter((f) => f.mes.startsWith(prefixo));
     return {
       ativos: alunos.filter((a) => a.status === "Ativo").length,
       novas: alunos.filter((a) => noPeriodo(a.dataMatricula)).length,
       canc: alunos.filter((a) => a.status === "Cancelado" && noPeriodo(a.dataStatus)).length,
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
-      fat: fats.length ? fats.reduce((s, f) => s + f.valor, 0) : null,
+      fat: totalAnual(faturamento, ano),
       desp: null,
       alertas: alunos.filter((a) => alertaConclusao(a, hoje)),
     };
-  }, [alunos, faturamento, prefixo, hoje]);
+  }, [alunos, faturamento, prefixo, hoje, ano]);
 
   const serie = useMemo(() => meses.map((m, i) => {
     const mm = `${ano}-${String(i + 1).padStart(2, "0")}`;
@@ -73,7 +74,7 @@ function Painel() {
     { label: "Novas matrículas", value: k.novas, icon: UserPlus, tone: "bg-secondary text-secondary-foreground" },
     { label: "Cancelamentos", value: k.canc, icon: UserX, tone: "bg-secondary text-secondary-foreground" },
     { label: "Conclusões", value: k.concl, icon: Award, tone: "bg-secondary text-secondary-foreground" },
-    { label: "Faturamento", value: brl(k.fat), icon: TrendingUp, tone: "bg-accent text-accent-foreground" },
+    { label: `Faturamento de ${ano}`, value: brl(k.fat), icon: TrendingUp, tone: "bg-accent text-accent-foreground" },
     { label: "Despesas", value: brl(k.desp), icon: TrendingDown, tone: "bg-secondary text-secondary-foreground" },
   ];
 
@@ -86,7 +87,7 @@ function Painel() {
         </div>
         <div className="flex gap-2">
           <Select value={mes} onValueChange={setMes}>
-            <SelectTrigger className="w-36 bg-card"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Mês do painel" className="w-36 bg-card"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Ano inteiro</SelectItem>
               {meses.map((m, i) => (
@@ -95,7 +96,7 @@ function Painel() {
             </SelectContent>
           </Select>
           <Select value={ano} onValueChange={setAno}>
-            <SelectTrigger className="w-28 bg-card"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Ano do painel" className="w-28 bg-card"><SelectValue /></SelectTrigger>
             <SelectContent>
               {anos.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
             </SelectContent>
@@ -113,32 +114,43 @@ function Painel() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="p-5">
-          <h2 className="mb-3 text-xl font-semibold">Faturamento mensal · {ano}</h2>
-          <ChartContainer config={chartConfig} className="h-64 w-full">
-            <LineChart data={serie}>
+      <div className="space-y-6">
+        <section className="border-t pt-5">
+          <h2 className="mb-3 text-xl font-semibold">Faturamento mensal · {ano} (R$)</h2>
+          <div className="overflow-x-auto">
+          <ChartContainer config={chartConfig} className="h-72 w-full min-w-[960px] [&_.recharts-label]:fill-foreground">
+            <LineChart data={serie} margin={{ top: 30, right: 40, bottom: 10, left: 10 }}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="mes" tickLine={false} axisLine={false} />
               <YAxis tickLine={false} axisLine={false} width={50} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
               <ChartTooltip content={<ChartTooltipContent formatter={(v) => brl(Number(v))} />} />
-              <Line dataKey="faturamento" stroke="var(--color-faturamento)" strokeWidth={2} dot connectNulls={false} />
+              <Line dataKey="faturamento" stroke="var(--color-faturamento)" strokeWidth={2} dot connectNulls={false} isAnimationActive={false}>
+                <LabelList dataKey="faturamento" position="top" offset={12} formatter={(v: unknown) => typeof v === 'number' ? v.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : ''} />
+              </Line>
             </LineChart>
           </ChartContainer>
-        </Card>
-        <Card className="p-5">
+          </div>
+          {serie.some((s) => s.faturamento === null) && <p className="mt-2 text-xs text-muted-foreground">Meses sem faturamento registrado ficam sem valor no gráfico.</p>}
+        </section>
+        <section className="border-t pt-5">
           <h2 className="mb-3 text-xl font-semibold">Matrículas por mês · {ano}</h2>
-          <ChartContainer config={chartConfig} className="h-64 w-full">
-            <BarChart data={serie}>
+          <div className="overflow-x-auto">
+          <ChartContainer config={chartConfig} className="h-64 w-full min-w-[640px] [&_.recharts-label]:fill-foreground">
+            <BarChart data={serie} margin={{ top: 30, right: 15, bottom: 5, left: 5 }}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="mes" tickLine={false} axisLine={false} />
               <YAxis tickLine={false} axisLine={false} width={30} allowDecimals={false} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="matriculas" fill="var(--color-matriculas)" radius={4} />
+              <Bar dataKey="matriculas" fill="var(--color-matriculas)" radius={4} isAnimationActive={false}>
+                <LabelList dataKey="matriculas" position="top" offset={8} />
+              </Bar>
             </BarChart>
           </ChartContainer>
-        </Card>
+          </div>
+        </section>
       </div>
+
+      <ProjecaoFaturamento receitas={faturamento} />
 
       <Card className="p-5">
         <div className="mb-3 flex items-center gap-2">

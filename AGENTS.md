@@ -12,3 +12,5 @@
 - Protect school pages under the integration-managed authenticated layout and check the protected owner role before mounting school state; no first-user or user-metadata ownership claim is allowed, because real records belong exclusively to the explicitly verified owner.
 - Keep uploaded personal records out of browser bundles and public asset storage; import them into access-controlled Cloud tables only after the owner's identity is confirmed.
 - Read and save school students through authenticated server functions and owner-scoped RLS, with paginated initial reads and a shared query cache; preserve unknown amounts and contract dates rather than fabricating them.
+- School reports reuse the protected shared student and monthly revenue queries; absent expenses and event dates remain unknown, and contractual tuition is not payment history.
+- Revenue forecasts use a client-safe tested helper averaging up to twelve recorded completed months, require at least three observations, exclude missing/current months, and stay distinct from actual annual revenue.

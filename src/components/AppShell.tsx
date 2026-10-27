@@ -3,12 +3,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useState, type ReactNode } from "react";
-import { LayoutDashboard, Users, Wallet, Menu, X, GraduationCap, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Wallet, Menu, X, GraduationCap, LogOut, FileText } from "lucide-react";
 
 const nav = [
   { to: "/dashboard", label: "Painel", icon: LayoutDashboard },
   { to: "/alunos", label: "Alunos", icon: Users },
   { to: "/financeiro", label: "Financeiro da escola", icon: Wallet },
+  { to: "/relatorios", label: "Relatórios", icon: FileText },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -22,14 +23,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
   return (
     <div className="min-h-screen md:flex">
-      <header className="flex items-center justify-between bg-sidebar px-4 py-3 text-sidebar-foreground md:hidden">
+      <header className="flex items-center justify-between bg-sidebar px-4 py-3 text-sidebar-foreground md:hidden print:hidden">
         <Brand />
         <Button variant="ghost" size="icon" aria-label="Menu" onClick={() => setOpen(!open)}>
           {open ? <X /> : <Menu />}
         </Button>
       </header>
       <aside
-        className={`${open ? "block" : "hidden"} bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:flex md:h-screen md:w-64 md:flex-col`}
+        className={`${open ? "block" : "hidden"} shrink-0 bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:flex md:h-screen md:w-64 md:flex-col print:hidden`}
       >
         <div className="hidden p-6 md:block">
           <Brand />
@@ -52,7 +53,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Button variant="ghost" className="mx-3 justify-start text-sidebar-foreground" onClick={sair}><LogOut /> Sair</Button>
         <p className="mt-auto hidden p-6 text-xs opacity-60 md:block">Acesso restrito · Evolução Mutz</p>
       </aside>
-      <main className="flex-1 p-4 md:p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-4 md:p-8 print:p-0">{children}</main>
     </div>
   );
 }
