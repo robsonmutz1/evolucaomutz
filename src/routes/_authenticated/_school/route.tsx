@@ -5,7 +5,7 @@ import { StoreProvider } from '@/lib/store';
 import { AppShell } from '@/components/AppShell';
 import { Button } from '@/components/ui/button';
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import { alunosQuery } from '@/lib/alunos-query';
 import { faturamentoQuery } from '@/lib/faturamento.functions';
 
@@ -22,6 +22,14 @@ export const Route = createFileRoute('/_authenticated/_school')({
     ]);
   },
   component: SchoolLayout,
+  errorComponent: ({ reset }) => {
+    const router = useRouter();
+    return <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-4 p-6">
+      <h1 className="text-2xl font-semibold">Não foi possível carregar os dados</h1>
+      <p className="text-muted-foreground">A conexão falhou por um momento. Tente novamente.</p>
+      <Button onClick={() => { reset(); void router.invalidate(); }}>Tentar novamente</Button>
+    </main>;
+  },
 });
 
 function SchoolLayout() {
