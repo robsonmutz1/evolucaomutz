@@ -116,6 +116,42 @@ export type Database = {
         }
         Relationships: []
       }
+      financeiro_registros: {
+        Row: {
+          categoria: string
+          created_at: string
+          data: string | null
+          descricao: string
+          id: string
+          observacoes: string | null
+          quantidade: number | null
+          tipo: string
+          valor: number | null
+        }
+        Insert: {
+          categoria?: string
+          created_at?: string
+          data?: string | null
+          descricao: string
+          id?: string
+          observacoes?: string | null
+          quantidade?: number | null
+          tipo: string
+          valor?: number | null
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          data?: string | null
+          descricao?: string
+          id?: string
+          observacoes?: string | null
+          quantidade?: number | null
+          tipo?: string
+          valor?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
