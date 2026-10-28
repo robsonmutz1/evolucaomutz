@@ -3,6 +3,6 @@
 - [x] Verificar entrada do Robson após liberar acesso à sua conta confirmada e esclarecer a senha recusada; painel, alunos e saída testados.
 - [x] Concluir importação dos alunos e verificar a exibição na conta autorizada, preservando cores/status, valores ausentes e códigos repetidos.
 - [x] Retirar indicadores financeiros fictícios para não confundi-los com os dados reais importados.
-- [ ] Criar Relatórios protegidos de finanças e alunos, com período e exportação.
-- [ ] Mostrar faturamento anual dinâmico e valores permanentes nos gráficos.
-- [ ] Incluir projeções de faturamento de 1, 3, 6, 9 e 12 meses e testar os cálculos e as páginas.
+- [x] Criar Relatórios protegidos de finanças e alunos, com período e exportação; saídas e saldo permanecem não informados porque não há despesas registradas.
+- [x] Mostrar faturamento anual dinâmico e valores permanentes nos gráficos.
+- [x] Incluir projeções de faturamento de 1, 3, 6, 9 e 12 meses; 20 testes passaram e gráficos, períodos, exportação e relatórios foram conferidos na conta autorizada.

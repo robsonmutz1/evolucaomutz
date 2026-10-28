@@ -119,7 +119,7 @@ function Painel() {
           <h2 className="mb-3 text-xl font-semibold">Faturamento mensal · {ano} (R$)</h2>
           <div className="overflow-x-auto">
           <ChartContainer config={chartConfig} className="h-72 w-full min-w-[960px] [&_.recharts-label]:fill-foreground">
-            <LineChart data={serie} margin={{ top: 30, right: 40, bottom: 10, left: 10 }}>
+            <LineChart data={serie} margin={{ top: 30, right: 45, bottom: 10, left: 40 }}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="mes" tickLine={false} axisLine={false} />
               <YAxis tickLine={false} axisLine={false} width={50} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />

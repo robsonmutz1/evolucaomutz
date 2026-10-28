@@ -19,10 +19,10 @@ export function ProjecaoFaturamento({ receitas }: { receitas: ReceitaMensal[] })
     </div>
     {!projecao ? <p className="text-sm text-muted-foreground">Histórico insuficiente: são necessários pelo menos 3 meses de faturamento registrados, anteriores ao mês atual.</p> : <>
       <p className="text-sm text-muted-foreground">Estimativa pela média de {projecao.base.length} meses registrados, de {formatMes(projecao.base[0]?.mes ?? '')} a {formatMes(projecao.base.at(-1)?.mes ?? '')}: {brl(projecao.media)} por mês. Meses sem registro e o mês atual não entram na média. Não representa receita garantida.</p>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {projecao.totais.map((p) => <Card key={p.meses} className="gap-2 p-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        {projecao.totais.map((p) => <Card key={p.meses} className="flex min-w-0 flex-col gap-2 p-4">
           <span className="text-sm text-muted-foreground">Próximo{p.meses > 1 ? 's' : ''} {p.meses} {p.meses === 1 ? 'mês' : 'meses'}</span>
-          <strong className="break-words text-lg tabular-nums text-primary">{brl(p.valor)}</strong>
+          <strong className="break-words text-base tabular-nums text-primary">{brl(p.valor)}</strong>
           <span className="text-xs text-muted-foreground">Total estimado</span>
         </Card>)}
       </div>
