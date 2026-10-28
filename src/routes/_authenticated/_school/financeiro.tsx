@@ -82,7 +82,7 @@ function Faturamento() {
   }
   const proximo = () => {
     const ult = lista[0]?.mes; if (!ult) return new Date().toISOString().slice(0, 7);
-    const [y, m] = ult.split("-").map(Number); return m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+    const [y = 0, m = 0] = ult.split("-").map(Number); return m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
   };
 
   return (
