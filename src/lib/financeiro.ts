@@ -1,6 +1,6 @@
 export type TipoRegistro = 'despesa' | 'produto' | 'patrimonio';
 export type RegistroFinanceiro = {
-  id?: string; tipo: TipoRegistro; descricao: string; categoria: string;
+  id?: string | undefined; tipo: TipoRegistro; descricao: string; categoria: string;
   data: string | null; valor: number | null; quantidade: number | null; observacoes: string | null;
 };
 

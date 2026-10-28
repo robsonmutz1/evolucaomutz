@@ -60,7 +60,7 @@ function Faturamento() {
   const qc = useQueryClient();
   const salvar = useServerFn(salvarFaturamento);
   const excluir = useServerFn(excluirFaturamento);
-  const [edit, setEdit] = useState<{ mes: string; valor: string; anterior?: string } | null>(null);
+  const [edit, setEdit] = useState<{ mes: string; valor: string; anterior?: string | undefined } | null>(null);
   const [busy, setBusy] = useState(false);
   const lista = [...data].sort((a, b) => b.mes.localeCompare(a.mes));
 
@@ -137,7 +137,7 @@ function Registros({ tipo }: { tipo: TipoRegistro }) {
   const t = textos[tipo];
   const lista = data.filter((r) => r.tipo === tipo);
   const total = totalConhecido(lista);
-  const [edit, setEdit] = useState<(ReturnType<typeof vazio> & { id?: string }) | null>(null);
+  const [edit, setEdit] = useState<(ReturnType<typeof vazio> & { id?: string | undefined }) | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function onSave() {

@@ -15,7 +15,7 @@ export const faturamentoQuery = queryOptions({ queryKey: ['school', 'faturamento
 
 export const salvarFaturamento = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { mes: string; valor: number; anterior?: string }) => {
+  .inputValidator((i: { mes: string; valor: number; anterior?: string | undefined }) => {
     validarMes(i.mes);
     if (!Number.isFinite(i.valor) || i.valor < 0) throw new Error('Informe um valor válido.');
     return i;
