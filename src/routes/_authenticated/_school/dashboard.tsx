@@ -10,7 +10,7 @@ import { useStore } from "@/lib/store";
 import { AlertaBadge } from "@/components/AlertaBadge";
 import { alertaConclusao, brl, mesAtualISO } from "@/lib/alunos";
 import { faturamentoQuery } from "@/lib/faturamento.functions";
-import { totalAnual } from "@/lib/relatorios";
+import { taxaCancelamento, totalAnual } from "@/lib/relatorios";
 import { ProjecaoFaturamento } from "@/components/ProjecaoFaturamento";
 
 const chartConfig = {
@@ -55,6 +55,7 @@ function Painel() {
       ativos: mes === "todos" ? alunos.filter((a) => a.status === "Ativo").length : Math.max(0, novas - canc),
       novas,
       canc,
+      taxaCanc: taxaCancelamento(novas, canc),
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
       fat: mes === "todos" ? totalAnual(faturamento, ano) : faturamento.find((f) => f.mes === prefixo)?.valor ?? null,
       desp: null,
@@ -74,7 +75,7 @@ function Painel() {
   const cards = [
     { label: "Alunos ativos", value: k.ativos, icon: Users, tone: "bg-primary text-primary-foreground" },
     { label: "Novas matrículas", value: k.novas, icon: UserPlus, tone: "bg-secondary text-secondary-foreground" },
-    { label: "Cancelamentos", value: k.canc, icon: UserX, tone: "bg-secondary text-secondary-foreground" },
+    { label: "Cancelamentos", value: k.canc, icon: UserX, tone: "bg-secondary text-secondary-foreground", hint: k.taxaCanc === null ? undefined : `${k.taxaCanc.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% das matrículas` },
     { label: "Conclusões", value: k.concl, icon: Award, tone: "bg-secondary text-secondary-foreground" },
     { label: mes === "todos" ? `Faturamento de ${ano}` : `Faturamento de ${meses[Number(mes) - 1]}/${ano}`, value: brl(k.fat), icon: TrendingUp, tone: "bg-accent text-accent-foreground" },
     { label: "Despesas", value: brl(k.desp), icon: TrendingDown, tone: "bg-secondary text-secondary-foreground" },
@@ -107,11 +108,12 @@ function Painel() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        {cards.map(({ label, value, icon: Icon, tone }) => (
+        {cards.map(({ label, value, icon: Icon, tone, hint }) => (
           <Card key={label} className={`border-0 p-5 shadow-sm ${tone}`}>
             <Icon className="mb-3 h-5 w-5 opacity-80" />
             <div className="font-display text-2xl font-semibold md:text-3xl">{value}</div>
             <div className="text-sm opacity-80">{label}</div>
+            {hint && <div className="mt-1 text-xs font-medium opacity-90">{hint}</div>}
           </Card>
         ))}
       </div>

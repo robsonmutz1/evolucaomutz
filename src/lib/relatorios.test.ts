@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alunosDoRelatorio, gerarCsv, horizontes, projetarFaturamento, totalAnual } from './relatorios';
+import { alunosDoRelatorio, gerarCsv, horizontes, projetarFaturamento, taxaCancelamento, totalAnual } from './relatorios';
 import type { Aluno } from './alunos';
 
 describe('Faturamento e projeções', () => {
@@ -8,6 +8,11 @@ describe('Faturamento e projeções', () => {
     expect(totalAnual(receitas, '2026')).toBe(1170);
     expect(totalAnual(receitas, '2025')).toBe(90);
     expect(totalAnual(receitas, '2027')).toBeNull();
+  });
+  it('calcula a porcentagem de cancelados sobre as matrículas do período', () => {
+    expect(taxaCancelamento(100, 14)).toBe(14);
+    expect(taxaCancelamento(3, 3)).toBe(100);
+    expect(taxaCancelamento(0, 5)).toBeNull();
   });
   it('projeta os cinco prazos solicitados sem usar o mês incompleto', () => {
     const p = projetarFaturamento(receitas, '2026-03');

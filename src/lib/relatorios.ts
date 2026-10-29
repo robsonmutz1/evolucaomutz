@@ -9,6 +9,12 @@ export function totalAnual(receitas: ReceitaMensal[], ano: string): number | nul
   return registros.length ? registros.reduce((s, r) => s + r.valor, 0) : null;
 }
 
+/** Cancellation rate relative to enrollments of the same period; unknown without enrollments. */
+export function taxaCancelamento(matriculas: number, cancelamentos: number): number | null {
+  if (!Number.isFinite(matriculas) || matriculas <= 0) return null;
+  return Math.round((cancelamentos / matriculas) * 1000) / 10;
+}
+
 /** Average of the last twelve recorded completed months; missing months are not zero revenue. */
 export function projetarFaturamento(receitas: ReceitaMensal[], mesAtual: string) {
   const base = receitas.filter((r) => r.mes < mesAtual && Number.isFinite(r.valor))
