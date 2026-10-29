@@ -63,7 +63,7 @@ const statusTone: Record<Status, string> = {
 function Alunos() {
   const { alunos, salvar } = useStore();
   const [q, setQ] = useState("");
-  const [fStatus, setFStatus] = useState("todos");
+  const [fStatus, setFStatus] = useState("Ativo");
   const [fCurso, setFCurso] = useState("todos");
   const [fTurma, setFTurma] = useState("todos");
   const [vMin, setVMin] = useState("");
@@ -71,7 +71,7 @@ function Alunos() {
   const [pMat, setPMat] = useState<P>(vazio);
   const [pCanc, setPCanc] = useState<P>(vazio);
   const [pConc, setPConc] = useState<P>(vazio);
-  const [sort, setSort] = useState<{ col: Col; asc: boolean }>({ col: "nome", asc: true });
+  const [sort, setSort] = useState<{ col: Col; asc: boolean }>({ col: "dataMatricula", asc: false });
   const [editando, setEditando] = useState<Aluno | null>(null);
   const hoje = mesAtualISO();
   const cursos = useMemo(() => [...new Set(alunos.map((a) => a.curso).filter(Boolean))].sort(), [alunos]);
