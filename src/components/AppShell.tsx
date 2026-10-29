@@ -3,7 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useState, type ReactNode } from "react";
-import { LayoutDashboard, Users, Wallet, Menu, X, GraduationCap, LogOut, FileText } from "lucide-react";
+import { LayoutDashboard, Users, Wallet, Menu, X, LogOut, FileText } from "lucide-react";
+import logoAsset from "@/assets/evolmutz-logo.jpg.asset.json";
 
 const nav = [
   { to: "/dashboard", label: "Painel", icon: LayoutDashboard },
@@ -60,14 +61,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2">
-      <span className="grid h-9 w-9 place-items-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-        <GraduationCap className="h-5 w-5" />
-      </span>
-      <div className="leading-tight">
-        <div className="font-display text-lg font-semibold">Evolução Mutz</div>
-        <div className="text-xs opacity-70">Gestão escolar</div>
-      </div>
+    <div className="flex flex-col items-start gap-1.5">
+      <img src={logoAsset.url} alt="Evolução Mutz" className="h-14 w-auto rounded-lg" />
+      <div className="text-xs opacity-70">Gestão escolar</div>
     </div>
   );
 }
