@@ -56,7 +56,7 @@ function Painel() {
       novas,
       canc,
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
-      fat: totalAnual(faturamento, ano),
+      fat: mes === "todos" ? totalAnual(faturamento, ano) : faturamento.find((f) => f.mes === prefixo)?.valor ?? null,
       desp: null,
       alertas: alunos.filter((a) => alertaConclusao(a, hoje)),
     };
@@ -76,7 +76,7 @@ function Painel() {
     { label: "Novas matrículas", value: k.novas, icon: UserPlus, tone: "bg-secondary text-secondary-foreground" },
     { label: "Cancelamentos", value: k.canc, icon: UserX, tone: "bg-secondary text-secondary-foreground" },
     { label: "Conclusões", value: k.concl, icon: Award, tone: "bg-secondary text-secondary-foreground" },
-    { label: `Faturamento de ${ano}`, value: brl(k.fat), icon: TrendingUp, tone: "bg-accent text-accent-foreground" },
+    { label: mes === "todos" ? `Faturamento de ${ano}` : `Faturamento de ${meses[Number(mes) - 1]}/${ano}`, value: brl(k.fat), icon: TrendingUp, tone: "bg-accent text-accent-foreground" },
     { label: "Despesas", value: brl(k.desp), icon: TrendingDown, tone: "bg-secondary text-secondary-foreground" },
   ];
 
