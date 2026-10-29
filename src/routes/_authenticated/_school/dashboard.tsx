@@ -49,10 +49,12 @@ function Painel() {
 
   const k = useMemo(() => {
     const noPeriodo = (d?: string | null) => !!d && d.startsWith(prefixo);
+    const novas = alunos.filter((a) => noPeriodo(a.dataMatricula)).length;
+    const canc = alunos.filter((a) => a.status === "Cancelado" && noPeriodo(a.dataStatus)).length;
     return {
-      ativos: alunos.filter((a) => a.status === "Ativo").length,
-      novas: alunos.filter((a) => noPeriodo(a.dataMatricula)).length,
-      canc: alunos.filter((a) => a.status === "Cancelado" && noPeriodo(a.dataStatus)).length,
+      ativos: mes === "todos" ? alunos.filter((a) => a.status === "Ativo").length : Math.max(0, novas - canc),
+      novas,
+      canc,
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
       fat: totalAnual(faturamento, ano),
       desp: null,
