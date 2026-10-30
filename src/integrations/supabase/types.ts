@@ -152,6 +152,42 @@ export type Database = {
         }
         Relationships: []
       }
+      lancamentos: {
+        Row: {
+          categoria: string
+          created_at: string
+          descricao: string | null
+          grupo: string
+          id: string
+          mes: string
+          origem: string
+          tipo: string
+          valor: number
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          descricao?: string | null
+          grupo?: string
+          id?: string
+          mes: string
+          origem?: string
+          tipo: string
+          valor: number
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          descricao?: string | null
+          grupo?: string
+          id?: string
+          mes?: string
+          origem?: string
+          tipo?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
