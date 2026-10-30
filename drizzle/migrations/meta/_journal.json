@@ -29,6 +29,13 @@
       "when": 1793207175718,
       "tag": "0003_school_finance_records",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793373555842,
+      "tag": "0004_school_cash_entries",
+      "breakpoints": true
     }
   ]
 }
