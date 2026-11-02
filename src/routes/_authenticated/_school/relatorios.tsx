@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStore } from '@/lib/store';
 import { faturamentoQuery } from '@/lib/faturamento.functions';
+import { lancamentosQuery } from '@/lib/lancamentos.functions';
+import { totalPorTipo } from '@/lib/lancamentos';
 import { alunosDoRelatorio, gerarCsv, type TipoRelatorio } from '@/lib/relatorios';
 import { brl, formatData, formatMes, valorComDesconto } from '@/lib/alunos';
 
