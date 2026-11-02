@@ -36,6 +36,13 @@
       "when": 1793373555842,
       "tag": "0004_school_cash_entries",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793629822797,
+      "tag": "0005_alunos_cep_rua",
+      "breakpoints": true
     }
   ]
 }
