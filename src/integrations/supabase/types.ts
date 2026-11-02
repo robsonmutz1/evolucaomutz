@@ -17,6 +17,7 @@ export type Database = {
       alunos: {
         Row: {
           bairro: string
+          cep: string
           cidade: string
           codigo: string
           created_at: string
@@ -34,16 +35,19 @@ export type Database = {
           import_row: number | null
           matriculaPaga: string | null
           nome: string
+          numero: string
           observacoes: string | null
           primeiraCobranca: string
           qtdMensalidades: number
           responsavel: string
+          rua: string
           status: string
           turma: string
           valorMensal: number | null
         }
         Insert: {
           bairro?: string
+          cep?: string
           cidade?: string
           codigo?: string
           created_at?: string
@@ -61,16 +65,19 @@ export type Database = {
           import_row?: number | null
           matriculaPaga?: string | null
           nome: string
+          numero?: string
           observacoes?: string | null
           primeiraCobranca?: string
           qtdMensalidades?: number
           responsavel?: string
+          rua?: string
           status?: string
           turma?: string
           valorMensal?: number | null
         }
         Update: {
           bairro?: string
+          cep?: string
           cidade?: string
           codigo?: string
           created_at?: string
@@ -88,10 +95,12 @@ export type Database = {
           import_row?: number | null
           matriculaPaga?: string | null
           nome?: string
+          numero?: string
           observacoes?: string | null
           primeiraCobranca?: string
           qtdMensalidades?: number
           responsavel?: string
+          rua?: string
           status?: string
           turma?: string
           valorMensal?: number | null
