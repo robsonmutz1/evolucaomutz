@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import { alunosQuery } from '@/lib/alunos-query';
 import { faturamentoQuery } from '@/lib/faturamento.functions';
+import { lancamentosQuery } from '@/lib/lancamentos.functions';
 
 export const Route = createFileRoute('/_authenticated/_school')({
   beforeLoad: async () => {
@@ -19,6 +20,7 @@ export const Route = createFileRoute('/_authenticated/_school')({
     if (context.ownerAllowed) await Promise.all([
       context.queryClient.ensureQueryData(alunosQuery),
       context.queryClient.ensureQueryData(faturamentoQuery),
+      context.queryClient.ensureQueryData(lancamentosQuery),
     ]);
   },
   component: SchoolLayout,

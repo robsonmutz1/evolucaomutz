@@ -16,6 +16,8 @@ import { totalConhecido, type RegistroFinanceiro, type TipoRegistro } from "@/li
 import {
   excluirFaturamento, excluirRegistro, faturamentoQuery, registrosQuery, salvarFaturamento, salvarRegistro,
 } from "@/lib/faturamento.functions";
+import { lancamentosQuery } from "@/lib/lancamentos.functions";
+import { Lancamentos } from "@/components/Lancamentos";
 
 export const Route = createFileRoute("/_authenticated/_school/financeiro")({
   head: () => ({
@@ -28,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/_school/financeiro")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(registrosQuery),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(registrosQuery), context.queryClient.ensureQueryData(lancamentosQuery)]),
   component: Financeiro,
 });
 
@@ -39,13 +41,15 @@ function Financeiro() {
         <h1 className="text-3xl font-semibold md:text-4xl">Financeiro da escola</h1>
         <p className="text-muted-foreground">Cadastre e edite faturamento, despesas, produtos e patrimônio.</p>
       </div>
-      <Tabs defaultValue="faturamento">
+      <Tabs defaultValue="lancamentos">
         <TabsList className="flex-wrap">
+          <TabsTrigger value="lancamentos">Entradas e saídas</TabsTrigger>
           <TabsTrigger value="faturamento">Faturamento</TabsTrigger>
           <TabsTrigger value="despesa">Despesas</TabsTrigger>
           <TabsTrigger value="produto">Produtos</TabsTrigger>
           <TabsTrigger value="patrimonio">Patrimônio</TabsTrigger>
         </TabsList>
+        <TabsContent value="lancamentos"><Lancamentos /></TabsContent>
         <TabsContent value="faturamento"><Faturamento /></TabsContent>
         <TabsContent value="despesa"><Registros tipo="despesa" /></TabsContent>
         <TabsContent value="produto"><Registros tipo="produto" /></TabsContent>
