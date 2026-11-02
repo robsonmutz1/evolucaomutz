@@ -22,7 +22,7 @@ export function Lancamentos() {
   const salvar = useServerFn(salvarLancamento);
   const excluir = useServerFn(excluirLancamento);
   const meses = useMemo(() => [...new Set([new Date().toISOString().slice(0, 7), ...data.map((l) => l.mes)])].sort().reverse(), [data]);
-  const [mes, setMes] = useState(meses[0] ?? "");
+  const [mes, setMes] = useState(data[0]?.mes ?? meses[0] ?? "");
   const [edit, setEdit] = useState<Edit | null>(null);
   const [busy, setBusy] = useState(false);
   const lista = data.filter((l) => l.mes === mes).sort((a, b) => a.tipo.localeCompare(b.tipo) || a.grupo.localeCompare(b.grupo) || b.valor - a.valor);

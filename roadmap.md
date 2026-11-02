@@ -5,4 +5,6 @@
 - [x] Retirar indicadores financeiros fictícios para não confundi-los com os dados reais importados.
 - [x] Criar Relatórios protegidos de finanças e alunos, com período e exportação; saídas e saldo permanecem não informados porque não há despesas registradas.
 - [x] Mostrar faturamento anual dinâmico e valores permanentes nos gráficos.
-- [x] Incluir projeções de faturamento de 1, 3, 6, 9 e 12 meses; 20 testes passaram e gráficos, períodos, exportação e relatórios foram conferidos na conta autorizada.- [x] Financeiro funcional: editar/adicionar faturamento mensal e cadastrar despesas, produtos e patrimônio; testado na conta autorizada.
+- [x] Incluir projeções de faturamento de 1, 3, 6, 9 e 12 meses; 20 testes passaram e gráficos, períodos, exportação e relatórios foram conferidos na conta autorizada.
+- [x] Financeiro funcional: editar/adicionar faturamento mensal e cadastrar despesas, produtos e patrimônio; testado na conta autorizada.
+- [x] Importar totais por categoria das planilhas de controle financeiro 2023–2026 e permitir lançar entradas/saídas que refletem no Painel e Relatórios.
