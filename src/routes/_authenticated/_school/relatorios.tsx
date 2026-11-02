@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStore } from '@/lib/store';
 import { faturamentoQuery } from '@/lib/faturamento.functions';
+import { lancamentosQuery } from '@/lib/lancamentos.functions';
+import { totalPorTipo } from '@/lib/lancamentos';
 import { alunosDoRelatorio, gerarCsv, type TipoRelatorio } from '@/lib/relatorios';
 import { brl, formatData, formatMes, valorComDesconto } from '@/lib/alunos';
 
@@ -29,6 +31,7 @@ const tipos: { valor: TipoRelatorio; nome: string }[] = [
 function Relatorios() {
   const { alunos } = useStore();
   const { data: receitas } = useSuspenseQuery(faturamentoQuery);
+  const { data: lancs } = useSuspenseQuery(lancamentosQuery);
   const [tipo, setTipo] = useState<TipoRelatorio>('financeiro');
   const [de, setDe] = useState(`${new Date().getFullYear()}-01-01`);
   const [ate, setAte] = useState(`${new Date().getFullYear()}-12-31`);
@@ -40,11 +43,14 @@ function Relatorios() {
   const selecao = useMemo(() => alunosDoRelatorio(alunos, tipo, de, ate, curso, turma), [alunos, tipo, de, ate, curso, turma]);
   const financeiro = receitas.filter((r) => (!de || r.mes >= de.slice(0, 7)) && (!ate || r.mes <= ate.slice(0, 7)));
   const total = financeiro.length ? financeiro.reduce((s, r) => s + r.valor, 0) : null;
+  const saidaMes = (m: string) => totalPorTipo(lancs, 'saida', m);
+  const saidas = financeiro.some((r) => saidaMes(r.mes) !== null) ? financeiro.reduce((s, r) => s + (saidaMes(r.mes) ?? 0), 0) : null;
+  const saldoDe = (e: number | null, s: number | null) => (e === null || s === null ? null : Math.round((e - s) * 100) / 100);
   const evento = tipo === 'cancelamentos' || tipo === 'formados';
   const titulo = tipos.find((t) => t.valor === tipo)?.nome ?? '';
   const cabecalho = tipo === 'financeiro' ? ['Mês', 'Entradas (R$)', 'Saídas (R$)', 'Saldo (R$)'] : ['Código', 'Aluno', 'Curso', 'Turma', evento ? 'Data do evento' : 'Matrícula', 'Status atual', 'Mensalidade contratual (R$)'];
   const linhas: (string | number | null)[][] = tipo === 'financeiro'
-    ? financeiro.map((r) => [formatMes(r.mes), r.valor, null, null])
+    ? financeiro.map((r) => [formatMes(r.mes), r.valor, saidaMes(r.mes), saldoDe(r.valor, saidaMes(r.mes))])
     : selecao.alunos.map((a) => [a.codigo, a.nome, a.curso, a.turma, (evento ? a.dataStatus : a.dataMatricula) ? formatData((evento ? a.dataStatus : a.dataMatricula) ?? '') : null, a.status, valorComDesconto(a)]);
   function exportar() {
     const conteudo = gerarCsv([[titulo], ['Período', de, ate], [tipo === 'financeiro' ? 'Faturamento agregado mensal; saídas e saldo não disponíveis.' : 'Status atual; mensalidade contratual não equivale a pagamento recebido.'], [], cabecalho, ...linhas]);
@@ -69,8 +75,8 @@ function Relatorios() {
       <h2 className="text-xl font-semibold">{titulo}</h2>
       <p className="text-sm text-muted-foreground">{de ? formatData(de) : 'Início do histórico'} — {ate ? formatData(ate) : 'Fim do histórico'}</p>
       {tipo === 'financeiro' ? <>
-        <div className="grid gap-4 border-y py-4 sm:grid-cols-3">{[['Entradas registradas', brl(total)], ['Saídas', 'Não informado'], ['Saldo', 'Não informado']].map(([nome, v]) => <div key={nome}><p className="text-sm text-muted-foreground">{nome}</p><strong className="text-xl tabular-nums">{v}</strong></div>)}</div>
-        <p className="text-sm text-muted-foreground">Faturamento agregado por mês; os meses inicial e final são considerados inteiros. Não há saídas registradas nem detalhamento de pagamentos individuais.</p>
+        <div className="grid gap-4 border-y py-4 sm:grid-cols-3">{[['Entradas registradas', brl(total)], ['Saídas', brl(saidas)], ['Saldo', brl(saldoDe(total, saidas))]].map(([nome, v]) => <div key={nome}><p className="text-sm text-muted-foreground">{nome}</p><strong className="text-xl tabular-nums">{v}</strong></div>)}</div>
+        <p className="text-sm text-muted-foreground">Faturamento e saídas agregados por mês; os meses inicial e final são considerados inteiros. Meses sem saídas lançadas aparecem como "Não informado".</p>
       </> : <>
         <p className="font-semibold">{selecao.alunos.length} alunos no período</p>
         {tipo === 'ativos' && <p className="text-sm text-muted-foreground">Alunos com status ativo atualmente e matrícula no período; não representa o total de ativos em uma data passada.</p>}

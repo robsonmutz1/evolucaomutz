@@ -10,6 +10,8 @@ import { useStore } from "@/lib/store";
 import { AlertaBadge } from "@/components/AlertaBadge";
 import { alertaConclusao, brl, mesAtualISO } from "@/lib/alunos";
 import { faturamentoQuery } from "@/lib/faturamento.functions";
+import { lancamentosQuery } from "@/lib/lancamentos.functions";
+import { totalPorTipo } from "@/lib/lancamentos";
 import { taxaCancelamento, totalAnual } from "@/lib/relatorios";
 import { ProjecaoFaturamento } from "@/components/ProjecaoFaturamento";
 
@@ -37,6 +39,7 @@ const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "O
 function Painel() {
   const { alunos } = useStore();
   const { data: faturamento } = useSuspenseQuery(faturamentoQuery);
+  const { data: lancamentos } = useSuspenseQuery(lancamentosQuery);
   const [ano, setAno] = useState(() => String(new Date().getFullYear()));
   const [mes, setMes] = useState("todos");
   const prefixo = mes === "todos" ? ano : `${ano}-${mes}`;
@@ -58,10 +61,10 @@ function Painel() {
       taxaCanc: taxaCancelamento(novas, canc),
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
       fat: mes === "todos" ? totalAnual(faturamento, ano) : faturamento.find((f) => f.mes === prefixo)?.valor ?? null,
-      desp: null,
+      desp: totalPorTipo(lancamentos, "saida", prefixo),
       alertas: alunos.filter((a) => alertaConclusao(a, hoje)),
     };
-  }, [alunos, faturamento, prefixo, hoje, ano]);
+  }, [alunos, faturamento, lancamentos, prefixo, hoje, ano]);
 
   const serie = useMemo(() => meses.map((m, i) => {
     const mm = `${ano}-${String(i + 1).padStart(2, "0")}`;
