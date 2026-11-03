@@ -24,3 +24,7 @@ describe("regras do contrato", () => {
     expect(alertaConclusao(a, "2026-11")).toBeNull();
   });
 });
+
+import { proximoCodigo as pc } from "./alunos";
+import { test as t2, expect as e2 } from "vitest";
+t2("próximo código é o maior + 1", () => { e2(pc(["701167", "700247", "EM2166"])).toBe("701168"); });
