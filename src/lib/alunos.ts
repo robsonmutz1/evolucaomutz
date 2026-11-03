@@ -5,6 +5,9 @@ export interface Aluno {
   codigo: string;
   nome: string;
   responsavel: string;
+  cep?: string;
+  rua?: string;
+  numero?: string;
   bairro: string;
   cidade: string;
   dataMatricula: string; // YYYY-MM-DD
@@ -63,3 +66,10 @@ export const formatMes = (ym: string) => {
 };
 
 export const formatData = (iso: string) => iso.split("-").reverse().join("/");
+
+/** Próximo código: maior código numérico + 1 (ex.: 701167 → 701168). */
+export function proximoCodigo(codigos: string[]): string {
+  let max = 0;
+  for (const c of codigos) if (/^\d+$/.test(c.trim())) max = Math.max(max, Number(c.trim()));
+  return max > 0 ? String(max + 1) : "1";
+}

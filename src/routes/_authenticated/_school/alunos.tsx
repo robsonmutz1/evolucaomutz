@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertaBadge } from "@/components/AlertaBadge";
 import { useStore } from "@/lib/store";
 import {
-  alertaConclusao, brl, formatData, formatMes, mesAtualISO, ultimaMensalidade, valorComDesconto,
+  alertaConclusao, brl, formatData, formatMes, mesAtualISO, proximoCodigo, ultimaMensalidade, valorComDesconto,
   type Aluno, type Status,
 } from "@/lib/alunos";
 
@@ -102,7 +102,7 @@ function Alunos() {
   }, [alunos, q, fStatus, fCurso, fTurma, vMin, vMax, pMat, pCanc, pConc, sort]);
 
   const novo = (): Aluno => ({
-    id: crypto.randomUUID(), codigo: `EM${1001 + alunos.length}`, nome: "", responsavel: "", bairro: "", cidade: "",
+    id: crypto.randomUUID(), codigo: proximoCodigo(alunos.map((a) => a.codigo)), nome: "", responsavel: "", bairro: "", cidade: "",
     dataMatricula: new Date().toISOString().slice(0, 10), curso: "", turma: "", horario: "", status: "Ativo",
     valorMensal: 0, descontoTipo: "percentual", desconto: 0, diaLimiteDesconto: 5, diaVencimento: 10,
     qtdMensalidades: 12, primeiraCobranca: hoje,
@@ -256,6 +256,21 @@ function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => vo
             {txt("codigo", "Código")}
             <div className="sm:col-span-2">{txt("nome", "Nome")}</div>
             {txt("responsavel", "Responsável")}
+            <div className="space-y-1.5">
+              <Label>CEP</Label>
+              <Input value={f.cep ?? ""} inputMode="numeric" placeholder="00000-000" onChange={async (e) => {
+                const v = e.target.value; set("cep", v);
+                const d = v.replace(/\D/g, "");
+                if (d.length !== 8) return;
+                try {
+                  const r = await (await fetch(`https://viacep.com.br/ws/${d}/json/`)).json();
+                  if (r.erro) { toast.error("CEP não encontrado"); return; }
+                  setF((p) => ({ ...p, rua: r.logradouro || p.rua, bairro: r.bairro || p.bairro, cidade: r.localidade || p.cidade }));
+                } catch { toast.error("Não foi possível buscar o CEP"); }
+              }} />
+            </div>
+            <div className="sm:col-span-2">{txt("rua", "Rua")}</div>
+            {txt("numero", "Número")}
             {txt("bairro", "Bairro")}
             {txt("cidade", "Cidade")}
             {txt("dataMatricula", "Data da matrícula", "date")}
