@@ -8,7 +8,7 @@ export const listarAlunos = createServerFn({ method: 'GET' })
     const rows: Aluno[] = [];
     for (let start = 0; ; start += 500) {
       const { data, error } = await context.supabase.from('alunos')
-        .select('id,codigo,nome,responsavel,bairro,cidade,dataMatricula,curso,turma,horario,status,dataStatus,valorMensal,descontoTipo,desconto,diaLimiteDesconto,diaVencimento,qtdMensalidades,primeiraCobranca,observacoes')
+        .select('id,codigo,nome,responsavel,cep,rua,numero,bairro,cidade,dataMatricula,curso,turma,horario,status,dataStatus,valorMensal,descontoTipo,desconto,diaLimiteDesconto,diaVencimento,qtdMensalidades,primeiraCobranca,observacoes')
         .order('id').range(start, start + 499);
       if (error) throw new Error('Não foi possível carregar os alunos.');
       for (const row of data) {
@@ -28,7 +28,7 @@ export const salvarAluno = createServerFn({ method: 'POST' })
   })
   .handler(async ({ context, data }) => {
     const { error } = await context.supabase.from('alunos').upsert({
-      id: data.id, codigo: data.codigo, nome: data.nome, responsavel: data.responsavel, bairro: data.bairro, cidade: data.cidade,
+      id: data.id, codigo: data.codigo, nome: data.nome, responsavel: data.responsavel, cep: data.cep ?? '', rua: data.rua ?? '', numero: data.numero ?? '', bairro: data.bairro, cidade: data.cidade,
       dataMatricula: data.dataMatricula, curso: data.curso, turma: data.turma, horario: data.horario, status: data.status,
       dataStatus: data.dataStatus ?? null, valorMensal: data.valorMensal, descontoTipo: data.descontoTipo, desconto: data.desconto,
       diaLimiteDesconto: data.diaLimiteDesconto, diaVencimento: data.diaVencimento, qtdMensalidades: data.qtdMensalidades,
