@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { GraduationCap, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
+import logoAsset from '@/assets/evolmutz-logo.jpg.asset.json';
 import '@lovable.dev/cloud-auth-js/styles.css';
 
 export const Route = createFileRoute('/auth')({
@@ -66,16 +67,27 @@ function Auth() {
     } catch { setMessage('Não foi possível concluir. Tente novamente.'); }
     finally { setBusy(false); }
   }
-  return <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 px-6 py-12">
-    <GraduationCap className="h-10 w-10 text-primary" />
-    <div><h1 className="text-3xl font-semibold">Evolução Mutz</h1><p className="mt-2 text-muted-foreground">{mode === 'signup' ? 'Criar conta' : mode === 'reset' ? 'Recuperar senha' : 'Acesso à gestão escolar'}</p></div>
-    <form className="space-y-4" onSubmit={submit}>
-      <div className="space-y-2"><Label htmlFor="email">E-mail</Label><Input id="email" type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required /></div>
-      {mode !== 'reset' && <div className="space-y-2"><Label htmlFor="password">Senha</Label><Input id="password" type="password" minLength={8} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)} required /></div>}
-      <Button className="w-full" disabled={busy} type="submit"><LogIn />{busy ? 'Aguarde…' : mode === 'signup' ? 'Criar conta' : mode === 'reset' ? 'Enviar link' : 'Entrar'}</Button>
-    </form>
-    {message && <p role="status" className="text-sm text-foreground">{message}</p>}
-    {mode !== 'reset' && <div className="space-y-3"><Button className="w-full" variant="outline" disabled={busy} onClick={() => social('google')}>Continuar com Google</Button><Button className="lovable-auth-button w-full" disabled={busy} onClick={() => social('lovable')}>Continue with Lovable</Button></div>}
-    <div className="flex flex-wrap gap-2"><Button variant="link" disabled={busy} onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setMessage(''); }}>{mode === 'login' ? 'Criar conta' : 'Voltar para entrar'}</Button>{mode === 'login' && <Button variant="link" disabled={busy} onClick={() => { setMode('reset'); setMessage(''); }}>Esqueci a senha</Button>}</div>
-  </main>;
+  return <div className="flex min-h-screen">
+    <aside className="hidden w-1/2 flex-col items-center justify-center gap-6 bg-sidebar p-12 text-center text-sidebar-foreground md:flex">
+      <img src={logoAsset.url} alt="Evolução Mutz" className="w-64 rounded-xl shadow-lg" />
+      <div>
+        <h1 className="font-display text-3xl font-semibold">Evolução Mutz</h1>
+        <p className="mt-2 text-sm opacity-75">Gestão escolar · Acesso restrito</p>
+      </div>
+    </aside>
+    <main className="flex w-full flex-1 flex-col justify-center px-6 py-12 md:w-1/2">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-6">
+        <img src={logoAsset.url} alt="Evolução Mutz" className="h-24 w-auto self-start rounded-lg md:hidden" />
+        <div><h2 className="text-2xl font-semibold">{mode === 'signup' ? 'Criar conta' : mode === 'reset' ? 'Recuperar senha' : 'Entrar'}</h2><p className="mt-2 text-muted-foreground">{mode === 'signup' ? 'Acesso à gestão escolar' : mode === 'reset' ? 'Enviaremos o link para o seu e-mail' : 'Acesso à gestão escolar da Evolução Mutz'}</p></div>
+        <form className="space-y-4" onSubmit={submit}>
+          <div className="space-y-2"><Label htmlFor="email">E-mail</Label><Input id="email" type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required /></div>
+          {mode !== 'reset' && <div className="space-y-2"><Label htmlFor="password">Senha</Label><Input id="password" type="password" minLength={8} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)} required /></div>}
+          <Button className="w-full" disabled={busy} type="submit"><LogIn />{busy ? 'Aguarde…' : mode === 'signup' ? 'Criar conta' : mode === 'reset' ? 'Enviar link' : 'Entrar'}</Button>
+        </form>
+        {message && <p role="status" className="text-sm text-foreground">{message}</p>}
+        {mode !== 'reset' && <div className="space-y-3"><Button className="w-full" variant="outline" disabled={busy} onClick={() => social('google')}>Continuar com Google</Button><Button className="lovable-auth-button w-full" disabled={busy} onClick={() => social('lovable')}>Continue with Lovable</Button></div>}
+        <div className="flex flex-wrap gap-2"><Button variant="link" disabled={busy} onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setMessage(''); }}>{mode === 'login' ? 'Criar conta' : 'Voltar para entrar'}</Button>{mode === 'login' && <Button variant="link" disabled={busy} onClick={() => { setMode('reset'); setMessage(''); }}>Esqueci a senha</Button>}</div>
+      </div>
+    </main>
+  </div>;
 }
