@@ -42,6 +42,8 @@ export type Database = {
           responsavel: string
           rua: string
           status: string
+          telefone: string
+          telefoneResponsavel: string
           turma: string
           valorMensal: number | null
         }
@@ -72,6 +74,8 @@ export type Database = {
           responsavel?: string
           rua?: string
           status?: string
+          telefone?: string
+          telefoneResponsavel?: string
           turma?: string
           valorMensal?: number | null
         }
@@ -102,6 +106,8 @@ export type Database = {
           responsavel?: string
           rua?: string
           status?: string
+          telefone?: string
+          telefoneResponsavel?: string
           turma?: string
           valorMensal?: number | null
         }
@@ -197,6 +203,115 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_interacoes: {
+        Row: {
+          created_at: string
+          descricao: string
+          id: string
+          lead_id: string
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          descricao: string
+          id?: string
+          lead_id: string
+          tipo: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          id?: string
+          lead_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_interacoes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          aluno_id: string | null
+          consultor_responsavel: string | null
+          created_at: string
+          curso_interesse: string
+          data_fechamento: string | null
+          data_pos_venda: string | null
+          data_proximo_contato: string | null
+          data_ultimo_contato: string | null
+          etapa: string
+          id: string
+          idade_aluno: number | null
+          motivo_perda: string | null
+          nome_aluno: string | null
+          nome_responsavel: string
+          observacoes: string
+          origem: string
+          pos_venda_realizado: boolean
+          telefone: string
+          turno_interesse: string
+          valor_mensalidade_negociado: number | null
+        }
+        Insert: {
+          aluno_id?: string | null
+          consultor_responsavel?: string | null
+          created_at?: string
+          curso_interesse?: string
+          data_fechamento?: string | null
+          data_pos_venda?: string | null
+          data_proximo_contato?: string | null
+          data_ultimo_contato?: string | null
+          etapa?: string
+          id?: string
+          idade_aluno?: number | null
+          motivo_perda?: string | null
+          nome_aluno?: string | null
+          nome_responsavel: string
+          observacoes?: string
+          origem?: string
+          pos_venda_realizado?: boolean
+          telefone: string
+          turno_interesse?: string
+          valor_mensalidade_negociado?: number | null
+        }
+        Update: {
+          aluno_id?: string | null
+          consultor_responsavel?: string | null
+          created_at?: string
+          curso_interesse?: string
+          data_fechamento?: string | null
+          data_pos_venda?: string | null
+          data_proximo_contato?: string | null
+          data_ultimo_contato?: string | null
+          etapa?: string
+          id?: string
+          idade_aluno?: number | null
+          motivo_perda?: string | null
+          nome_aluno?: string | null
+          nome_responsavel?: string
+          observacoes?: string
+          origem?: string
+          pos_venda_realizado?: boolean
+          telefone?: string
+          turno_interesse?: string
+          valor_mensalidade_negociado?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -220,6 +335,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      crm_chave_telefone: { Args: { numero: string }; Returns: string }
+      crm_consultores: {
+        Args: never
+        Returns: {
+          id: string
+          nome: string
+        }[]
+      }
+      crm_registrar_contato: {
+        Args: {
+          p_descricao: string
+          p_lead_id: string
+          p_proximo?: string
+          p_tipo: string
+        }
+        Returns: undefined
+      }
+      crm_telefone: { Args: { numero: string }; Returns: string }
       has_owner_access: { Args: never; Returns: boolean }
     }
     Enums: {

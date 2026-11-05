@@ -43,6 +43,13 @@
       "when": 1793629822797,
       "tag": "0005_alunos_cep_rua",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793874223365,
+      "tag": "0006_school_crm",
+      "breakpoints": true
     }
   ]
 }
