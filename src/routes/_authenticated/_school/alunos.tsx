@@ -41,7 +41,7 @@ const naFaixa = (d: string | undefined | null, p: P) => {
 };
 
 function Filtro({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="space-y-1"><Label className="text-xs text-muted-foreground">{label}</Label>{children}</div>;
+  return <div className="min-w-0 space-y-1"><Label className="text-xs text-muted-foreground">{label}</Label>{children}</div>;
 }
 function Periodo({ label, v, set }: { label: string; v: P; set: (p: P) => void }) {
   return (
