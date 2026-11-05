@@ -8,3 +8,5 @@
 - [x] Incluir projeções de faturamento de 1, 3, 6, 9 e 12 meses; 20 testes passaram e gráficos, períodos, exportação e relatórios foram conferidos na conta autorizada.
 - [x] Financeiro funcional: editar/adicionar faturamento mensal e cadastrar despesas, produtos e patrimônio; testado na conta autorizada.
 - [x] Importar totais por categoria das planilhas de controle financeiro 2023–2026 e permitir lançar entradas/saídas que refletem no Painel e Relatórios.
+- [ ] Criar CRM protegido com funil, leads, histórico, contatos, pós-venda e métricas.
+- [ ] Adicionar telefones dos alunos e responsáveis e conversão automática segura; verificar fluxo completo e telas menores.
