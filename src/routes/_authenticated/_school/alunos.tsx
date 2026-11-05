@@ -256,6 +256,8 @@ function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => vo
             {txt("codigo", "Código")}
             <div className="sm:col-span-2">{txt("nome", "Nome")}</div>
             {txt("responsavel", "Responsável")}
+            {txt("telefone", "Telefone do aluno", "tel")}
+            {txt("telefoneResponsavel", "Telefone do responsável", "tel")}
             <div className="space-y-1.5">
               <Label>CEP</Label>
               <Input value={f.cep ?? ""} inputMode="numeric" placeholder="00000-000" onChange={async (e) => {

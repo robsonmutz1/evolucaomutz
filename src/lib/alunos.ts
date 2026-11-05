@@ -5,6 +5,8 @@ export interface Aluno {
   codigo: string;
   nome: string;
   responsavel: string;
+  telefone?: string;
+  telefoneResponsavel?: string;
   cep?: string;
   rua?: string;
   numero?: string;
