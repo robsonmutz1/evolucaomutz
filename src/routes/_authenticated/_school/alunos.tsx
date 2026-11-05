@@ -41,14 +41,14 @@ const naFaixa = (d: string | undefined | null, p: P) => {
 };
 
 function Filtro({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="space-y-1"><Label className="text-xs text-muted-foreground">{label}</Label>{children}</div>;
+  return <div className="min-w-0 space-y-1"><Label className="text-xs text-muted-foreground">{label}</Label>{children}</div>;
 }
 function Periodo({ label, v, set }: { label: string; v: P; set: (p: P) => void }) {
   return (
     <Filtro label={label}>
-      <div className="flex gap-2">
-        <Input type="date" aria-label={`${label} de`} value={v.de} onChange={(e) => set({ ...v, de: e.target.value })} />
-        <Input type="date" aria-label={`${label} até`} value={v.ate} onChange={(e) => set({ ...v, ate: e.target.value })} />
+      <div className="flex min-w-0 gap-2">
+        <Input className="min-w-0 flex-1" type="date" aria-label={`${label} de`} value={v.de} onChange={(e) => set({ ...v, de: e.target.value })} />
+        <Input className="min-w-0 flex-1" type="date" aria-label={`${label} até`} value={v.ate} onChange={(e) => set({ ...v, ate: e.target.value })} />
       </div>
     </Filtro>
   );
@@ -163,9 +163,9 @@ function Alunos() {
             </Select>
           </Filtro>
           <Filtro label="Mensalidade (R$)">
-            <div className="flex gap-2">
-              <Input type="number" placeholder="Mín." value={vMin} onChange={(e) => setVMin(e.target.value)} />
-              <Input type="number" placeholder="Máx." value={vMax} onChange={(e) => setVMax(e.target.value)} />
+            <div className="flex min-w-0 gap-2">
+              <Input className="min-w-0 flex-1" type="number" placeholder="Mín." value={vMin} onChange={(e) => setVMin(e.target.value)} />
+              <Input className="min-w-0 flex-1" type="number" placeholder="Máx." value={vMax} onChange={(e) => setVMax(e.target.value)} />
             </div>
           </Filtro>
           <Periodo label="Data de matrícula" v={pMat} set={setPMat} />
