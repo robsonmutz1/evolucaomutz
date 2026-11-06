@@ -121,3 +121,8 @@
   }
   h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
 }
+
+.crm-conversion { appearance: none; border: none; border-radius: 4px; overflow: hidden; background: var(--muted); }
+.crm-conversion::-webkit-progress-bar { background: var(--muted); }
+.crm-conversion::-webkit-progress-value { background: var(--primary); }
+.crm-conversion::-moz-progress-bar { background: var(--primary); }

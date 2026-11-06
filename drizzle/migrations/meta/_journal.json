@@ -50,6 +50,13 @@
       "when": 1793874223365,
       "tag": "0006_school_crm",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793967639610,
+      "tag": "0007_crm_phone_write_lock",
+      "breakpoints": true
     }
   ]
 }
