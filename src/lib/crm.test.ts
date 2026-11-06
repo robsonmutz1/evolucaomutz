@@ -1,0 +1,18 @@
+import { describe, expect, it } from 'vitest';
+import { chaveTelefone, normalizarTelefone, nivelContato, followUp, posVenda, metricasCRM, validarLead, type Lead } from './crm';
+const now=new Date('2026-11-05T15:00:00Z');
+const lead=(v:Partial<Lead>={}):Lead=>({id:'00000000-0000-0000-0000-000000000001',created_at:'2026-11-01T15:00:00Z',telefone:'27912345678',nome_responsavel:'Responsável teste',nome_aluno:null,idade_aluno:null,turno_interesse:'Ainda não definiu',curso_interesse:'',origem:'WhatsApp direto',consultor_responsavel:null,valor_mensalidade_negociado:null,etapa:'Novo lead',observacoes:'',data_ultimo_contato:null,data_proximo_contato:null,aluno_id:null,data_fechamento:null,motivo_perda:null,pos_venda_realizado:false,data_pos_venda:null,...v});
+describe('Regras CRM',()=>{
+ it('salva só números com DDD sem código 55',()=>expect(normalizarTelefone('+55 (27) 91234-5678')).toBe('27912345678'));
+ it('compara país 55 e número com/sem nono dígito',()=>expect(chaveTelefone('+55 27 91234-5678')).toBe(chaveTelefone('27 1234-5678')));
+ it('exige motivo ao perder lead',()=>{expect(()=>validarLead(lead({etapa:'Perdido'}))).toThrow('motivo');expect(validarLead(lead({etapa:'Perdido',motivo_perda:'Sem interesse'})).etapa).toBe('Perdido');});
+ it('alerta laranja só acima de 3 dias',()=>{expect(nivelContato(lead({created_at:'2026-11-02T15:00:00Z'}),now)).toBe('normal');expect(nivelContato(lead(),now)).toBe('atencao');});
+ it('alerta vermelho só acima de 7 dias',()=>{expect(nivelContato(lead({created_at:'2026-10-29T15:00:00Z'}),now)).toBe('atencao');expect(nivelContato(lead({created_at:'2026-10-28T15:00:00Z'}),now)).toBe('forte');});
+ it('follow-up inclui hoje e atrasados',()=>{expect(followUp(lead({etapa:'Em negociação',data_proximo_contato:'2026-11-05'}),now)).toBe(true);expect(followUp(lead({etapa:'Em negociação',data_proximo_contato:'2026-11-04'}),now)).toBe(true);expect(followUp(lead({etapa:'Em negociação',data_proximo_contato:'2026-11-06'}),now)).toBe(false);});
+ it('Novo lead e Sem resposta entram após 2 dias sem contato',()=>{expect(followUp(lead({created_at:'2026-11-03T15:00:00Z'}),now)).toBe(false);expect(followUp(lead({created_at:'2026-11-02T15:00:00Z',etapa:'Sem resposta'}),now)).toBe(true);});
+ it('matriculados e perdidos não entram em follow-up',()=>{expect(followUp(lead({etapa:'Matriculado',data_proximo_contato:'2026-11-01'}),now)).toBe(false);expect(followUp(lead({etapa:'Perdido'}),now)).toBe(false);});
+ it('pós-venda inclui até 30 dias, sem atendimento realizado',()=>{const l=lead({etapa:'Matriculado',data_fechamento:'2026-10-06T15:00:00Z'});expect(posVenda(l,now)).toBe(true);expect(posVenda({...l,data_fechamento:'2026-10-05T15:00:00Z'},now)).toBe(false);expect(posVenda({...l,pos_venda_realizado:true},now)).toBe(false);});
+ it('conversão divide matrículas pelos leads do mês de entrada',()=>{const rows=Array.from({length:100},(_,i)=>lead({etapa:i<14?'Matriculado':'Novo lead'}));expect(metricasCRM(rows,'2026-11').conversao).toBe(14);expect(metricasCRM([...rows,lead({created_at:'2026-10-01T15:00:00Z',etapa:'Matriculado'})],'2026-11').matriculados).toBe(14);});
+ it('mensalidade desconhecida não diminui o ticket conhecido',()=>expect(metricasCRM([lead({etapa:'Matriculado',valor_mensalidade_negociado:100}),lead({etapa:'Matriculado'})],'2026-11').ticket).toBe(100));
+ it('potencial exclui perdas e matrículas',()=>expect(metricasCRM([lead({valor_mensalidade_negociado:100}),lead({etapa:'Matriculado',valor_mensalidade_negociado:200}),lead({etapa:'Perdido',valor_mensalidade_negociado:300})],'2026-11').potencial).toBe(100));
+});
