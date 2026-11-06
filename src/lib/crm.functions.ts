@@ -49,6 +49,6 @@ export const historicoLead = createServerFn({method:'POST'}).middleware([require
 export const registrarContatoCRM = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:{id:string;tipo:string;descricao:string;proximo:string})=>{
  if(!i.descricao.trim())throw new Error('Descreva o contato.');return i;
 }).handler(async ({context,data})=>{
- const {error}=await context.supabase.rpc('crm_registrar_contato',{p_lead_id:data.id,p_tipo:data.tipo,p_descricao:data.descricao,p_proximo:data.proximo||null});
+ const {error}=await context.supabase.rpc('crm_registrar_contato',{p_lead_id:data.id,p_tipo:data.tipo,p_descricao:data.descricao,...(data.proximo ? {p_proximo:data.proximo} : {})});
  if(error)throw new Error('Não foi possível registrar o contato.');return {success:true};
 });

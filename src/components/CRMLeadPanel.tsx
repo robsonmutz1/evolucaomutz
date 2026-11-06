@@ -34,7 +34,11 @@ export function CRMLeadPanel({lead,novo,consultores,onClose}:{lead:Lead;novo:boo
  },[f.telefone,f.id,novo,lead.telefone,check]);
  async function refresh(){await Promise.all([cache.invalidateQueries({queryKey:['school','crm']}),cache.invalidateQueries({queryKey:['school','crm-history',lead.id]})]);}
  async function salvar(row:Lead,fechar=true){setSaving(true);try{const result=await save({data:row});setF(result);await refresh();toast.success('Lead salvo');if(fechar)onClose();}catch(e){toast.error(e instanceof Error?e.message:'Não foi possível salvar.');}finally{setSaving(false);}}
- const txt=(k:keyof Lead,label:string,type='text')=><div className="min-w-0 space-y-1.5"><Label htmlFor={`crm-${k}`}>{label}</Label><Input id={`crm-${k}`} className="min-w-0" type={type} min={type==='number'?0:undefined} step={k==='valor_mensalidade_negociado'?'0.01':undefined} value={String(f[k]??'')} onChange={e=>set(k,(type==='number'?(e.target.value===''?null:Number(e.target.value)):e.target.value||null) as never)}/></div>;
+ const txt=(k:keyof Lead,label:string,type='text')=>{
+  const val=f[k];
+  const displayed=type==='datetime-local'&&typeof val==='string'&&val ? new Date(new Date(val).getTime()-new Date(val).getTimezoneOffset()*60000).toISOString().slice(0,16) : String(val??'');
+  return <div className="min-w-0 space-y-1.5"><Label htmlFor={`crm-${k}`}>{label}</Label><Input id={`crm-${k}`} className="min-w-0" required={k==='nome_responsavel'||k==='telefone'||k==='motivo_perda'} type={type} min={type==='number'?0:undefined} step={k==='valor_mensalidade_negociado'?'0.01':undefined} value={displayed} onChange={e=>set(k,(type==='number'?(e.target.value===''?null:Number(e.target.value)):type==='datetime-local'?(e.target.value?new Date(e.target.value).toISOString():null):['nome_responsavel','telefone'].includes(k)?e.target.value:e.target.value||null) as never)}/></div>;
+ };
  const resultados=alunos.filter(a=>a.status==='Ativo'&&[a.nome,a.codigo,a.responsavel].some(v=>v.toLowerCase().includes(alunoBusca.toLowerCase()))).slice(0,30);
  return <Sheet open onOpenChange={o=>{if(!o&&!saving)onClose();}}><SheetContent className="w-full overflow-y-auto sm:max-w-2xl" aria-describedby="crm-panel-description">
   <SheetHeader className="mb-6 text-left"><SheetTitle className="text-2xl">{novo?'Novo lead':f.nome_responsavel}</SheetTitle><SheetDescription id="crm-panel-description">{novo?'Cadastro de interessado':'Dados e histórico de atendimento'}</SheetDescription></SheetHeader>

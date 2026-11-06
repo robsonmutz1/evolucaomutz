@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useState, type ReactNode } from "react";
-import { LayoutDashboard, Users, Wallet, Menu, X, LogOut, FileText } from "lucide-react";
+import { LayoutDashboard, Users, Wallet, Menu, X, LogOut, FileText, ContactRound } from "lucide-react";
 import logoAsset from "@/assets/evolmutz-logo.jpg.asset.json";
 
 const nav = [
@@ -11,6 +11,7 @@ const nav = [
   { to: "/alunos", label: "Alunos", icon: Users },
   { to: "/financeiro", label: "Financeiro da escola", icon: Wallet },
   { to: "/relatorios", label: "Relatórios", icon: FileText },
+  { to: "/crm", label: "CRM", icon: ContactRound },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
