@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { validarLead, chaveTelefone, type Lead, type Interacao } from './crm';
 import { createMiddleware } from '@tanstack/react-start';
-const requireCRMOwner = createMiddleware().middleware([requireSupabaseAuth]).server(async ({context,next})=>{
+const requireCRMOwner = createMiddleware({type:'function'}).middleware([requireSupabaseAuth]).server(async ({context,next})=>{
  const {data,error}=await context.supabase.rpc('has_owner_access');
  if(error||!data) throw new Error('Acesso não autorizado à escola.');
  return next();
