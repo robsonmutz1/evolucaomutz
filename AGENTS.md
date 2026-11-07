@@ -15,3 +15,4 @@
 - School reports reuse the protected shared student and monthly revenue queries; absent expenses and event dates remain unknown, and contractual tuition is not payment history.
 - Revenue forecasts use a client-safe tested helper averaging up to twelve recorded completed months, require at least three observations, exclude missing/current months, and stay distinct from actual annual revenue.
 - CRM uses owner-scoped authenticated server functions and a separate shared query; database triggers normalize and deduplicate phones, audit lead changes, and convert matches against student/responsible phone fields so all student write paths behave consistently.
+- Financial launch dates synchronize the existing month key in a database trigger; classification catalogs normalize names and propagate renames/merges transactionally while preserving monetary fields, so existing monthly reports remain compatible.

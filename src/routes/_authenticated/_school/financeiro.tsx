@@ -18,6 +18,7 @@ import {
 } from "@/lib/faturamento.functions";
 import { lancamentosQuery } from "@/lib/lancamentos.functions";
 import { Lancamentos } from "@/components/Lancamentos";
+import { cadastrosFinanceirosQuery } from '@/lib/financeiro-cadastros.functions';
 
 export const Route = createFileRoute("/_authenticated/_school/financeiro")({
   head: () => ({
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/_authenticated/_school/financeiro")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(registrosQuery), context.queryClient.ensureQueryData(lancamentosQuery)]),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(registrosQuery), context.queryClient.ensureQueryData(lancamentosQuery),context.queryClient.ensureQueryData(cadastrosFinanceirosQuery)]),
   component: Financeiro,
 });
 

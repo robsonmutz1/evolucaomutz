@@ -11,9 +11,11 @@ export const cadastrosFinanceirosQuery=queryOptions({queryKey:['school','finance
 export const salvarCadastroFinanceiro=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:{kind:'grupo'|'categoria';id?:string|undefined;nome:string;tipo:string;ativo:boolean;grupo_id?:string|null|undefined})=>{
  if(!i.nome.trim())throw new Error('Informe o nome.');if(!['Entrada','Saída','Ambos'].includes(i.tipo))throw new Error('Tipo inválido.');return {...i,nome:i.nome.trim().replace(/\s+/g,' ')};
 }).handler(async({context,data})=>{
- const table=data.kind==='grupo'?'financeiro_grupos':'financeiro_categorias';
- const row={nome:data.nome,tipo:data.tipo,ativo:data.ativo,...(data.kind==='categoria'?{grupo_id:data.grupo_id??null}:{})};
- const {data:saved,error}=data.id?await context.supabase.from(table).update(row).eq('id',data.id).select().single():await context.supabase.from(table).insert(row).select().single();
+ const row={nome:data.nome,tipo:data.tipo,ativo:data.ativo};
+ const result=data.kind==='grupo'
+  ? data.id?await context.supabase.from('financeiro_grupos').update(row).eq('id',data.id).select().single():await context.supabase.from('financeiro_grupos').insert(row).select().single()
+  : data.id?await context.supabase.from('financeiro_categorias').update({...row,grupo_id:data.grupo_id??null}).eq('id',data.id).select().single():await context.supabase.from('financeiro_categorias').insert({...row,grupo_id:data.grupo_id??null}).select().single();
+ const {data:saved,error}=result;
  if(error)throw new Error(error.code==='23505'?'Já existe um nome igual, ignorando acentos e maiúsculas.':error.code==='P0001'?error.message:'Não foi possível salvar.');return saved;
 });
 export const excluirCadastroFinanceiro=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:{kind:'grupo'|'categoria';id:string})=>i).handler(async({context,data})=>{

@@ -23,7 +23,8 @@ export const salvarLancamento = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: Lancamento) => validarLancamento(i))
   .handler(async ({ context, data }) => {
-    const { id, ...row } = data;
+    const { id, data_lancamento, ...fields } = data;
+    const row={...fields,...(data_lancamento===undefined?{}:{data_lancamento})};
     const { error } = id
       ? await context.supabase.from('lancamentos').update(row).eq('id', id)
       : await context.supabase.from('lancamentos').insert(row);
