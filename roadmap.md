@@ -1,4 +1,6 @@
 # Dados reais e acesso restrito
+- [x] Ampliar e reorganizar a ficha do aluno para caber na tela do computador; conferido em 1331 × 866 com um e dois cursos, sem rolagem.
+- [x] Adicionar e verificar o olho de privacidade do Painel; ocultação e restauração conferidas na conta autorizada.
 - [x] Pedagógico: cursos, horários, turmas e Follow-up protegido.
 - [x] Alunos: até dois cursos, situações por curso, matrícula financeira e fotos privadas; criação e edição conferidas.
 - [x] Navegação: nome/código e alertas abrem edição compartilhada; Follow-up na ficha.
