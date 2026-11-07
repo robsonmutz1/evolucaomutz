@@ -85,6 +85,13 @@
       "when": 1794071084848,
       "tag": "0011_energy_and_provider_payments",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794071108623,
+      "tag": "0012_allow_atomic_lesson_payment",
+      "breakpoints": true
     }
   ]
 }
