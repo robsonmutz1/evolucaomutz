@@ -1,4 +1,8 @@
 # Dados reais e acesso restrito
+- [ ] Pedagógico: cursos, horários, turmas e Follow-up protegido.
+- [ ] Alunos: até dois cursos, situações por curso, matrícula financeira e fotos privadas.
+- [ ] Navegação: nome/código e alertas abrem edição compartilhada; Follow-up na ficha.
+- [ ] Verificar preservação de dados e fluxos pedagógicos na conta autorizada.
 - [x] Preparar login e proteção das páginas para a conta autorizada; testes das regras passam e visitantes são enviados para entrar.
 - [x] Verificar entrada do Robson após liberar acesso à sua conta confirmada e esclarecer a senha recusada; painel, alunos e saída testados.
 - [x] Concluir importação dos alunos e verificar a exibição na conta autorizada, preservando cores/status, valores ausentes e códigos repetidos.
