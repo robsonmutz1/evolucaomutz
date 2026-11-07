@@ -1,4 +1,7 @@
 # Dados reais e acesso restrito
+- [ ] Criar controles protegidos de energia e prestadores, aulas diárias, pagamento sem duplicidade e relatório por prestador.
+- [ ] Analisar e importar os registros seguros da nova planilha preservando o caixa existente; esclarecer dados ambíguos.
+- [ ] Testar registro diário, confirmação de pagamento e acompanhamento de energia na conta autorizada.
 - [x] Ampliar e reorganizar a ficha do aluno para caber na tela do computador; conferido em 1331 × 866 com um e dois cursos, sem rolagem.
 - [x] Adicionar e verificar o olho de privacidade do Painel; ocultação e restauração conferidas na conta autorizada.
 - [x] Pedagógico: cursos, horários, turmas e Follow-up protegido.

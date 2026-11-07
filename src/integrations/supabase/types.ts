@@ -190,6 +190,47 @@ export type Database = {
         }
         Relationships: []
       }
+      energia_registros: {
+        Row: {
+          consumo_kwh: number | null
+          data_pagamento: string | null
+          id: string
+          lancamento_id: string | null
+          medidor: number | null
+          mes: string
+          observacoes: string
+          valor: number | null
+        }
+        Insert: {
+          consumo_kwh?: number | null
+          data_pagamento?: string | null
+          id?: string
+          lancamento_id?: string | null
+          medidor?: number | null
+          mes: string
+          observacoes?: string
+          valor?: number | null
+        }
+        Update: {
+          consumo_kwh?: number | null
+          data_pagamento?: string | null
+          id?: string
+          lancamento_id?: string | null
+          medidor?: number | null
+          mes?: string
+          observacoes?: string
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "energia_registros_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "lancamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faturamento_mensal: {
         Row: {
           mes: string
@@ -549,6 +590,120 @@ export type Database = {
           },
         ]
       }
+      prestador_aulas: {
+        Row: {
+          created_at: string
+          data: string
+          descricao: string
+          horas: number
+          id: string
+          pagamento_id: string | null
+          prestador_id: string
+          valor_hora: number
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          descricao?: string
+          horas: number
+          id?: string
+          pagamento_id?: string | null
+          prestador_id: string
+          valor_hora: number
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          descricao?: string
+          horas?: number
+          id?: string
+          pagamento_id?: string | null
+          prestador_id?: string
+          valor_hora?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestador_aulas_pagamento_id_fkey"
+            columns: ["pagamento_id"]
+            isOneToOne: false
+            referencedRelation: "prestador_pagamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestador_aulas_prestador_id_fkey"
+            columns: ["prestador_id"]
+            isOneToOne: false
+            referencedRelation: "prestadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prestador_pagamentos: {
+        Row: {
+          data_pagamento: string
+          id: string
+          lancamento_id: string
+          mes: string
+          prestador_id: string
+          valor: number
+        }
+        Insert: {
+          data_pagamento: string
+          id?: string
+          lancamento_id: string
+          mes: string
+          prestador_id: string
+          valor: number
+        }
+        Update: {
+          data_pagamento?: string
+          id?: string
+          lancamento_id?: string
+          mes?: string
+          prestador_id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestador_pagamentos_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "lancamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestador_pagamentos_prestador_id_fkey"
+            columns: ["prestador_id"]
+            isOneToOne: false
+            referencedRelation: "prestadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prestadores: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          nome: string
+          valor_hora: number
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+          valor_hora?: number
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          valor_hora?: number
+        }
+        Relationships: []
+      }
       turmas: {
         Row: {
           codigo: string
@@ -644,6 +799,10 @@ export type Database = {
         Returns: undefined
       }
       crm_telefone: { Args: { numero: string }; Returns: string }
+      energia_salvar: {
+        Args: { p_lancar?: boolean; p_row: Json }
+        Returns: string
+      }
       financeiro_mesclar_categorias: {
         Args: { destino_id: string; origem_id: string }
         Returns: number
@@ -653,6 +812,10 @@ export type Database = {
       pedagogico_salvar_aluno: {
         Args: { p_aluno: Json; p_matriculas: Json }
         Returns: undefined
+      }
+      prestador_pagar: {
+        Args: { p_data: string; p_mes: string; p_prestador: string }
+        Returns: string
       }
     }
     Enums: {
