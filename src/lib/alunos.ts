@@ -26,6 +26,10 @@ export interface Aluno {
   qtdMensalidades: number;
   primeiraCobranca: string; // YYYY-MM
   observacoes?: string;
+  foto_url?: string | null;
+  valor_matricula?: number | null;
+  data_matricula?: string | null;
+  matriculas?: import('./pedagogico').MatriculaInput[];
 }
 
 /** Valor da mensalidade com desconto (pago até o dia limite). Nunca negativo. */

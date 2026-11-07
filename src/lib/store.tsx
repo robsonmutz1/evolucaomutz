@@ -19,6 +19,7 @@ export function useStore(): { alunos: Aluno[]; salvar: (a: Aluno) => Promise<voi
     await save({ data: a });
     await client.invalidateQueries({ queryKey: alunosQuery.queryKey });
     await client.invalidateQueries({ queryKey: ['school', 'crm'] });
+    await client.invalidateQueries({ queryKey: ['school', 'pedagogico'] });
   };
   return { alunos, salvar };
 }
