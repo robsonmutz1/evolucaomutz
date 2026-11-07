@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,6 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
   const [photo,setPhoto]=useState<Blob|null>(null);
   const [removePhoto,setRemovePhoto]=useState(false);
   const exists=alunos.some(a=>a.id===aluno.id);
-  useEffect(()=>{if(ms.length===2){const values=ms.map(m=>m.valor_mensal);if(values.every(v=>v!==null))setF(p=>({...p,valorMensal:Math.round(values.reduce<number>((s,v)=>s+(v??0),0)*100)/100}));}},[ms]);
   const [f, setF] = useState(aluno);
   const [saving, setSaving] = useState(false);
   const set = <K extends keyof Aluno>(k: K, v: Aluno[K]) => setF((p) => ({ ...p, [k]: v }));
@@ -31,9 +30,10 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
     <div className="space-y-1.5">
       <Label>{label}</Label>
       <Input
+        aria-label={label}
         type={type}
         value={String(f[k] ?? "")}
-        onChange={(e) => set(k, (type === "number" ? (k === 'valorMensal' && e.target.value === '' ? null : Number(e.target.value)) : e.target.value) as never)}
+        onChange={(e) => {set(k, (type === "number" ? (['valorMensal','valor_matricula'].includes(k) && e.target.value === '' ? null : Number(e.target.value)) : (type === 'date' && k==='data_matricula' && !e.target.value ? null : e.target.value)) as never);if(k==='valor_matricula'&&e.target.value)setF(p=>({...p,data_matricula:p.data_matricula??dataBrasilia()}));}}
       />
     </div>
   );
@@ -90,7 +90,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
 
           </section>
 
-          <StudentCourses value={ms} original={original} onChange={setMs} onDefault={(mensal,matricula)=>setF(p=>({...p,...(ms.length===1&&mensal!==null?{valorMensal:mensal}:{}),...(matricula!==null?{valor_matricula:matricula,data_matricula:p.data_matricula??dataBrasilia()}:{} )}))}/>
+          <StudentCourses value={ms} original={original} onChange={next=>{if(next.length===2&&next.some((m,i)=>m.valor_mensal!==ms[i]?.valor_mensal)&&next.every(m=>m.valor_mensal!==null))setF(p=>({...p,valorMensal:Math.round(next.reduce((s,m)=>s+(m.valor_mensal??0),0)*100)/100}));setMs(next);}} onDefault={(mensal,matricula)=>setF(p=>({...p,...(ms.length===1&&mensal!==null?{valorMensal:mensal}:{}),...(matricula!==null?{valor_matricula:matricula,data_matricula:p.data_matricula??dataBrasilia()}:{} )}))}/>
           <section className="grid gap-4 rounded-xl bg-muted/50 p-4 sm:grid-cols-3">
             <h3 className="text-lg font-semibold sm:col-span-3">Contrato financeiro</h3>
             {txt("valorMensal", "Valor mensal cheio / combo (R$)", "number")}
