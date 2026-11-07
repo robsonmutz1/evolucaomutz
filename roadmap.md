@@ -8,5 +8,7 @@
 - [x] Incluir projeções de faturamento de 1, 3, 6, 9 e 12 meses; 20 testes passaram e gráficos, períodos, exportação e relatórios foram conferidos na conta autorizada.
 - [x] Financeiro funcional: editar/adicionar faturamento mensal e cadastrar despesas, produtos e patrimônio; testado na conta autorizada.
 - [x] Importar totais por categoria das planilhas de controle financeiro 2023–2026 e permitir lançar entradas/saídas que refletem no Painel e Relatórios.
-- [ ] Criar CRM protegido com funil, leads, histórico, contatos, pós-venda e métricas.
-- [ ] Adicionar telefones dos alunos e responsáveis e conversão automática segura; verificar fluxo completo e telas menores.
+- [x] Criar CRM protegido com funil, leads, histórico, contatos, pós-venda e métricas; arraste, contatos, duplicidade e perda conferidos.
+- [x] Adicionar telefones dos alunos e responsáveis e conversão automática segura; matrícula e pós-venda conferidos na conta autorizada.
+- [ ] Financeiro: data de lançamento com dia atual de Brasília, migração dos antigos, ordenação e filtro por intervalo sem alterar totais.
+- [ ] Financeiro: cadastros de grupos/categorias por histórico, seletores pesquisáveis, gestão, renomeação e mesclagem com confirmação.
