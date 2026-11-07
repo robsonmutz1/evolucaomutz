@@ -71,6 +71,13 @@
       "when": 1794067538871,
       "tag": "0009_school_pedagogy_followups",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794067596102,
+      "tag": "0010_pedagogy_safe_enrollment_updates",
+      "breakpoints": true
     }
   ]
 }
