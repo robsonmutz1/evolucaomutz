@@ -10,5 +10,5 @@
 - [x] Importar totais por categoria das planilhas de controle financeiro 2023–2026 e permitir lançar entradas/saídas que refletem no Painel e Relatórios.
 - [x] Criar CRM protegido com funil, leads, histórico, contatos, pós-venda e métricas; arraste, contatos, duplicidade e perda conferidos.
 - [x] Adicionar telefones dos alunos e responsáveis e conversão automática segura; matrícula e pós-venda conferidos na conta autorizada.
-- [ ] Financeiro: data de lançamento com dia atual de Brasília, migração dos antigos, ordenação e filtro por intervalo sem alterar totais.
-- [ ] Financeiro: cadastros de grupos/categorias por histórico, seletores pesquisáveis, gestão, renomeação e mesclagem com confirmação.
+- [x] Financeiro: data de lançamento com dia atual de Brasília, migração dos antigos, ordenação e filtro por intervalo; valor e mês conferidos após edição.
+- [x] Financeiro: cadastros de grupos/categorias por histórico, seletores pesquisáveis, gestão, renomeação e mesclagem com confirmação; fluxos conferidos na conta autorizada, testes removidos.
