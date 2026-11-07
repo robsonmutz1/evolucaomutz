@@ -136,7 +136,7 @@
   .student-form > section:not(.student-financial) > div { padding-top: .5rem; }
   .student-form > section:not(.student-financial) { --spacing: .2rem; }
   .student-form label { font-size: .75rem; }
-  .student-form input, .student-form [role="combobox"], .student-form button { min-height: 2rem; }
+  .student-form input, .student-form [role="combobox"], .student-form button:not([role="checkbox"]) { min-height: 2rem; }
 }
 
 .dashboard-concealed { filter: blur(12px); opacity: .35; user-select: none; pointer-events: none; }
