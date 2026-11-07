@@ -3,7 +3,6 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Pencil, Plus, Trash2, Settings, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,6 +56,7 @@ export function Lancamentos() {
   async function onSave() {
     if (!edit) return;
     if(!edit.data_lancamento){toast.error('Informe a data do lançamento.');return;}
+    if(!edit.valor.trim()){toast.error('Informe o valor do lançamento.');return;}
     setBusy(true);
     try {
       await salvar({ data: { id: edit.id, mes: edit.data_lancamento.slice(0,7),data_lancamento:edit.data_lancamento, tipo: edit.tipo, grupo: edit.grupo, categoria: edit.categoria, valor: Number(edit.valor.replace(/\./g, "").replace(",", ".")), descricao: edit.descricao || null } });
@@ -112,7 +112,7 @@ export function Lancamentos() {
           {edit && <div className="grid gap-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="min-w-0"><Label>Data do lançamento</Label><FinanceiroDatePicker label="Data do lançamento" value={edit.data_lancamento} onChange={v=>setEdit({...edit,data_lancamento:v,mes:v.slice(0,7)})}/></div>
-              <div><Label>Tipo</Label><Select value={edit.tipo} onValueChange={(v) => setEdit({ ...edit, tipo: v as Lancamento["tipo"] })}><SelectTrigger aria-label="Tipo"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="entrada">Entrada</SelectItem><SelectItem value="saida">Saída</SelectItem></SelectContent></Select></div>
+              <div><Label>Tipo</Label><Select value={edit.tipo} onValueChange={(v) => {const t=v as Lancamento['tipo'];setEdit({ ...edit, tipo:t,grupo:cadastros.grupos.some(i=>i.nome===edit.grupo&&tipoPermitido(i,t))?edit.grupo:'',categoria:cadastros.categorias.some(i=>i.nome===edit.categoria&&tipoPermitido(i,t))?edit.categoria:'' });}}><SelectTrigger aria-label="Tipo"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="entrada">Entrada</SelectItem><SelectItem value="saida">Saída</SelectItem></SelectContent></Select></div>
             </div>
             <div><div className="mb-1 flex items-center justify-between"><Label>Grupo</Label><Button size="icon" variant="ghost" title="Gerenciar grupos" aria-label="Gerenciar grupos do formulário" onClick={()=>setManager(true)}><Settings className="h-4 w-4"/></Button></div><FinanceiroCombobox label="Grupo do lançamento" value={edit.grupo} items={options('grupo',edit.tipo,edit.grupo)} onChange={v=>setEdit({...edit,grupo:v})} onCreate={v=>createItem('grupo',v)} optional/></div>
             <div><div className="mb-1 flex items-center justify-between"><Label>Categoria</Label><Button size="icon" variant="ghost" title="Gerenciar categorias" aria-label="Gerenciar categorias do formulário" onClick={()=>setManager(true)}><Settings className="h-4 w-4"/></Button></div><FinanceiroCombobox label="Categoria do lançamento" value={edit.categoria} items={options('categoria',edit.tipo,edit.categoria)} onChange={v=>setEdit({...edit,categoria:v})} onCreate={v=>createItem('categoria',v)}/></div>

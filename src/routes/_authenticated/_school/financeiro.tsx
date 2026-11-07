@@ -43,7 +43,7 @@ function Financeiro() {
         <p className="text-muted-foreground">Cadastre e edite faturamento, despesas, produtos e patrimônio.</p>
       </div>
       <Tabs defaultValue="lancamentos">
-        <TabsList className="flex-wrap">
+        <TabsList className="h-auto flex-wrap gap-y-1">
           <TabsTrigger value="lancamentos">Entradas e saídas</TabsTrigger>
           <TabsTrigger value="faturamento">Faturamento</TabsTrigger>
           <TabsTrigger value="despesa">Despesas</TabsTrigger>
