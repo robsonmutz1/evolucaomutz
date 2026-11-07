@@ -67,7 +67,7 @@ function Painel() {
       canc,
       taxaCanc: taxaCancelamento(novas, canc),
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
-      fat: mes === "todos" ? ((totalAnual(faturamento, ano)??0)+matriculaReceitas.filter(f=>f.mes.startsWith(ano)).reduce((s,f)=>s+f.valor,0)) : receitaMes(prefixo),
+      fat: mes === "todos" ? (totalAnual(faturamento, ano)===null&&!matriculaReceitas.some(f=>f.mes.startsWith(ano))?null:(totalAnual(faturamento, ano)??0)+matriculaReceitas.filter(f=>f.mes.startsWith(ano)).reduce((s,f)=>s+f.valor,0)) : receitaMes(prefixo),
       desp: totalPorTipo(lancamentos, "saida", prefixo),
       alertas: alunos.filter((a) => alertaConclusao(a, hoje)),
     };

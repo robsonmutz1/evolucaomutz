@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { FinanceiroDatePicker } from './FinanceiroDatePicker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,12 +30,12 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
   const txt = (k: keyof Aluno, label: string, type = "text") => (
     <div className="space-y-1.5">
       <Label>{label}</Label>
-      <Input
+      {type==='date'?<FinanceiroDatePicker label={label} value={String(f[k]??'')} onChange={v=>set(k,v as never)}/>:<Input
         aria-label={label}
         type={type}
         value={String(f[k] ?? "")}
         onChange={(e) => {set(k, (type === "number" ? (['valorMensal','valor_matricula'].includes(k) && e.target.value === '' ? null : Number(e.target.value)) : (type === 'date' && k==='data_matricula' && !e.target.value ? null : e.target.value)) as never);if(k==='valor_matricula'&&e.target.value)setF(p=>({...p,data_matricula:p.data_matricula??dataBrasilia()}));}}
-      />
+      />}
     </div>
   );
 
