@@ -131,6 +131,65 @@ export type Database = {
         }
         Relationships: []
       }
+      financeiro_categorias: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          grupo_id: string | null
+          id: string
+          nome: string
+          tipo: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          grupo_id?: string | null
+          id?: string
+          nome: string
+          tipo?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          grupo_id?: string | null
+          id?: string
+          nome?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_categorias_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_grupos: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          nome: string
+          tipo: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+          tipo?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
       financeiro_registros: {
         Row: {
           categoria: string
@@ -171,6 +230,7 @@ export type Database = {
         Row: {
           categoria: string
           created_at: string
+          data_lancamento: string | null
           descricao: string | null
           grupo: string
           id: string
@@ -182,6 +242,7 @@ export type Database = {
         Insert: {
           categoria: string
           created_at?: string
+          data_lancamento?: string | null
           descricao?: string | null
           grupo?: string
           id?: string
@@ -193,6 +254,7 @@ export type Database = {
         Update: {
           categoria?: string
           created_at?: string
+          data_lancamento?: string | null
           descricao?: string | null
           grupo?: string
           id?: string
@@ -353,6 +415,11 @@ export type Database = {
         Returns: undefined
       }
       crm_telefone: { Args: { numero: string }; Returns: string }
+      financeiro_mesclar_categorias: {
+        Args: { destino_id: string; origem_id: string }
+        Returns: number
+      }
+      financeiro_nome_chave: { Args: { n: string }; Returns: string }
       has_owner_access: { Args: never; Returns: boolean }
     }
     Enums: {

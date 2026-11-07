@@ -57,6 +57,13 @@
       "when": 1793967639610,
       "tag": "0007_crm_phone_write_lock",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794010089596,
+      "tag": "0008_financial_dates_and_classifications",
+      "breakpoints": true
     }
   ]
 }
