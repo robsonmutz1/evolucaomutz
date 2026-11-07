@@ -14,6 +14,10 @@ import { lancamentosQuery } from "@/lib/lancamentos.functions";
 import { totalPorTipo } from "@/lib/lancamentos";
 import { taxaCancelamento, totalAnual } from "@/lib/relatorios";
 import { ProjecaoFaturamento } from "@/components/ProjecaoFaturamento";
+import { AlunoForm } from '@/components/AlunoForm';
+import { Button } from '@/components/ui/button';
+import type { Aluno } from '@/lib/alunos';
+import { receitasMatriculas } from '@/lib/pedagogico';
 
 const chartConfig = {
   faturamento: { label: "Faturamento", color: "var(--primary)" },
@@ -38,12 +42,15 @@ const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "O
 
 function Painel() {
   const { alunos } = useStore();
+  const [editando,setEditando]=useState<Aluno|null>(null);
   const { data: faturamento } = useSuspenseQuery(faturamentoQuery);
   const { data: lancamentos } = useSuspenseQuery(lancamentosQuery);
   const [ano, setAno] = useState(() => String(new Date().getFullYear()));
   const [mes, setMes] = useState("todos");
   const prefixo = mes === "todos" ? ano : `${ano}-${mes}`;
   const hoje = mesAtualISO();
+  const matriculaReceitas=useMemo(()=>receitasMatriculas(alunos),[alunos]);
+  const receitaMes=(mm:string)=>{const base=faturamento.find(f=>f.mes===mm)?.valor;const extra=matriculaReceitas.find(f=>f.mes===mm)?.valor;return base===undefined&&extra===undefined?null:(base??0)+(extra??0);};
   const anos = useMemo(() => {
     const s = new Set<string>([String(new Date().getFullYear()), ...faturamento.map((f) => f.mes.slice(0, 4))]);
     alunos.forEach((a) => a.dataMatricula && s.add(a.dataMatricula.slice(0, 4)));
@@ -60,20 +67,20 @@ function Painel() {
       canc,
       taxaCanc: taxaCancelamento(novas, canc),
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
-      fat: mes === "todos" ? totalAnual(faturamento, ano) : faturamento.find((f) => f.mes === prefixo)?.valor ?? null,
+      fat: mes === "todos" ? (totalAnual(faturamento, ano)===null&&!matriculaReceitas.some(f=>f.mes.startsWith(ano))?null:(totalAnual(faturamento, ano)??0)+matriculaReceitas.filter(f=>f.mes.startsWith(ano)).reduce((s,f)=>s+f.valor,0)) : receitaMes(prefixo),
       desp: totalPorTipo(lancamentos, "saida", prefixo),
       alertas: alunos.filter((a) => alertaConclusao(a, hoje)),
     };
-  }, [alunos, faturamento, lancamentos, prefixo, hoje, ano]);
+  }, [alunos, faturamento, lancamentos, prefixo, hoje, ano, matriculaReceitas]);
 
   const serie = useMemo(() => meses.map((m, i) => {
     const mm = `${ano}-${String(i + 1).padStart(2, "0")}`;
     return {
       mes: m,
-      faturamento: faturamento.find((f) => f.mes === mm)?.valor ?? null,
+      faturamento: receitaMes(mm),
       matriculas: alunos.filter((a) => a.dataMatricula?.startsWith(mm)).length,
     };
-  }), [ano, faturamento, alunos]);
+  }), [ano, faturamento, alunos,matriculaReceitas]);
 
   const cards = [
     { label: "Alunos ativos", value: k.ativos, icon: Users, tone: "bg-primary text-primary-foreground" },
@@ -172,7 +179,7 @@ function Painel() {
               const al = alertaConclusao(a, hoje);
               return (
                 <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
-                  <span><strong>{a.nome}</strong> · {a.curso}</span>
+                  <span><Button variant="link" className="h-auto p-0 whitespace-normal" onClick={()=>setEditando(a)}>{a.nome}</Button> · {a.curso}</span>
                   <AlertaBadge alerta={al} />
                 </li>
               );
@@ -183,6 +190,7 @@ function Painel() {
           Ver cadastro de alunos →
         </Link>
       </Card>
+      {editando&&<AlunoForm aluno={editando} onClose={()=>setEditando(null)}/>}
     </div>
   );
 }

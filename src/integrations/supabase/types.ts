@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      aluno_followups: {
+        Row: {
+          aluno_id: string
+          created_at: string
+          data: string
+          descricao: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          aluno_id: string
+          created_at?: string
+          data?: string
+          descricao: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          aluno_id?: string
+          created_at?: string
+          data?: string
+          descricao?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aluno_followups_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alunos: {
         Row: {
           bairro: string
@@ -22,6 +57,7 @@ export type Database = {
           codigo: string
           created_at: string
           curso: string
+          data_matricula: string | null
           dataMatricula: string
           dataPagamentoMatricula: string | null
           dataStatus: string | null
@@ -29,6 +65,7 @@ export type Database = {
           descontoTipo: string
           diaLimiteDesconto: number
           diaVencimento: number
+          foto_url: string | null
           horario: string
           id: string
           import_raw: Json | null
@@ -45,6 +82,7 @@ export type Database = {
           telefone: string
           telefoneResponsavel: string
           turma: string
+          valor_matricula: number | null
           valorMensal: number | null
         }
         Insert: {
@@ -54,6 +92,7 @@ export type Database = {
           codigo?: string
           created_at?: string
           curso?: string
+          data_matricula?: string | null
           dataMatricula?: string
           dataPagamentoMatricula?: string | null
           dataStatus?: string | null
@@ -61,6 +100,7 @@ export type Database = {
           descontoTipo?: string
           diaLimiteDesconto?: number
           diaVencimento?: number
+          foto_url?: string | null
           horario?: string
           id?: string
           import_raw?: Json | null
@@ -77,6 +117,7 @@ export type Database = {
           telefone?: string
           telefoneResponsavel?: string
           turma?: string
+          valor_matricula?: number | null
           valorMensal?: number | null
         }
         Update: {
@@ -86,6 +127,7 @@ export type Database = {
           codigo?: string
           created_at?: string
           curso?: string
+          data_matricula?: string | null
           dataMatricula?: string
           dataPagamentoMatricula?: string | null
           dataStatus?: string | null
@@ -93,6 +135,7 @@ export type Database = {
           descontoTipo?: string
           diaLimiteDesconto?: number
           diaVencimento?: number
+          foto_url?: string | null
           horario?: string
           id?: string
           import_raw?: Json | null
@@ -109,7 +152,41 @@ export type Database = {
           telefone?: string
           telefoneResponsavel?: string
           turma?: string
+          valor_matricula?: number | null
           valorMensal?: number | null
+        }
+        Relationships: []
+      }
+      cursos: {
+        Row: {
+          ativo: boolean
+          carga_horaria: number | null
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+          valor_matricula_padrao: number | null
+          valor_mensal_padrao: number | null
+        }
+        Insert: {
+          ativo?: boolean
+          carga_horaria?: number | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          valor_matricula_padrao?: number | null
+          valor_mensal_padrao?: number | null
+        }
+        Update: {
+          ativo?: boolean
+          carga_horaria?: number | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          valor_matricula_padrao?: number | null
+          valor_mensal_padrao?: number | null
         }
         Relationships: []
       }
@@ -223,6 +300,33 @@ export type Database = {
           quantidade?: number | null
           tipo?: string
           valor?: number | null
+        }
+        Relationships: []
+      }
+      horarios: {
+        Row: {
+          ativo: boolean
+          descricao: string
+          dias_semana: number[]
+          hora_fim: string | null
+          hora_inicio: string | null
+          id: string
+        }
+        Insert: {
+          ativo?: boolean
+          descricao: string
+          dias_semana?: number[]
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
+        }
+        Update: {
+          ativo?: boolean
+          descricao?: string
+          dias_semana?: number[]
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
         }
         Relationships: []
       }
@@ -374,6 +478,131 @@ export type Database = {
           },
         ]
       }
+      matriculas_curso: {
+        Row: {
+          aluno_id: string
+          created_at: string
+          curso_id: string | null
+          data_conclusao: string | null
+          horario_id: string | null
+          id: string
+          motivo_cancelamento: string | null
+          ordem: number
+          status: string
+          turma_id: string | null
+          valor_mensal: number | null
+        }
+        Insert: {
+          aluno_id: string
+          created_at?: string
+          curso_id?: string | null
+          data_conclusao?: string | null
+          horario_id?: string | null
+          id?: string
+          motivo_cancelamento?: string | null
+          ordem: number
+          status?: string
+          turma_id?: string | null
+          valor_mensal?: number | null
+        }
+        Update: {
+          aluno_id?: string
+          created_at?: string
+          curso_id?: string | null
+          data_conclusao?: string | null
+          horario_id?: string | null
+          id?: string
+          motivo_cancelamento?: string | null
+          ordem?: number
+          status?: string
+          turma_id?: string | null
+          valor_mensal?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matriculas_curso_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matriculas_curso_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "cursos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matriculas_curso_horario_id_fkey"
+            columns: ["horario_id"]
+            isOneToOne: false
+            referencedRelation: "horarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matriculas_curso_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "turmas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      turmas: {
+        Row: {
+          codigo: string
+          created_at: string
+          curso_id: string
+          data_inicio: string | null
+          data_previsao_termino: string | null
+          disponivel_matricula: boolean
+          horario_id: string | null
+          id: string
+          observacoes: string | null
+          status: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          curso_id: string
+          data_inicio?: string | null
+          data_previsao_termino?: string | null
+          disponivel_matricula?: boolean
+          horario_id?: string | null
+          id?: string
+          observacoes?: string | null
+          status?: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          curso_id?: string
+          data_inicio?: string | null
+          data_previsao_termino?: string | null
+          disponivel_matricula?: boolean
+          horario_id?: string | null
+          id?: string
+          observacoes?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turmas_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "cursos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turmas_horario_id_fkey"
+            columns: ["horario_id"]
+            isOneToOne: false
+            referencedRelation: "horarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -421,6 +650,10 @@ export type Database = {
       }
       financeiro_nome_chave: { Args: { n: string }; Returns: string }
       has_owner_access: { Args: never; Returns: boolean }
+      pedagogico_salvar_aluno: {
+        Args: { p_aluno: Json; p_matriculas: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "owner"

@@ -9,6 +9,7 @@ import logoAsset from "@/assets/evolmutz-logo.jpg.asset.json";
 const nav = [
   { to: "/dashboard", label: "Painel", icon: LayoutDashboard },
   { to: "/alunos", label: "Alunos", icon: Users },
+  { to: "/pedagogico", label: "Pedagógico", icon: FileText },
   { to: "/financeiro", label: "Financeiro da escola", icon: Wallet },
   { to: "/relatorios", label: "Relatórios", icon: FileText },
   { to: "/crm", label: "CRM", icon: ContactRound },

@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlunoForm } from "@/components/AlunoForm";
+import { StudentAvatar } from "@/components/StudentPhoto";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { pedagogicoQuery } from "@/lib/pedagogico.functions";
+import { dataBrasilia } from "@/lib/pedagogico";
 import { AlertaBadge } from "@/components/AlertaBadge";
 import { useStore } from "@/lib/store";
 import {
@@ -62,6 +67,7 @@ const statusTone: Record<Status, string> = {
 
 function Alunos() {
   const { alunos, salvar } = useStore();
+  const {data:pedagogico}=useSuspenseQuery(pedagogicoQuery);
   const [q, setQ] = useState("");
   const [fStatus, setFStatus] = useState("Ativo");
   const [fCurso, setFCurso] = useState("todos");
@@ -83,11 +89,11 @@ function Alunos() {
     const r = alunos.filter((a) => {
       const v = valorComDesconto(a);
       if (fStatus !== "todos" && a.status !== fStatus) return false;
-      if (fCurso !== "todos" && a.curso !== fCurso) return false;
-      if (fTurma !== "todos" && a.turma !== fTurma) return false;
+      if (fCurso !== "todos" && a.curso !== fCurso && !pedagogico.matriculas.some(m=>m.aluno_id===a.id&&pedagogico.cursos.find(c=>c.id===m.curso_id)?.nome===fCurso)) return false;
+      if (fTurma !== "todos" && a.turma !== fTurma && !pedagogico.matriculas.some(m=>m.aluno_id===a.id&&pedagogico.turmas.find(t=>t.id===m.turma_id)?.codigo===fTurma)) return false;
       if ((vMin !== "" || vMax !== "") && v == null) return false;
-      if (vMin !== "" && v! < Number(vMin)) return false;
-      if (vMax !== "" && v! > Number(vMax)) return false;
+      if (vMin !== "" && v !== null && v < Number(vMin)) return false;
+      if (vMax !== "" && v !== null && v > Number(vMax)) return false;
       if (!naFaixa(a.dataMatricula, pMat)) return false;
       if (ativo(pCanc) && !(a.status === "Cancelado" && naFaixa(a.dataStatus, pCanc))) return false;
       if (ativo(pConc) && !(a.status === "Concluído" && naFaixa(a.dataStatus, pConc))) return false;
@@ -99,13 +105,13 @@ function Alunos() {
       const c = typeof a === "number" ? a - Number(b ?? 0) : String(a ?? '').localeCompare(String(b ?? ''), "pt-BR");
       return sort.asc ? c : -c;
     });
-  }, [alunos, q, fStatus, fCurso, fTurma, vMin, vMax, pMat, pCanc, pConc, sort]);
+  }, [pedagogico, alunos, q, fStatus, fCurso, fTurma, vMin, vMax, pMat, pCanc, pConc, sort]);
 
   const novo = (): Aluno => ({
     id: crypto.randomUUID(), codigo: proximoCodigo(alunos.map((a) => a.codigo)), nome: "", responsavel: "", bairro: "", cidade: "",
-    dataMatricula: new Date().toISOString().slice(0, 10), curso: "", turma: "", horario: "", status: "Ativo",
+    dataMatricula: dataBrasilia(), curso: "", turma: "", horario: "", status: "Ativo",
     valorMensal: 0, descontoTipo: "percentual", desconto: 0, diaLimiteDesconto: 5, diaVencimento: 10,
-    qtdMensalidades: 12, primeiraCobranca: hoje,
+    qtdMensalidades: 12, primeiraCobranca: hoje, data_matricula:dataBrasilia(),
   });
 
   const Th = ({ col, children }: { col: Col; children: string }) => (
@@ -186,12 +192,12 @@ function Alunos() {
           <tbody className="divide-y">
             {lista.map((a) => (
               <tr key={a.id} className="hover:bg-muted/40">
-                <td className="px-3 py-3 font-mono text-xs">{a.codigo}</td>
+                <td className="px-3 py-3 font-mono text-xs"><Button variant="link" className="h-auto p-0" onClick={()=>setEditando(a)}>{a.codigo}</Button></td>
                 <td className="px-3 py-3">
-                  <div className="font-medium">{a.nome}</div>
+                  <div className="flex items-center gap-2"><StudentAvatar nome={a.nome} path={a.foto_url}/><Button variant="link" className="h-auto whitespace-normal p-0 text-left" onClick={()=>setEditando(a)}>{a.nome}</Button></div>
                   <div className="text-xs text-muted-foreground">{a.bairro} · {a.cidade}</div>
                 </td>
-                <td className="px-3 py-3">{a.curso}</td>
+                <td className="px-3 py-3">{pedagogico.matriculas.filter(m=>m.aluno_id===a.id).sort((x,y)=>x.ordem-y.ordem).map(m=><div key={m.id}>{pedagogico.cursos.find(c=>c.id===m.curso_id)?.nome??a.curso}<div className="text-xs text-muted-foreground">{pedagogico.horarios.find(h=>h.id===m.horario_id)?.descricao??a.horario}</div></div>)}</td>
                 <td className="px-3 py-3">{a.turma} <span className="text-xs text-muted-foreground">{a.horario}</span></td>
                 <td className="px-3 py-3">{formatData(a.dataMatricula)}</td>
                 <td className="px-3 py-3">
@@ -222,112 +228,3 @@ function Alunos() {
   );
 }
 
-function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => void; onSave: (a: Aluno) => Promise<void> }) {
-  const [f, setF] = useState(aluno);
-  const [saving, setSaving] = useState(false);
-  const set = <K extends keyof Aluno>(k: K, v: Aluno[K]) => setF((p) => ({ ...p, [k]: v }));
-  const txt = (k: keyof Aluno, label: string, type = "text") => (
-    <div className="space-y-1.5">
-      <Label>{label}</Label>
-      <Input
-        type={type}
-        value={String(f[k] ?? "")}
-        onChange={(e) => set(k, (type === "number" ? (k === 'valorMensal' && e.target.value === '' ? null : Number(e.target.value)) : e.target.value) as never)}
-      />
-    </div>
-  );
-
-  return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-        <DialogHeader><DialogTitle className="font-display text-2xl">{aluno.nome ? "Editar aluno" : "Novo aluno"}</DialogTitle></DialogHeader>
-        <form
-          className="space-y-6"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            if (!f.nome.trim() || !f.curso.trim()) { toast.error("Preencha nome e curso"); return; }
-            setSaving(true);
-            try { await onSave(f); } catch { toast.error('Não foi possível salvar o aluno. Tente novamente.'); }
-            finally { setSaving(false); }
-          }}
-        >
-          <section className="grid gap-4 sm:grid-cols-3">
-            <h3 className="text-lg font-semibold sm:col-span-3">Dados do aluno</h3>
-            {txt("codigo", "Código")}
-            <div className="sm:col-span-2">{txt("nome", "Nome")}</div>
-            {txt("responsavel", "Responsável")}
-            {txt("telefone", "Telefone do aluno", "tel")}
-            {txt("telefoneResponsavel", "Telefone do responsável", "tel")}
-            <div className="space-y-1.5">
-              <Label>CEP</Label>
-              <Input value={f.cep ?? ""} inputMode="numeric" placeholder="00000-000" onChange={async (e) => {
-                const v = e.target.value; set("cep", v);
-                const d = v.replace(/\D/g, "");
-                if (d.length !== 8) return;
-                try {
-                  const r = await (await fetch(`https://viacep.com.br/ws/${d}/json/`)).json();
-                  if (r.erro) { toast.error("CEP não encontrado"); return; }
-                  setF((p) => ({ ...p, rua: r.logradouro || p.rua, bairro: r.bairro || p.bairro, cidade: r.localidade || p.cidade }));
-                } catch { toast.error("Não foi possível buscar o CEP"); }
-              }} />
-            </div>
-            <div className="sm:col-span-2">{txt("rua", "Rua")}</div>
-            {txt("numero", "Número")}
-            {txt("bairro", "Bairro")}
-            {txt("cidade", "Cidade")}
-            {txt("dataMatricula", "Data da matrícula", "date")}
-            {txt("curso", "Curso")}
-            {txt("turma", "Turma")}
-            {txt("horario", "Horário")}
-            <div className="space-y-1.5">
-              <Label>Status</Label>
-              <Select value={f.status} onValueChange={(v) => setF((p) => ({ ...p, status: v as Status, dataStatus: v === "Ativo" ? undefined : p.dataStatus ?? new Date().toISOString().slice(0, 10) }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {(["Ativo", "Concluído", "Cancelado"] as const).map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            {f.status !== "Ativo" && txt("dataStatus", f.status === "Concluído" ? "Data da conclusão" : "Data do cancelamento", "date")}
-          </section>
-
-          <section className="grid gap-4 rounded-xl bg-muted/50 p-4 sm:grid-cols-3">
-            <h3 className="text-lg font-semibold sm:col-span-3">Contrato financeiro</h3>
-            {txt("valorMensal", "Valor mensal cheio (R$)", "number")}
-            <div className="space-y-1.5">
-              <Label>Tipo de desconto</Label>
-              <Select value={f.descontoTipo} onValueChange={(v) => set("descontoTipo", v as Aluno["descontoTipo"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="percentual">Percentual (%)</SelectItem>
-                  <SelectItem value="valor">Valor (R$)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {txt("desconto", f.descontoTipo === "percentual" ? "Desconto (%)" : "Desconto (R$)", "number")}
-            {txt("diaLimiteDesconto", "Dia limite do desconto", "number")}
-            {txt("diaVencimento", "Dia de vencimento", "number")}
-            {txt("qtdMensalidades", "Quantidade de mensalidades", "number")}
-            {txt("primeiraCobranca", "Mês da 1ª cobrança", "month")}
-            <Resumo label="Valor com desconto" value={brl(valorComDesconto(f))} />
-            <Resumo label="Previsão da última mensalidade" value={f.primeiraCobranca && f.qtdMensalidades > 0 ? formatMes(ultimaMensalidade(f.primeiraCobranca, f.qtdMensalidades)) : "—"} />
-          </section>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function Resumo({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-card p-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="font-display text-xl font-semibold text-primary">{value}</div>
-    </div>
-  );
-}

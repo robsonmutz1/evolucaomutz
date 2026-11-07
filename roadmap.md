@@ -1,4 +1,9 @@
 # Dados reais e acesso restrito
+- [x] Pedagógico: cursos, horários, turmas e Follow-up protegido.
+- [x] Alunos: até dois cursos, situações por curso, matrícula financeira e fotos privadas; criação e edição conferidas.
+- [x] Navegação: nome/código e alertas abrem edição compartilhada; Follow-up na ficha.
+- [x] Preservação: 1.170 alunos e matrículas, financeiro R$ 2.587.857,73; cadastros de teste removidos; 37 testes passam.
+- [ ] Revalidar o formulário final de Follow-up na ficha: primeiro fluxo de criação/edição/exclusão passou, mas a última automação não reteve o texto preenchido; causa ainda não confirmada.
 - [x] Preparar login e proteção das páginas para a conta autorizada; testes das regras passam e visitantes são enviados para entrar.
 - [x] Verificar entrada do Robson após liberar acesso à sua conta confirmada e esclarecer a senha recusada; painel, alunos e saída testados.
 - [x] Concluir importação dos alunos e verificar a exibição na conta autorizada, preservando cores/status, valores ausentes e códigos repetidos.
