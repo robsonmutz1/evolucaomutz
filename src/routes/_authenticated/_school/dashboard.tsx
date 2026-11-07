@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, XAxis, YAxis } from "recharts";
-import { Users, UserPlus, UserX, Award, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { Users, UserPlus, UserX, Award, TrendingUp, TrendingDown, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,6 +42,7 @@ const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "O
 
 function Painel() {
   const { alunos } = useStore();
+  const [oculto, setOculto] = useState(false);
   const [editando,setEditando]=useState<Aluno|null>(null);
   const { data: faturamento } = useSuspenseQuery(faturamentoQuery);
   const { data: lancamentos } = useSuspenseQuery(lancamentosQuery);
@@ -93,9 +94,9 @@ function Painel() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold md:text-4xl">Painel principal</h1>
+      <div className="grid min-w-0 gap-4 sm:flex sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex"><h1 className="text-3xl font-semibold md:text-4xl">Painel principal</h1><Button variant="ghost" size="icon" className="shrink-0" aria-label={oculto ? 'Mostrar informações do Painel' : 'Ocultar informações do Painel'} title={oculto ? 'Mostrar informações' : 'Ocultar informações'} aria-pressed={oculto} aria-controls="dashboard-information" onClick={() => {setOculto(v => !v);setEditando(null);}}>{oculto ? <EyeOff /> : <Eye />}</Button></div>
           <p className="text-muted-foreground">Visão geral do período selecionado</p>
         </div>
         <div className="flex gap-2">
@@ -117,6 +118,7 @@ function Painel() {
         </div>
       </div>
 
+      <div id="dashboard-information" className={`space-y-6 ${oculto ? 'dashboard-concealed' : ''}`} aria-hidden={oculto} inert={oculto}>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         {cards.map(({ label, value, icon: Icon, tone, hint }) => (
           <Card key={label} className={`border-0 p-5 shadow-sm ${tone}`}>
@@ -190,6 +192,7 @@ function Painel() {
           Ver cadastro de alunos →
         </Link>
       </Card>
+      </div>
       {editando&&<AlunoForm aluno={editando} onClose={()=>setEditando(null)}/>}
     </div>
   );

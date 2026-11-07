@@ -126,3 +126,18 @@
 .crm-conversion::-webkit-progress-bar { background: var(--muted); }
 .crm-conversion::-webkit-progress-value { background: var(--primary); }
 .crm-conversion::-moz-progress-bar { background: var(--primary); }
+
+.student-form > section { min-width: 0; }
+.student-form input, .student-form [data-slot="select-trigger"] { min-width: 0; }
+@media (min-width: 1280px) {
+  .student-details h3 { grid-column: 1 / -1; }
+  .student-details .sm\:col-span-2 { grid-column: span 2; }
+  .student-form > section:not(.student-financial) { border-left: 1px solid var(--border); padding-left: 1rem; }
+  .student-form > section:not(.student-financial) > div { padding-top: .5rem; }
+  .student-form > section:not(.student-financial) { --spacing: .2rem; }
+  .student-form label { font-size: .75rem; }
+  .student-form input, .student-form [role="combobox"], .student-form button { min-height: 2rem; }
+}
+
+.dashboard-concealed { filter: blur(12px); opacity: .35; user-select: none; pointer-events: none; }
+@media print { .dashboard-concealed { visibility: hidden; } }

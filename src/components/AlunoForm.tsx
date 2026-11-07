@@ -41,10 +41,10 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent className="student-dialog max-h-[96dvh] w-[calc(100%-1rem)] max-w-none overflow-y-auto gap-3 p-4 sm:max-w-none xl:w-[calc(100%-2rem)]">
         <DialogHeader><DialogTitle className="font-display text-2xl">{aluno.nome ? "Editar aluno" : "Novo aluno"}</DialogTitle></DialogHeader>
         <Tabs defaultValue="cadastro"><TabsList className="mb-4"><TabsTrigger value="cadastro">Cadastro</TabsTrigger><TabsTrigger value="followup" disabled={!exists}>Follow-up</TabsTrigger></TabsList><TabsContent value="cadastro"><form
-          className="space-y-6"
+          className="student-form grid gap-4 xl:grid-cols-3"
           onSubmit={async (e) => {
             e.preventDefault();
             if (!f.nome.trim()) { toast.error("Preencha o nome"); return; }
@@ -63,7 +63,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             finally { setSaving(false); }
           }}
         >
-          <StudentPhoto nome={f.nome} path={f.foto_url} onChange={(blob,remove)=>{setPhoto(blob);setRemovePhoto(remove);}}/><section className="grid gap-4 sm:grid-cols-3">
+          <div className="student-details min-w-0 space-y-3"><StudentPhoto nome={f.nome} path={f.foto_url} onChange={(blob,remove)=>{setPhoto(blob);setRemovePhoto(remove);}}/><section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-2">
             <h3 className="text-lg font-semibold sm:col-span-3">Dados do aluno</h3>
             {txt("codigo", "Código")}
             <div className="sm:col-span-2">{txt("nome", "Nome")}</div>
@@ -89,11 +89,11 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             {txt("cidade", "Cidade")}
             {txt("dataMatricula", "Data da matrícula", "date")}
 
-          </section>
+          </section></div>
 
           <StudentCourses value={ms} original={original} onChange={next=>{if(next.length===2&&next.some((m,i)=>m.valor_mensal!==ms[i]?.valor_mensal)&&next.every(m=>m.valor_mensal!==null))setF(p=>({...p,valorMensal:Math.round(next.reduce((s,m)=>s+(m.valor_mensal??0),0)*100)/100}));setMs(next);}} onDefault={(mensal,matricula)=>setF(p=>({...p,...(ms.length===1&&mensal!==null?{valorMensal:mensal}:{}),...(matricula!==null?{valor_matricula:matricula,data_matricula:p.data_matricula??dataBrasilia()}:{} )}))}/>
-          <section className="grid gap-4 rounded-xl bg-muted/50 p-4 sm:grid-cols-3">
-            <h3 className="text-lg font-semibold sm:col-span-3">Contrato financeiro</h3>
+          <section className="student-financial grid content-start gap-3 border-t pt-3 sm:grid-cols-3 xl:grid-cols-2 xl:border-t-0 xl:border-l xl:pl-4 xl:pt-0">
+            <h3 className="text-lg font-semibold sm:col-span-3 xl:col-span-2">Contrato financeiro</h3>
             {txt("valorMensal", "Valor mensal cheio / combo (R$)", "number")}
             {txt("valor_matricula", "Valor da matrícula (R$)", "number")}
             {txt("data_matricula", "Data da receita de matrícula", "date")}
@@ -116,7 +116,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             <Resumo label="Previsão da última mensalidade" value={f.primeiraCobranca && f.qtdMensalidades > 0 ? formatMes(ultimaMensalidade(f.primeiraCobranca, f.qtdMensalidades)) : "—"} />
           </section>
 
-          <DialogFooter>
+          <DialogFooter className="col-span-full border-t pt-3">
             <Button type="button" variant="outline" onClick={onClose}>Voltar</Button>
             <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
           </DialogFooter>
