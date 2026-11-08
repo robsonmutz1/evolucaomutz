@@ -19,6 +19,8 @@ import {
 import { lancamentosQuery } from "@/lib/lancamentos.functions";
 import { Lancamentos } from "@/components/Lancamentos";
 import { cadastrosFinanceirosQuery } from '@/lib/financeiro-cadastros.functions';
+import { controlesQuery } from '@/lib/energia-prestadores.functions';
+import { EnergiaPrestadores } from '@/components/EnergiaPrestadores';
 
 export const Route = createFileRoute("/_authenticated/_school/financeiro")({
   head: () => ({
@@ -31,7 +33,7 @@ export const Route = createFileRoute("/_authenticated/_school/financeiro")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(registrosQuery), context.queryClient.ensureQueryData(lancamentosQuery),context.queryClient.ensureQueryData(cadastrosFinanceirosQuery)]),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(controlesQuery), context.queryClient.ensureQueryData(registrosQuery), context.queryClient.ensureQueryData(lancamentosQuery),context.queryClient.ensureQueryData(cadastrosFinanceirosQuery)]),
   component: Financeiro,
 });
 
@@ -49,12 +51,14 @@ function Financeiro() {
           <TabsTrigger value="despesa">Despesas</TabsTrigger>
           <TabsTrigger value="produto">Produtos</TabsTrigger>
           <TabsTrigger value="patrimonio">Patrimônio</TabsTrigger>
+          <TabsTrigger value="controles">Energia e Prestadores</TabsTrigger>
         </TabsList>
         <TabsContent value="lancamentos"><Lancamentos /></TabsContent>
         <TabsContent value="faturamento"><Faturamento /></TabsContent>
         <TabsContent value="despesa"><Registros tipo="despesa" /></TabsContent>
         <TabsContent value="produto"><Registros tipo="produto" /></TabsContent>
         <TabsContent value="patrimonio"><Registros tipo="patrimonio" /></TabsContent>
+        <TabsContent value="controles"><EnergiaPrestadores /></TabsContent>
       </Tabs>
     </div>
   );
