@@ -70,10 +70,7 @@ function Auth() {
   return <div className="flex min-h-screen">
     <aside className="hidden w-1/2 flex-col items-center justify-center gap-6 bg-sidebar p-12 text-center text-sidebar-foreground md:flex">
       <img src={logoAsset.url} alt="Evolução Mutz" className="w-64 rounded-xl shadow-lg" />
-      <div>
-        <h1 className="font-display text-3xl font-semibold">Evolução Mutz</h1>
-        <p className="mt-2 text-sm opacity-75">Gestão escolar · Acesso restrito</p>
-      </div>
+      <p className="text-sm opacity-75">Gestão Escolar | Acesso Restrito</p>
     </aside>
     <main className="flex w-full flex-1 flex-col justify-center px-6 py-12 md:w-1/2">
       <div className="mx-auto flex w-full max-w-md flex-col gap-6">
