@@ -638,6 +638,44 @@ export type Database = {
           },
         ]
       }
+      prestador_historico: {
+        Row: {
+          horas: number | null
+          horas_conferidas: number | null
+          id: string
+          mes: string
+          origem: string
+          prestador_id: string
+          valor: number | null
+        }
+        Insert: {
+          horas?: number | null
+          horas_conferidas?: number | null
+          id?: string
+          mes: string
+          origem: string
+          prestador_id: string
+          valor?: number | null
+        }
+        Update: {
+          horas?: number | null
+          horas_conferidas?: number | null
+          id?: string
+          mes?: string
+          origem?: string
+          prestador_id?: string
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestador_historico_prestador_id_fkey"
+            columns: ["prestador_id"]
+            isOneToOne: false
+            referencedRelation: "prestadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prestador_pagamentos: {
         Row: {
           data_pagamento: string

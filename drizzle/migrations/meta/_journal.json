@@ -92,6 +92,13 @@
       "when": 1794071108623,
       "tag": "0012_allow_atomic_lesson_payment",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794274140806,
+      "tag": "0013_provider_spreadsheet_history",
+      "breakpoints": true
     }
   ]
 }
