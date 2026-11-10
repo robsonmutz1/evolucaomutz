@@ -3,11 +3,13 @@ import { queryOptions } from '@tanstack/react-query';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { validarAula, type Prestador, type Aula, type Pagamento, type Energia } from './energia-prestadores';
 import { dataValida } from './financeiro-cadastros';
+import type { Database } from '@/integrations/supabase/types';
 export const listarControles = createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
- const out:{prestadores:Prestador[];aulas:Aula[];pagamentos:Pagamento[];energia:Energia[]}={prestadores:[],aulas:[],pagamentos:[],energia:[]};
- for(const t of ['prestadores','prestador_aulas','prestador_pagamentos','energia_registros'] as const){
+ const out:{prestadores:Prestador[];aulas:Aula[];pagamentos:Pagamento[];energia:Energia[];historico:Database['public']['Tables']['prestador_historico']['Row'][]}={prestadores:[],aulas:[],pagamentos:[],energia:[],historico:[]};
+ for(const t of ['prestadores','prestador_aulas','prestador_pagamentos','energia_registros','prestador_historico'] as const){
   const rows=[];for(let start=0;;start+=500){const {data,error}=await context.supabase.from(t).select('*').order('id').range(start,start+499);if(error)throw new Error('Não foi possível carregar os controles.');rows.push(...data);if(data.length<500)break;}
   if(t==='prestadores')out.prestadores=rows as Prestador[];if(t==='prestador_aulas')out.aulas=rows as Aula[];if(t==='prestador_pagamentos')out.pagamentos=rows as Pagamento[];if(t==='energia_registros')out.energia=rows as Energia[];
+  if(t==='prestador_historico')out.historico=rows as Database['public']['Tables']['prestador_historico']['Row'][];
  }return out;
 });
 export const controlesQuery=queryOptions({queryKey:['school','controles'],queryFn:()=>listarControles(),staleTime:30000});

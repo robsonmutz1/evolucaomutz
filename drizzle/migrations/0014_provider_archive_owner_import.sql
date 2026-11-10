@@ -1,0 +1,1 @@
+GRANT INSERT ON public.prestador_historico TO authenticated; CREATE POLICY "Owner imports provider archive" ON public.prestador_historico FOR INSERT TO authenticated WITH CHECK(public.has_owner_access());
