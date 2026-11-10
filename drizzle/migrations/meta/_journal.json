@@ -106,6 +106,13 @@
       "when": 1794274183527,
       "tag": "0014_provider_archive_owner_import",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1794274343931,
+      "tag": "0015_provider_paid_record_maintenance",
+      "breakpoints": true
     }
   ]
 }
