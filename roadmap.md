@@ -1,7 +1,7 @@
 # Dados reais e acesso restrito
-- [ ] Criar controles protegidos de energia e prestadores, aulas diárias, pagamento sem duplicidade e relatório por prestador.
-- [ ] Analisar e importar os registros seguros da nova planilha preservando o caixa existente; esclarecer dados ambíguos.
-- [ ] Testar registro diário, confirmação de pagamento e acompanhamento de energia na conta autorizada.
+- [x] Criar controles protegidos de energia e prestadores, aulas diárias, pagamento sem duplicidade e relatório por prestador.
+- [x] Importar 54 meses de energia, 7 prestadores, 105 totais históricos e 9 registros de novembro; 16 divergências de horas visíveis no Histórico Excel. Caixa preservado em R$ 2.587.857,73; histórico não presume pagamento.
+- [x] Conferir horas pendentes, pagamento único de R$ 50, relatório e gráfico de energia na conta autorizada; celular sem excesso de largura, dados de teste removidos.
 - [x] Ampliar e reorganizar a ficha do aluno para caber na tela do computador; conferido em 1331 × 866 com um e dois cursos, sem rolagem.
 - [x] Adicionar e verificar o olho de privacidade do Painel; ocultação e restauração conferidas na conta autorizada.
 - [x] Pedagógico: cursos, horários, turmas e Follow-up protegido.
