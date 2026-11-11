@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
-import { Plus, Pencil, Trash2, Check, Download, Users, Zap } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
@@ -18,9 +18,8 @@ import { brl, formatData, formatMes } from '@/lib/alunos';
 import { hojeFinanceiro } from '@/lib/financeiro-cadastros';
 const parse=(v:FormDataEntryValue|null)=>v===null||String(v).trim()===''?null:Number(String(v).replace(',','.'));
 function Field({name,label,value='',type='text',required=false}:{name:string;label:string;value?:string|number;type?:string;required?:boolean}){return <div className="min-w-0 space-y-1"><Label htmlFor={`ctrl-${name}`}>{label}</Label><Input id={`ctrl-${name}`} name={name} type={type} defaultValue={value} required={required} min={type==='number'?0:undefined} step={type==='number'?'any':undefined}/></div>;}
-export function EnergiaPrestadores(){return <Tabs defaultValue="energia"><TabsList className="mb-4 h-auto flex-wrap"><TabsTrigger value="energia"><Zap className="mr-2 h-4 w-4"/>Gasto de Energia</TabsTrigger><TabsTrigger value="prestadores"><Users className="mr-2 h-4 w-4"/>Salário dos Prestadores</TabsTrigger></TabsList><TabsContent value="energia"><EnergiaControl/></TabsContent><TabsContent value="prestadores"><PrestadoresControl/></TabsContent></Tabs>;}
 function useActions(){const qc=useQueryClient();const [busy,setBusy]=useState(false);async function run(action:()=>Promise<unknown>,done?:()=>void){setBusy(true);try{await action();await Promise.all([qc.invalidateQueries({queryKey:controlesQuery.queryKey}),qc.invalidateQueries({queryKey:['school','lancamentos']})]);done?.();toast.success('Salvo');}catch(e){toast.error(e instanceof Error?e.message:'Não foi possível salvar.');}finally{setBusy(false);}}return {busy,run};}
-function EnergiaControl(){
+export function EnergiaControl(){
  const {data}=useSuspenseQuery(controlesQuery);const save=useServerFn(salvarEnergia);const {busy,run}=useActions();const [edit,setEdit]=useState<Partial<Energia>|null>(null);const [year,setYear]=useState(hojeFinanceiro().slice(0,4));const [metric,setMetric]=useState('valor');
  const rows=data.energia.filter(e=>e.mes.startsWith(year)).sort((a,b)=>a.mes.localeCompare(b.mes));const latest=rows.at(-1);const prev=latest?data.energia.find(e=>{const d=new Date(`${latest.mes}-01T12:00:00Z`);d.setUTCMonth(d.getUTCMonth()-1);return e.mes===d.toISOString().slice(0,7);}):undefined;const change=variacaoEnergia(latest?.valor??null,prev?.valor??null);
  return <section className="min-w-0 space-y-5"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-semibold">Gasto de Energia</h2><div className="flex gap-2"><Input className="w-24" aria-label="Ano da energia" type="number" value={year} onChange={e=>setYear(e.target.value)}/><Button onClick={()=>setEdit({mes:hojeFinanceiro().slice(0,7)})}><Plus className="mr-2 h-4 w-4"/>Adicionar mês</Button></div></div>
@@ -31,7 +30,7 @@ function EnergiaControl(){
  <Dialog open={edit!==null} onOpenChange={v=>!v&&setEdit(null)}><DialogContent><DialogHeader><DialogTitle>{edit?.id?'Editar energia':'Registrar energia'}</DialogTitle></DialogHeader>{edit&&<form key={edit.id??'new'} className="grid gap-4" onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget);const submitter=(e.nativeEvent as SubmitEvent).submitter;void run(()=>save({data:{row:{mes:String(f.get('mes')),medidor:parse(f.get('medidor')),consumo_kwh:parse(f.get('consumo')),valor:parse(f.get('valor')),data_pagamento:String(f.get('data')||'')||null,observacoes:String(f.get('obs')||'')},lancar:submitter?.getAttribute('value')==='pagar'}}),()=>setEdit(null));}}><Field name="mes" label="Mês de referência" type="month" value={edit.mes??''} required/><div className="grid grid-cols-2 gap-3"><Field name="medidor" label="Leitura do medidor" type="number" value={edit.medidor??''}/><Field name="consumo" label="Consumo (kWh)" type="number" value={edit.consumo_kwh??''}/></div><Field name="valor" label="Valor (R$)" type="number" value={edit.valor??''}/><Field name="data" label="Data do pagamento" type="date" value={edit.data_pagamento??hojeFinanceiro()}/><Field name="obs" label="Observações" value={edit.observacoes??''}/><div className="flex flex-wrap justify-end gap-2"><Button type="submit" variant="outline" disabled={busy}>Salvar controle</Button>{!edit.lancamento_id&&<Button type="submit" value="pagar" disabled={busy}><Check className="mr-2 h-4 w-4"/>Pago · lançar saída</Button>}</div></form>}</DialogContent></Dialog>
  </section>;
 }
-function PrestadoresControl(){
+export function PrestadoresControl(){
  const {data}=useSuspenseQuery(controlesQuery);const saveP=useServerFn(salvarPrestador),saveA=useServerFn(salvarAula),delA=useServerFn(excluirAula),pay=useServerFn(pagarPrestador);const {busy,run}=useActions();
  const [mes,setMes]=useState(hojeFinanceiro().slice(0,7)),[selected,setSelected]=useState('todos'),[view,setView]=useState('horas'),[pEdit,setPEdit]=useState<Partial<Prestador>|null>(null),[aEdit,setAEdit]=useState<Partial<Aula>|null>(null),[payment,setPayment]=useState<Prestador|null>(null),[de,setDe]=useState(hojeFinanceiro().slice(0,4)+'-01'),[ate,setAte]=useState(hojeFinanceiro().slice(0,7));
  const providers=[...data.prestadores].sort((a,b)=>a.nome.localeCompare(b.nome));const lessons=data.aulas.filter(a=>a.data.startsWith(mes)&&(selected==='todos'||a.prestador_id===selected)).sort((a,b)=>b.data.localeCompare(a.data));const totals=providers.filter(p=>selected==='todos'||selected===p.id).map(p=>({p,...resumoPrestador(data.aulas,data.pagamentos,p.id,mes,mes)}));
