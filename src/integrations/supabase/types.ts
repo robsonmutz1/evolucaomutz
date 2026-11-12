@@ -157,6 +157,131 @@ export type Database = {
         }
         Relationships: []
       }
+      caixa_alteracoes: {
+        Row: {
+          antes: Json | null
+          conferencias_ids: string[]
+          criado_em: string
+          criado_por: string
+          depois: Json | null
+          id: string
+          lancamento_id: string
+          operacao: string
+          valor_antigo: number | null
+          valor_novo: number | null
+        }
+        Insert: {
+          antes?: Json | null
+          conferencias_ids?: string[]
+          criado_em?: string
+          criado_por: string
+          depois?: Json | null
+          id?: string
+          lancamento_id: string
+          operacao: string
+          valor_antigo?: number | null
+          valor_novo?: number | null
+        }
+        Update: {
+          antes?: Json | null
+          conferencias_ids?: string[]
+          criado_em?: string
+          criado_por?: string
+          depois?: Json | null
+          id?: string
+          lancamento_id?: string
+          operacao?: string
+          valor_antigo?: number | null
+          valor_novo?: number | null
+        }
+        Relationships: []
+      }
+      conferencias_caixa: {
+        Row: {
+          conta_id: string | null
+          criado_em: string
+          criado_por: string
+          data_referencia: string
+          diferenca: number
+          id: string
+          observacao: string
+          resolvida: boolean
+          resolvida_em: string | null
+          saldo_informado: number
+          saldo_sistema: number
+          status: string
+        }
+        Insert: {
+          conta_id?: string | null
+          criado_em?: string
+          criado_por?: string
+          data_referencia: string
+          diferenca: number
+          id?: string
+          observacao?: string
+          resolvida?: boolean
+          resolvida_em?: string | null
+          saldo_informado: number
+          saldo_sistema: number
+          status: string
+        }
+        Update: {
+          conta_id?: string | null
+          criado_em?: string
+          criado_por?: string
+          data_referencia?: string
+          diferenca?: number
+          id?: string
+          observacao?: string
+          resolvida?: boolean
+          resolvida_em?: string | null
+          saldo_informado?: number
+          saldo_sistema?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conferencias_caixa_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas_caixa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contas_caixa: {
+        Row: {
+          ativa: boolean
+          criado_em: string
+          data_saldo_inicial: string | null
+          id: string
+          nome: string
+          saldo_inicial: number | null
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          ativa?: boolean
+          criado_em?: string
+          data_saldo_inicial?: string | null
+          id?: string
+          nome: string
+          saldo_inicial?: number | null
+          tipo?: string
+          user_id?: string
+        }
+        Update: {
+          ativa?: boolean
+          criado_em?: string
+          data_saldo_inicial?: string | null
+          id?: string
+          nome?: string
+          saldo_inicial?: number | null
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cursos: {
         Row: {
           ativo: boolean
@@ -373,42 +498,81 @@ export type Database = {
       }
       lancamentos: {
         Row: {
+          aluno_id: string | null
+          caixa_owner_id: string | null
           categoria: string
+          conta_id: string | null
           created_at: string
           data_lancamento: string | null
+          data_pagamento: string | null
           descricao: string | null
           grupo: string
           id: string
           mes: string
           origem: string
+          referencia_mensalidade: string | null
+          situacao: string
           tipo: string
+          transferencia_id: string | null
+          updated_at: string
           valor: number
         }
         Insert: {
+          aluno_id?: string | null
+          caixa_owner_id?: string | null
           categoria: string
+          conta_id?: string | null
           created_at?: string
           data_lancamento?: string | null
+          data_pagamento?: string | null
           descricao?: string | null
           grupo?: string
           id?: string
           mes: string
           origem?: string
+          referencia_mensalidade?: string | null
+          situacao?: string
           tipo: string
+          transferencia_id?: string | null
+          updated_at?: string
           valor: number
         }
         Update: {
+          aluno_id?: string | null
+          caixa_owner_id?: string | null
           categoria?: string
+          conta_id?: string | null
           created_at?: string
           data_lancamento?: string | null
+          data_pagamento?: string | null
           descricao?: string | null
           grupo?: string
           id?: string
           mes?: string
           origem?: string
+          referencia_mensalidade?: string | null
+          situacao?: string
           tipo?: string
+          transferencia_id?: string | null
+          updated_at?: string
           valor?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lancamentos_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas_caixa"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lead_interacoes: {
         Row: {
@@ -819,6 +983,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      caixa_conferir: {
+        Args: {
+          p_conta: string
+          p_data: string
+          p_observacao?: string
+          p_saldo: number
+        }
+        Returns: string
+      }
+      caixa_resolver: {
+        Args: { p_id: string; p_observacao: string }
+        Returns: undefined
+      }
+      caixa_salvar_lancamento: {
+        Args: { p_confirmar?: boolean; p_excluir?: boolean; p_row: Json }
+        Returns: string
+      }
+      caixa_transferir: {
+        Args: {
+          p_data: string
+          p_descricao: string
+          p_destino: string
+          p_origem: string
+          p_valor: number
+        }
+        Returns: string
+      }
       crm_chave_telefone: { Args: { numero: string }; Returns: string }
       crm_consultores: {
         Args: never

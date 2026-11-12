@@ -9,9 +9,9 @@ export const listarLancamentos = createServerFn({ method: 'GET' })
     const out: Lancamento[] = [];
     for (let de = 0; ; de += 1000) {
       const { data, error } = await context.supabase.from('lancamentos')
-        .select('id,mes,data_lancamento,tipo,grupo,categoria,valor,descricao').order('data_lancamento', { ascending: false }).order('id').range(de, de + 999);
+        .select('id,mes,data_lancamento,tipo,grupo,categoria,valor,descricao,conta_id,situacao,data_pagamento,aluno_id,referencia_mensalidade,transferencia_id,created_at,updated_at').order('data_lancamento', { ascending: false }).order('id').range(de, de + 999);
       if (error) throw new Error('Não foi possível carregar os lançamentos.');
-      out.push(...data.map((r) => ({ ...r, tipo: r.tipo as Lancamento['tipo'], valor: Number(r.valor) })));
+      out.push(...data.map((r) => ({ ...r, tipo: r.tipo as Lancamento['tipo'], situacao: r.situacao as NonNullable<Lancamento['situacao']>, valor: Number(r.valor) })));
       if (data.length < 1000) break;
     }
     return out;
@@ -23,20 +23,17 @@ export const salvarLancamento = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: Lancamento) => validarLancamento(i))
   .handler(async ({ context, data }) => {
-    const { id, data_lancamento, ...fields } = data;
-    const row={...fields,...(data_lancamento===undefined?{}:{data_lancamento})};
-    const { error } = id
-      ? await context.supabase.from('lancamentos').update(row).eq('id', id)
-      : await context.supabase.from('lancamentos').insert(row);
-    if (error) throw new Error('Não foi possível salvar o lançamento.');
+    const {confirmar_caixa,created_at,updated_at,transferencia_id,...row}=data;
+    const {error}=await context.supabase.rpc('caixa_salvar_lancamento',{p_row:row,p_confirmar:confirmar_caixa??false});
+    if (error) throw new Error(error.code==='P0001'?error.message:'Não foi possível salvar o lançamento.');
     return { success: true };
   });
 
 export const excluirLancamento = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { id: string }) => i)
+  .inputValidator((i: { id: string; confirmar_caixa?:boolean }) => i)
   .handler(async ({ context, data }) => {
-    const { error } = await context.supabase.from('lancamentos').delete().eq('id', data.id);
-    if (error) throw new Error('Não foi possível excluir.');
+    const { error } = await context.supabase.rpc('caixa_salvar_lancamento',{p_row:{id:data.id},p_excluir:true,p_confirmar:data.confirmar_caixa??false});
+    if (error) throw new Error(error.code==='P0001'?error.message:'Não foi possível excluir.');
     return { success: true };
   });

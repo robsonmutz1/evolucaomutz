@@ -18,6 +18,8 @@ import { AlunoForm } from '@/components/AlunoForm';
 import { Button } from '@/components/ui/button';
 import type { Aluno } from '@/lib/alunos';
 import { receitasMatriculas } from '@/lib/pedagogico';
+import { CaixaAvisos } from '@/components/Caixa';
+import { caixaQuery } from '@/lib/caixa.functions';
 
 const chartConfig = {
   faturamento: { label: "Faturamento", color: "var(--primary)" },
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/_authenticated/_school/dashboard")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  loader: ({context}) => context.queryClient.ensureQueryData(caixaQuery),
   component: Painel,
 });
 
@@ -119,6 +122,7 @@ function Painel() {
       </div>
 
       <div id="dashboard-information" className={`space-y-6 ${oculto ? 'dashboard-concealed' : ''}`} aria-hidden={oculto} inert={oculto}>
+      <CaixaAvisos />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         {cards.map(({ label, value, icon: Icon, tone, hint }) => (
           <Card key={label} className={`border-0 p-5 shadow-sm ${tone}`}>

@@ -1,5 +1,6 @@
 export type Lancamento = {
   id?: string | undefined; mes: string; data_lancamento?: string | null | undefined; tipo: 'entrada' | 'saida'; grupo: string; categoria: string; valor: number; descricao: string | null;
+  conta_id?:string|null; situacao?:'realizado'|'pendente'|'cancelado'|'estornado'; data_pagamento?:string|null; aluno_id?:string|null; referencia_mensalidade?:string|null; transferencia_id?:string|null; created_at?:string; updated_at?:string; confirmar_caixa?:boolean;
 };
 
 /** Sums entries of one type whose month starts with the prefix ("2025" or "2025-03"); null when none exist. */

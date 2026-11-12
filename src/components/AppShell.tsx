@@ -11,6 +11,7 @@ const nav = [
   { to: "/alunos", label: "Alunos", icon: Users },
   { to: "/pedagogico", label: "Pedagógico", icon: FileText },
   { to: "/financeiro", label: "Financeiro da escola", icon: Wallet },
+  { to: "/fluxo-caixa", label: "Fluxo de Caixa e Conferência", icon: Wallet },
   { to: "/relatorios", label: "Relatórios", icon: FileText },
   { to: "/crm", label: "CRM", icon: ContactRound },
 ] as const;

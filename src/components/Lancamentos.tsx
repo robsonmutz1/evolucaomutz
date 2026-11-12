@@ -16,6 +16,7 @@ import { cadastrosFinanceirosQuery, salvarCadastroFinanceiro } from '@/lib/finan
 import { hojeFinanceiro, nomeChave, tipoPermitido, type ItemFinanceiro } from '@/lib/financeiro-cadastros';
 import { FinanceiroCombobox } from './FinanceiroCombobox';
 import { FinanceiroDatePicker } from './FinanceiroDatePicker';
+import { Link } from '@tanstack/react-router';
 import { FinanceiroCadastrosManager } from './FinanceiroCadastrosManager';
 
 type Edit = { id?: string | undefined; mes: string; data_lancamento:string; tipo: Lancamento["tipo"]; grupo: string; categoria: string; valor: string; descricao: string };
@@ -59,19 +60,21 @@ export function Lancamentos() {
     if(!edit.valor.trim()){toast.error('Informe o valor do lançamento.');return;}
     setBusy(true);
     try {
-      await salvar({ data: { id: edit.id, mes: edit.data_lancamento.slice(0,7),data_lancamento:edit.data_lancamento, tipo: edit.tipo, grupo: edit.grupo, categoria: edit.categoria, valor: Number(edit.valor.replace(/\./g, "").replace(",", ".")), descricao: edit.descricao || null } });
+      const row: Lancamento = { id: edit.id, mes: edit.data_lancamento.slice(0,7),data_lancamento:edit.data_lancamento, tipo: edit.tipo, grupo: edit.grupo, categoria: edit.categoria, valor: Number(edit.valor.replace(/\./g, "").replace(",", ".")), descricao: edit.descricao || null };
+      try { await salvar({data:row}); } catch(e) { if(e instanceof Error && e.message.includes("conferência fechada") && confirm("Esta alteração afeta uma conferência fechada e será registrada. Continuar?")) await salvar({data:{...row,confirmar_caixa:true}}); else throw e; }
       await qc.invalidateQueries({ queryKey: ["school", "lancamentos"] });
       toast.success("Lançamento salvo"); setMes(edit.data_lancamento.slice(0,7)); setDe('');setAte('');setEdit(null);
     } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
   }
   async function onDelete(l: Lancamento) {
     if (!l.id || !confirm(`Excluir "${l.categoria}" (${brl(l.valor)})?`)) return;
-    try { await excluir({ data: { id: l.id } }); await qc.invalidateQueries({ queryKey: ["school", "lancamentos"] }); toast.success("Excluído"); }
+    try { try { await excluir({ data: { id: l.id } }); } catch(e) { if(e instanceof Error && e.message.includes("conferência fechada") && confirm("Esta exclusão afeta uma conferência fechada e será registrada. Continuar?")) await excluir({data:{id:l.id,confirmar_caixa:true}}); else throw e; } await qc.invalidateQueries({ queryKey: ["school", "lancamentos"] }); toast.success("Excluído"); }
     catch (e) { toast.error((e as Error).message); }
   }
 
   return (
     <section className="min-w-0 p-1">
+      <Link to="/fluxo-caixa" className="mb-3 inline-block text-sm text-primary underline">Definir contas, pagamentos e conferir caixa</Link>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1">
           <Label>Mês</Label>

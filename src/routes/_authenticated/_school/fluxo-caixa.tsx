@@ -1,0 +1,4 @@
+import {createFileRoute} from '@tanstack/react-router';
+import {Caixa} from '@/components/Caixa';
+import {caixaQuery} from '@/lib/caixa.functions';
+export const Route=createFileRoute('/_authenticated/_school/fluxo-caixa')({head:()=>({meta:[{title:'Fluxo de Caixa e Conferência · Evolução Mutz'},{name:'description',content:'Contas, saldos e conferência financeira da escola Evolução Mutz.'},{property:'og:title',content:'Fluxo de Caixa e Conferência · Evolução Mutz'},{property:'og:description',content:'Controle protegido de contas e diagnóstico de divergências financeiras.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),loader:({context})=>context.queryClient.ensureQueryData(caixaQuery),component:()=> <div className="mx-auto max-w-6xl space-y-6"><h1 className="text-3xl font-semibold">Fluxo de Caixa e Conferência</h1><Caixa/></div>});

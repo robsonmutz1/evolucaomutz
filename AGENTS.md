@@ -19,3 +19,4 @@
 - Pedagogical catalogs and enrollment records preserve legacy text; student and enrollment updates use an owner-checked transactional RPC, while follow-ups use a separate shared protected query and photos use owner-only private storage.
 - Keep student editing in the shared AlunoForm and dashboard concealment presentation-only with inert hidden content, so all entry points share layout and privacy does not alter stored records.
 - Energy and provider controls render independently in Financeiro and share protected cached queries; provider payments close a work month transactionally with a single linked cash entry, and hourly rates are snapshots on daily lessons to preserve history.
+- Cash reconciliation reuses lancamentos with owner-bound accounts, integer-cent helpers and protected transactional RPCs; initial balances are closing positions and audit trails preserve changes affecting closed checks.
