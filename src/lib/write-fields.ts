@@ -46,7 +46,7 @@ export const studentWrite = (r: Aluno) => fields(r, [
   'numero', 'bairro', 'cidade', 'dataMatricula', 'curso', 'turma', 'horario', 'status',
   'dataStatus', 'valorMensal', 'descontoTipo', 'desconto', 'diaLimiteDesconto',
   'diaVencimento', 'qtdMensalidades', 'primeiraCobranca', 'observacoes', 'foto_url',
-  'valor_matricula', 'data_matricula',
+  'valor_matricula', 'data_matricula', 'data_nascimento', 'outro_responsavel', 'telefone_outro_responsavel',
 ] as const);
 
 type ProviderInput = {id?: string; nome: string; valor_hora: number; ativo: boolean};

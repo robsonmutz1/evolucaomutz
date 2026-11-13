@@ -58,6 +58,7 @@ export type Database = {
           created_at: string
           curso: string
           data_matricula: string | null
+          data_nascimento: string | null
           dataMatricula: string
           dataPagamentoMatricula: string | null
           dataStatus: string | null
@@ -74,12 +75,14 @@ export type Database = {
           nome: string
           numero: string
           observacoes: string | null
+          outro_responsavel: string | null
           primeiraCobranca: string
           qtdMensalidades: number
           responsavel: string
           rua: string
           status: string
           telefone: string
+          telefone_outro_responsavel: string | null
           telefoneResponsavel: string
           turma: string
           valor_matricula: number | null
@@ -93,6 +96,7 @@ export type Database = {
           created_at?: string
           curso?: string
           data_matricula?: string | null
+          data_nascimento?: string | null
           dataMatricula?: string
           dataPagamentoMatricula?: string | null
           dataStatus?: string | null
@@ -109,12 +113,14 @@ export type Database = {
           nome: string
           numero?: string
           observacoes?: string | null
+          outro_responsavel?: string | null
           primeiraCobranca?: string
           qtdMensalidades?: number
           responsavel?: string
           rua?: string
           status?: string
           telefone?: string
+          telefone_outro_responsavel?: string | null
           telefoneResponsavel?: string
           turma?: string
           valor_matricula?: number | null
@@ -128,6 +134,7 @@ export type Database = {
           created_at?: string
           curso?: string
           data_matricula?: string | null
+          data_nascimento?: string | null
           dataMatricula?: string
           dataPagamentoMatricula?: string | null
           dataStatus?: string | null
@@ -144,12 +151,14 @@ export type Database = {
           nome?: string
           numero?: string
           observacoes?: string | null
+          outro_responsavel?: string | null
           primeiraCobranca?: string
           qtdMensalidades?: number
           responsavel?: string
           rua?: string
           status?: string
           telefone?: string
+          telefone_outro_responsavel?: string | null
           telefoneResponsavel?: string
           turma?: string
           valor_matricula?: number | null

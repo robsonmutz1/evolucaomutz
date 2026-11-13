@@ -21,3 +21,5 @@
 - Energy and provider controls render independently in Financeiro and share protected cached queries; provider payments close a work month transactionally with a single linked cash entry, and hourly rates are snapshots on daily lessons to preserve history.
 - Cash reconciliation reuses lancamentos with owner-bound accounts, integer-cent helpers and protected transactional RPCs; initial balances are closing positions and audit trails preserve changes affecting closed checks.
 - Selected student, CRM, financial, pedagogy and provider save handlers project editable fields through write-fields before database writes; request spreads must never set audit, import, ownership or payment-link fields.
+
+- Birthdays reuse the protected student cache and a client-safe age/filter helper; imported birthdates and contacts match both code and normalized full name and never overwrite populated contacts.

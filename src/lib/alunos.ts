@@ -7,6 +7,9 @@ export interface Aluno {
   responsavel: string;
   telefone?: string;
   telefoneResponsavel?: string;
+  data_nascimento?: string | null;
+  outro_responsavel?: string | null;
+  telefone_outro_responsavel?: string | null;
   cep?: string;
   rua?: string;
   numero?: string;

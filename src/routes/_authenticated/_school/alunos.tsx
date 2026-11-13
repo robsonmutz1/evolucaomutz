@@ -1,3 +1,4 @@
+import { idadeAluno, idadeTexto } from "@/lib/aniversariantes";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowUpDown, Pencil, Plus, Search } from "lucide-react";
@@ -195,7 +196,7 @@ function Alunos() {
                 <td className="px-3 py-3 font-mono text-xs"><Button variant="link" className="h-auto p-0" onClick={()=>setEditando(a)}>{a.codigo}</Button></td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-2"><StudentAvatar nome={a.nome} path={a.foto_url}/><Button variant="link" className="h-auto whitespace-normal p-0 text-left" onClick={()=>setEditando(a)}>{a.nome}</Button></div>
-                  <div className="text-xs text-muted-foreground">{a.bairro} · {a.cidade}</div>
+                  <div className="text-xs text-muted-foreground">{[a.bairro,a.cidade,idadeAluno(a.data_nascimento)!==null?idadeTexto(idadeAluno(a.data_nascimento)):null].filter(Boolean).join(" · ")}</div>
                 </td>
                 <td className="px-3 py-3">{pedagogico.matriculas.filter(m=>m.aluno_id===a.id).sort((x,y)=>x.ordem-y.ordem).map(m=><div key={m.id}>{pedagogico.cursos.find(c=>c.id===m.curso_id)?.nome??a.curso}<div className="text-xs text-muted-foreground">{pedagogico.horarios.find(h=>h.id===m.horario_id)?.descricao??a.horario}</div></div>)}</td>
                 <td className="px-3 py-3">{a.turma} <span className="text-xs text-muted-foreground">{a.horario}</span></td>

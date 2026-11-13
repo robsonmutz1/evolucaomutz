@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import type { Aluno } from './alunos';
 import { validarMatriculas } from './pedagogico';
 import type { Json } from '@/integrations/supabase/types';
+import { validarNascimento } from './aniversariantes';
 import { studentWrite, enrollmentWrite } from './write-fields';
 
 export const listarAlunos = createServerFn({ method: 'GET' })
@@ -11,7 +12,7 @@ export const listarAlunos = createServerFn({ method: 'GET' })
     const rows: Aluno[] = [];
     for (let start = 0; ; start += 500) {
       const { data, error } = await context.supabase.from('alunos')
-        .select('id,codigo,nome,responsavel,telefone,telefoneResponsavel,cep,rua,numero,bairro,cidade,dataMatricula,curso,turma,horario,status,dataStatus,valorMensal,descontoTipo,desconto,diaLimiteDesconto,diaVencimento,qtdMensalidades,primeiraCobranca,observacoes,foto_url,valor_matricula,data_matricula')
+        .select('id,codigo,nome,responsavel,telefone,telefoneResponsavel,cep,rua,numero,bairro,cidade,dataMatricula,curso,turma,horario,status,dataStatus,valorMensal,descontoTipo,desconto,diaLimiteDesconto,diaVencimento,qtdMensalidades,primeiraCobranca,observacoes,foto_url,valor_matricula,data_matricula,data_nascimento,outro_responsavel,telefone_outro_responsavel')
         .order('id').range(start, start + 499);
       if (error) throw new Error('Não foi possível carregar os alunos.');
       for (const row of data) {
@@ -27,6 +28,7 @@ export const salvarAluno = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: Aluno) => {
     if (!input.nome.trim() || !input.curso.trim()) throw new Error('Preencha nome e curso.');
+    validarNascimento(input.data_nascimento);
     if (input.matriculas) validarMatriculas(input.matriculas);
     return input;
   })
@@ -41,6 +43,7 @@ export const salvarAluno = createServerFn({ method: 'POST' })
     const { error } = await context.supabase.from('alunos').upsert({
       id: data.id, codigo: data.codigo, nome: data.nome, responsavel: data.responsavel, cep: data.cep ?? '', rua: data.rua ?? '', numero: data.numero ?? '', bairro: data.bairro, cidade: data.cidade,
       telefone: data.telefone ?? '', telefoneResponsavel: data.telefoneResponsavel ?? '',
+      ...studentWrite({ id: data.id, data_nascimento: data.data_nascimento, outro_responsavel: data.outro_responsavel, telefone_outro_responsavel: data.telefone_outro_responsavel } as Aluno),
       dataMatricula: data.dataMatricula, curso: data.curso, turma: data.turma, horario: data.horario, status: data.status,
       dataStatus: data.dataStatus ?? null, valorMensal: data.valorMensal, descontoTipo: data.descontoTipo, desconto: data.desconto,
       diaLimiteDesconto: data.diaLimiteDesconto, diaVencimento: data.diaVencimento, qtdMensalidades: data.qtdMensalidades,

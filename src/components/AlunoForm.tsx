@@ -1,3 +1,4 @@
+import { idadeAluno, idadeTexto } from '@/lib/aniversariantes';
 import { useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -67,7 +68,10 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             <h3 className="text-lg font-semibold sm:col-span-3">Dados do aluno</h3>
             {txt("codigo", "Código")}
             <div className="sm:col-span-2">{txt("nome", "Nome")}</div>
+            <div className="min-w-0 space-y-1.5"><Label>Data de Nascimento</Label><Input aria-label="Data de Nascimento" type="date" max={dataBrasilia()} value={f.data_nascimento??''} onChange={e=>set('data_nascimento',e.target.value||null)}/><p className="text-xs text-muted-foreground">{idadeTexto(idadeAluno(f.data_nascimento))}</p></div>
             {txt("responsavel", "Responsável")}
+            {txt("outro_responsavel", "Outro responsável (mãe / pai)")}
+            {txt("telefone_outro_responsavel", "Telefone do outro responsável", "tel")}
             {txt("telefone", "Telefone do aluno", "tel")}
             {txt("telefoneResponsavel", "Telefone do responsável", "tel")}
             <div className="space-y-1.5">

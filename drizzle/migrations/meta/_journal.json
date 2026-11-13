@@ -127,6 +127,13 @@
       "when": 1794442843525,
       "tag": "0017_cash_atomic_transfers",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794529968775,
+      "tag": "0018_student_birthdays_additional_guardian",
+      "breakpoints": true
     }
   ]
 }

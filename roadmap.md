@@ -26,3 +26,5 @@
 - [x] Adicionar telefones dos alunos e responsáveis e conversão automática segura; matrícula e pós-venda conferidos na conta autorizada.
 - [x] Financeiro: data de lançamento com dia atual de Brasília, migração dos antigos, ordenação e filtro por intervalo; valor e mês conferidos após edição.
 - [x] Financeiro: cadastros de grupos/categorias por histórico, seletores pesquisáveis, gestão, renomeação e mesclagem com confirmação; fluxos conferidos na conta autorizada, testes removidos.
+
+- [ ] Adicionar nascimento, idade, outro responsável e Aniversariantes com filtros; importar planilha com correspondência segura.
