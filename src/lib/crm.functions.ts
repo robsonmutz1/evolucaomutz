@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { validarLead, chaveTelefone, type Lead, type Interacao } from './crm';
 import { createMiddleware } from '@tanstack/react-start';
+import { leadWrite } from './write-fields';
 const requireCRMOwner = createMiddleware({type:'function'}).middleware([requireSupabaseAuth]).server(async ({context,next})=>{
  const {data,error}=await context.supabase.rpc('has_owner_access');
  if(error||!data) throw new Error('Acesso não autorizado à escola.');
@@ -20,7 +21,7 @@ export const listarCRM = createServerFn({method:'GET'}).middleware([requireCRMOw
  return {leads,consultores:consultores??[]};
 });
 export const salvarLead = createServerFn({method:'POST'}).middleware([requireCRMOwner]).inputValidator((l:Lead)=>validarLead(l)).handler(async ({context,data})=>{
- const {created_at,id,...row}=data;
+ const {id,...row}=leadWrite(data);
  const {data:existing,error:readError}=await context.supabase.from('leads').select('id').eq('id',id).maybeSingle();
  if(readError)throw new Error('Não foi possível verificar o lead.');
  const {data:salvo,error}= existing

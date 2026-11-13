@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { queryOptions } from '@tanstack/react-query';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { validarLancamento, type Lancamento } from './lancamentos';
+import { cashEntryWrite } from './write-fields';
 
 export const listarLancamentos = createServerFn({ method: 'GET' })
   .middleware([requireSupabaseAuth])
@@ -23,8 +24,8 @@ export const salvarLancamento = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: Lancamento) => validarLancamento(i))
   .handler(async ({ context, data }) => {
-    const {confirmar_caixa,created_at,updated_at,transferencia_id,...row}=data;
-    const {error}=await context.supabase.rpc('caixa_salvar_lancamento',{p_row:row,p_confirmar:confirmar_caixa??false});
+    const row = cashEntryWrite(data);
+    const {error}=await context.supabase.rpc('caixa_salvar_lancamento',{p_row:row,p_confirmar:data.confirmar_caixa===true});
     if (error) throw new Error(error.code==='P0001'?error.message:'Não foi possível salvar o lançamento.');
     return { success: true };
   });

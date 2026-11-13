@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import type { Aluno } from './alunos';
 import { validarMatriculas } from './pedagogico';
 import type { Json } from '@/integrations/supabase/types';
+import { studentWrite, enrollmentWrite } from './write-fields';
 
 export const listarAlunos = createServerFn({ method: 'GET' })
   .middleware([requireSupabaseAuth])
@@ -31,7 +32,8 @@ export const salvarAluno = createServerFn({ method: 'POST' })
   })
   .handler(async ({ context, data }) => {
     if (data.matriculas) {
-      const { matriculas, ...aluno } = data;
+      const aluno = studentWrite(data);
+      const matriculas = data.matriculas.map(enrollmentWrite);
       const { error } = await context.supabase.rpc('pedagogico_salvar_aluno', { p_aluno: JSON.parse(JSON.stringify(aluno)) as Json, p_matriculas: JSON.parse(JSON.stringify(matriculas)) as Json });
       if (error) throw new Error(error.code === 'P0001' ? error.message : 'Não foi possível salvar o aluno. Confira os cursos e turmas.');
       return { success: true };

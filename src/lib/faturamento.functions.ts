@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { queryOptions } from '@tanstack/react-query';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { validarMes, validarRegistro, type RegistroFinanceiro } from './financeiro';
+import { financialRecordWrite } from './write-fields';
 
 export const listarFaturamento = createServerFn({ method: 'GET' })
   .middleware([requireSupabaseAuth])
@@ -54,7 +55,7 @@ export const salvarRegistro = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: RegistroFinanceiro) => validarRegistro(i))
   .handler(async ({ context, data }) => {
-    const { id, ...row } = data;
+    const { id, ...row } = financialRecordWrite(data);
     const { error } = id
       ? await context.supabase.from('financeiro_registros').update(row).eq('id', id)
       : await context.supabase.from('financeiro_registros').insert(row);

@@ -20,3 +20,4 @@
 - Keep student editing in the shared AlunoForm and dashboard concealment presentation-only with inert hidden content, so all entry points share layout and privacy does not alter stored records.
 - Energy and provider controls render independently in Financeiro and share protected cached queries; provider payments close a work month transactionally with a single linked cash entry, and hourly rates are snapshots on daily lessons to preserve history.
 - Cash reconciliation reuses lancamentos with owner-bound accounts, integer-cent helpers and protected transactional RPCs; initial balances are closing positions and audit trails preserve changes affecting closed checks.
+- Selected student, CRM, financial, pedagogy and provider save handlers project editable fields through write-fields before database writes; request spreads must never set audit, import, ownership or payment-link fields.
