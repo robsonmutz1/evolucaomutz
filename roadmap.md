@@ -1,7 +1,8 @@
 # Dados reais e acesso restrito
-- [ ] Fluxo de Caixa e Conferência: contas, vínculos e situação dos lançamentos existentes, sem duplicar receitas/despesas.
-- [ ] Conferência salva, diagnóstico de divergências, histórico resolvido e auditoria de alterações confirmadas.
-- [ ] Visão de fluxo, saldo acumulado, gráficos, alertas no Painel e verificações dos quatro cenários solicitados.
+- [x] Fluxo de Caixa e Conferência: contas, vínculos e situação dos lançamentos existentes, sem duplicar receitas/despesas.
+- [x] Conferência salva, diagnóstico de divergências, histórico resolvido e auditoria de alterações confirmadas.
+- [x] Visão de fluxo, saldo acumulado, gráficos, alertas no Painel; saldo igual, diferença de R$ 1.500, duplicidades, pendentes e aviso de saldo inicial conferidos. Dados de teste removidos.
+- [ ] Comparar baixas individuais de mensalidade com caixa: aguarda histórico individual de pagamentos, inexistente nos registros atuais; valores contratuais não comprovam recebimento.
 - [x] Criar controles protegidos de energia e prestadores, aulas diárias, pagamento sem duplicidade e relatório por prestador.
 - [x] Importar 54 meses de energia, 7 prestadores, 105 totais históricos e 9 registros de novembro; 16 divergências de horas visíveis no Histórico Excel. Caixa preservado em R$ 2.587.857,73; histórico não presume pagamento.
 - [x] Conferir horas pendentes, pagamento único de R$ 50, relatório e gráfico de energia na conta autorizada; celular sem excesso de largura, dados de teste removidos.
