@@ -31,7 +31,7 @@ describe('editable write field allowlists', () => {
   });
   it('student and nested enrollments preserve editable fields, not import or audit fields', () => {
     const enrollment = { ordem: 1, curso_id: null, turma_id: null, horario_id: null, status: 'cursando', data_conclusao: null, motivo_cancelamento: null, valor_mensal: null };
-    const student = { id: 'student', codigo: '701168', nome: 'Aluno', responsavel: '', bairro: '', cidade: '', dataMatricula: '', curso: 'Curso', turma: '', horario: '', status: 'Ativo' as const, valorMensal: null, descontoTipo: 'percentual' as const, desconto: 0, diaLimiteDesconto: 0, diaVencimento: 0, qtdMensalidades: 0, primeiraCobranca: '', foto_url: null, valor_matricula: null, data_matricula: null };
+    const student = { id: 'student', codigo: '701168', nome: 'Aluno', responsavel: '', bairro: '', cidade: '', dataMatricula: '', curso: 'Curso', turma: '', horario: '', status: 'Ativo' as const, valorMensal: null, descontoTipo: 'percentual' as const, desconto: 0, diaLimiteDesconto: 0, diaVencimento: 0, qtdMensalidades: 0, primeiraCobranca: '', foto_url: null, valor_matricula: null, data_matricula: null, data_nascimento: '2011-11-13', outro_responsavel: 'Mãe', telefone_outro_responsavel: '27999999999' };
     expect(studentWrite(inject({ ...student, matriculas: [inject(enrollment)] }))).toEqual(student);
     expect(enrollmentWrite(inject(enrollment))).toEqual(enrollment);
   });

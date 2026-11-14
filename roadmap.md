@@ -27,4 +27,5 @@
 - [x] Financeiro: data de lançamento com dia atual de Brasília, migração dos antigos, ordenação e filtro por intervalo; valor e mês conferidos após edição.
 - [x] Financeiro: cadastros de grupos/categorias por histórico, seletores pesquisáveis, gestão, renomeação e mesclagem com confirmação; fluxos conferidos na conta autorizada, testes removidos.
 
-- [ ] Adicionar nascimento, idade, outro responsável e Aniversariantes com filtros; importar planilha com correspondência segura.
+- [x] Adicionar nascimento, idade, outro responsável e Aniversariantes com filtros; 263 nascimentos e 70 terceiros telefones importados; edição e leitura conferidas.
+- [ ] Confirmar correspondência de cinco registros da nova planilha: códigos 701152, 701090, 700890, 700784 e 700457 têm nomes diferentes dos cadastros; não importados.

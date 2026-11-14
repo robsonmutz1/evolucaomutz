@@ -43,7 +43,9 @@ export const salvarAluno = createServerFn({ method: 'POST' })
     const { error } = await context.supabase.from('alunos').upsert({
       id: data.id, codigo: data.codigo, nome: data.nome, responsavel: data.responsavel, cep: data.cep ?? '', rua: data.rua ?? '', numero: data.numero ?? '', bairro: data.bairro, cidade: data.cidade,
       telefone: data.telefone ?? '', telefoneResponsavel: data.telefoneResponsavel ?? '',
-      ...studentWrite({ id: data.id, data_nascimento: data.data_nascimento, outro_responsavel: data.outro_responsavel, telefone_outro_responsavel: data.telefone_outro_responsavel } as Aluno),
+      ...(data.data_nascimento !== undefined ? { data_nascimento: data.data_nascimento } : {}),
+      ...(data.outro_responsavel !== undefined ? { outro_responsavel: data.outro_responsavel } : {}),
+      ...(data.telefone_outro_responsavel !== undefined ? { telefone_outro_responsavel: data.telefone_outro_responsavel } : {}),
       dataMatricula: data.dataMatricula, curso: data.curso, turma: data.turma, horario: data.horario, status: data.status,
       dataStatus: data.dataStatus ?? null, valorMensal: data.valorMensal, descontoTipo: data.descontoTipo, desconto: data.desconto,
       diaLimiteDesconto: data.diaLimiteDesconto, diaVencimento: data.diaVencimento, qtdMensalidades: data.qtdMensalidades,
