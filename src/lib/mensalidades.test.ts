@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gerarParcelas, valorSugerido, vencimentoNoMes, origensDosUltimos } from './mensalidades';
+import { gerarParcelas, valorSugerido, valorParaBaixa, vencimentoNoMes, origensDosUltimos } from './mensalidades';
 const desc = { descontoTipo: 'percentual' as const, desconto: 10, diaLimiteDesconto: 5 };
 describe('mensalidades', () => {
   it('gera parcelas com valor cheio e matrícula separada', () => {
@@ -13,6 +13,22 @@ describe('mensalidades', () => {
     expect(valorSugerido(p, desc, '2026-12-06')).toBe(200);
   });
   it('matrícula não recebe desconto', () => { expect(valorSugerido({ tipo: 'matricula', referencia: '2026-12', valor: 50 }, desc, '2026-12-01')).toBe(50); });
+  it('baixa antecipada usa o desconto percentual do contrato', () => {
+    expect(valorParaBaixa({ tipo: 'mensalidade', referencia: '2026-12', vencimento: '2026-12-06', valor: 200 }, desc, '2026-11-03')).toBe(180);
+  });
+  it('desconto em reais inclui o dia limite e acaba no dia seguinte', () => {
+    const p = { tipo: 'mensalidade' as const, referencia: '2026-12', vencimento: '2026-12-11', valor: 200 };
+    const a = { descontoTipo: 'valor' as const, desconto: 20, diaLimiteDesconto: 10 };
+    expect(valorParaBaixa(p, a, '2026-12-10')).toBe(180);
+    expect(valorParaBaixa(p, a, '2026-12-11')).toBe(200);
+    expect(valorParaBaixa(p, a, '2026-12-12')).toBe(204.07);
+  });
+  it('prazo do desconto prevalece sobre vencimento renegociado', () => {
+    expect(valorParaBaixa({ tipo: 'mensalidade', referencia: '2026-12', vencimento: '2026-12-01', valor: 200 }, desc, '2026-12-05')).toBe(180);
+  });
+  it('não inventa desconto quando não configurado', () => {
+    expect(valorParaBaixa({ tipo: 'mensalidade', referencia: '2026-12', vencimento: '2026-12-06', valor: 200 }, undefined, '2026-11-03')).toBe(200);
+  });
   it('conta origens dos últimos N alunos no período', () => {
     const al = [{ dataMatricula: '2026-01-01', origem_lead: 'Vídeo' }, { dataMatricula: '2026-02-01', origem_lead: 'Vídeo' }, { dataMatricula: '2026-03-01', origem_lead: 'Google' }, { dataMatricula: '2025-12-01', origem_lead: 'Vídeo' }];
     const r = origensDosUltimos(al, 2, '2026-01-01', '2026-12-31');

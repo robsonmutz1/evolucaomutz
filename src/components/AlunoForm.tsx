@@ -161,7 +161,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             <Button type="button" variant="outline" onClick={onClose}>Voltar</Button>
             <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
           </DialogFooter>
-        </form></TabsContent><TabsContent value="financeiro">{exists&&<AlunoMensalidades aluno={aluno}/>}</TabsContent><TabsContent value="followup">{exists&&<StudentFollowups alunoId={aluno.id}/>}</TabsContent></Tabs>
+        </form></TabsContent><TabsContent value="financeiro">{exists&&<AlunoMensalidades aluno={f}/>}</TabsContent><TabsContent value="followup">{exists&&<StudentFollowups alunoId={aluno.id}/>}</TabsContent></Tabs>
       </DialogContent>
     </Dialog>
   );

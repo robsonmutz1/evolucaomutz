@@ -48,6 +48,13 @@ export function valorComAtraso(valor: number, vencimento: string, dataPagamento:
   const c = Math.round(valor * 100);
   return Math.round(c + c * 0.02 + c * 0.01 * dias / 30) / 100;
 }
+/** Shared settlement suggestion: the contracted discount deadline includes early payments. */
+export function valorParaBaixa(p: Pick<Parcela, 'tipo' | 'referencia' | 'valor' | 'vencimento'>, a: Parameters<typeof valorSugerido>[1] | undefined, dataPagamento: string): number {
+  if (!dataPagamento) return p.valor;
+  const descontado = a ? valorSugerido(p, a, dataPagamento) : p.valor;
+  if (descontado < p.valor) return descontado;
+  return valorComAtraso(p.valor, p.vencimento, dataPagamento);
+}
 export const emAtraso = (p: Pick<Parcela, 'situacao' | 'vencimento'>, hoje: string) => p.situacao === 'aberta' && p.vencimento < hoje;
 export const rotuloParcela = (p: Pick<Parcela, 'tipo' | 'parcela'>) => (p.tipo === 'matricula' ? 'Matrícula' : `Parcela ${p.parcela}`);
 
