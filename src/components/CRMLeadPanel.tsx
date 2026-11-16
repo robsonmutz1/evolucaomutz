@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { origensQuery } from '@/lib/mensalidades.functions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { etapas, origens, turnos, tiposContato, normalizarTelefone, type Lead } from '@/lib/crm';
+import { etapas, turnos, tiposContato, normalizarTelefone, type Lead } from '@/lib/crm';
 import { historicoLead, registrarContatoCRM, salvarLead, verificarTelefoneCRM } from '@/lib/crm.functions';
 import { useStore } from '@/lib/store';
 export type Consultor = {id:string;nome:string};
@@ -23,6 +24,7 @@ export function CRMLeadPanel({lead,novo,consultores,onClose}:{lead:Lead;novo:boo
  const [vincular,setVincular]=useState(false),[alunoBusca,setAlunoBusca]=useState(''),[alunoId,setAlunoId]=useState('');
  const {alunos}=useStore();const cache=useQueryClient();const save=useServerFn(salvarLead),check=useServerFn(verificarTelefoneCRM),register=useServerFn(registrarContatoCRM);
  const phoneSequence=useRef(0);
+ const origensLista=useQuery(origensQuery).data??[];
  const history=useQuery({queryKey:['school','crm-history',lead.id],queryFn:()=>historicoLead({data:{id:lead.id}}),enabled:!novo});
  const set=<K extends keyof Lead>(k:K,v:Lead[K])=>setF(p=>({...p,[k]:v}));
  useEffect(()=>{
@@ -54,7 +56,7 @@ export function CRMLeadPanel({lead,novo,consultores,onClose}:{lead:Lead;novo:boo
     {txt('nome_aluno','Nome do aluno')}{txt('idade_aluno','Idade do aluno','number')}
     <CRMSelect label="Turno de interesse" value={f.turno_interesse} options={turnos} onChange={v=>set('turno_interesse',v)}/>
     <div className="space-y-1.5"><Label htmlFor="crm-curso">Curso de interesse</Label><Input id="crm-curso" list="crm-cursos" value={f.curso_interesse} onChange={e=>set('curso_interesse',e.target.value)}/><datalist id="crm-cursos">{[...new Set(alunos.map(a=>a.curso).filter(Boolean))].sort().map(c=><option key={c} value={c}/>)}</datalist></div>
-    <CRMSelect label="Origem" value={f.origem} options={origens} onChange={v=>set('origem',v)}/>
+    <CRMSelect label="Origem" value={f.origem} options={[...origensLista.filter(o=>o.ativo||o.nome===f.origem).map(o=>o.nome),...(f.origem&&!origensLista.some(o=>o.nome===f.origem)?[f.origem]:[])]} onChange={v=>set('origem',v)}/>
     <div className="space-y-1.5"><Label>Consultor responsável</Label><Select value={f.consultor_responsavel??'nenhum'} onValueChange={v=>set('consultor_responsavel',v==='nenhum'?null:v)}><SelectTrigger className="w-full"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="nenhum">Não atribuído</SelectItem>{consultores.map(c=><SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent></Select></div>
     {txt('valor_mensalidade_negociado','Mensalidade negociada (R$)','number')}
     <CRMSelect label="Etapa" value={f.etapa} options={etapas} onChange={v=>set('etapa',v)}/>

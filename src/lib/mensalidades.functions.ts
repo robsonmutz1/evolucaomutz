@@ -92,7 +92,8 @@ export const editarOrigem = createServerFn({ method: 'POST' }).middleware([requi
     if (e0 || !atual) throw new Error('Origem não encontrada.');
     if (data.excluir) {
       const { count } = await context.supabase.from('alunos').select('id', { count: 'exact', head: true }).eq('origem_lead', atual.nome);
-      if (count) throw new Error(`Origem usada por ${count} aluno(s). Desative em vez de excluir.`);
+      const { count: nl } = await context.supabase.from('leads').select('id', { count: 'exact', head: true }).eq('origem', atual.nome);
+      if (count || nl) throw new Error(`Origem em uso (${count ?? 0} aluno(s), ${nl ?? 0} lead(s)). Desative em vez de excluir.`);
       const { error } = await context.supabase.from('origens_lead').delete().eq('id', data.id);
       if (error) throw new Error('Não foi possível excluir a origem.');
       return { success: true };
@@ -105,6 +106,8 @@ export const editarOrigem = createServerFn({ method: 'POST' }).middleware([requi
     if (data.nome && data.nome !== atual.nome) {
       const { error: e2 } = await context.supabase.from('alunos').update({ origem_lead: data.nome }).eq('origem_lead', atual.nome);
       if (e2) throw new Error('Origem renomeada, mas não foi possível atualizar os alunos.');
+      const { error: e3 } = await context.supabase.from('leads').update({ origem: data.nome }).eq('origem', atual.nome);
+      if (e3) throw new Error('Origem renomeada, mas não foi possível atualizar os leads.');
     }
     return { success: true };
   });

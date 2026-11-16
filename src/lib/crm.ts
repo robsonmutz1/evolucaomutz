@@ -3,6 +3,7 @@ export type Lead = Database['public']['Tables']['leads']['Row'];
 export type Interacao = Database['public']['Tables']['lead_interacoes']['Row'];
 export const etapas = ['Novo lead','Respondeu','Sem resposta','Em negociação','Matriculado','Perdido'] as const;
 export const turnos = ['Sábado','Semana - Manhã','Semana - Tarde','Semana - Noite','Ainda não definiu'] as const;
+/** Legacy fixed list; lead origins now come from the shared origens_lead catalog (Configurações). */
 export const origens = ['Anúncio Instagram/Facebook','Indicação','WhatsApp direto','Passou na frente','Google','Outro'] as const;
 export const tiposContato = ['WhatsApp','Ligação','Visita','Aula experimental','Pós-venda','Anotação'] as const;
 export function normalizarTelefone(t: string) { const n = t.replace(/\D/g, ''); return n.length > 11 && n.startsWith('55') ? n.slice(2) : n; }
@@ -15,7 +16,8 @@ export function posVenda(l: Lead, agora = new Date()) { return l.etapa === 'Matr
 export function validarLead(l: Lead) {
  if (!l.nome_responsavel.trim()) throw new Error('Informe o nome do responsável.');
  if (![10,11].includes(normalizarTelefone(l.telefone).length)) throw new Error('Informe um telefone com DDD válido.');
- if (!etapas.includes(l.etapa as typeof etapas[number]) || !turnos.includes(l.turno_interesse as typeof turnos[number]) || !origens.includes(l.origem as typeof origens[number])) throw new Error('Opção inválida.');
+ if (!etapas.includes(l.etapa as typeof etapas[number]) || !turnos.includes(l.turno_interesse as typeof turnos[number])) throw new Error('Opção inválida.');
+ if (!l.origem?.trim() || l.origem.trim().length > 60) throw new Error('Informe a origem do lead.');
  if (l.etapa === 'Perdido' && !l.motivo_perda?.trim()) throw new Error('Informe o motivo da perda.');
  if (l.valor_mensalidade_negociado !== null && (!Number.isFinite(l.valor_mensalidade_negociado) || l.valor_mensalidade_negociado < 0)) throw new Error('Mensalidade inválida.');
  if (l.idade_aluno !== null && (!Number.isInteger(l.idade_aluno) || l.idade_aluno < 0 || l.idade_aluno > 120)) throw new Error('Idade inválida.');
