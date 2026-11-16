@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedSchoolRouteRouteImport } from './routes/_authenticated/_school/route'
 import { Route as AuthenticatedSchoolAlunosRouteImport } from './routes/_authenticated/_school/alunos'
+import { Route as AuthenticatedSchoolConfiguracoesRouteImport } from './routes/_authenticated/_school/configuracoes'
 import { Route as AuthenticatedSchoolCrmRouteImport } from './routes/_authenticated/_school/crm'
 import { Route as AuthenticatedSchoolDashboardRouteImport } from './routes/_authenticated/_school/dashboard'
 import { Route as AuthenticatedSchoolFinanceiroRouteImport } from './routes/_authenticated/_school/financeiro'
@@ -51,6 +52,12 @@ const AuthenticatedSchoolAlunosRoute =
   AuthenticatedSchoolAlunosRouteImport.update({
     id: '/alunos',
     path: '/alunos',
+    getParentRoute: () => AuthenticatedSchoolRouteRoute,
+  } as any)
+const AuthenticatedSchoolConfiguracoesRoute =
+  AuthenticatedSchoolConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
     getParentRoute: () => AuthenticatedSchoolRouteRoute,
   } as any)
 const AuthenticatedSchoolCrmRoute = AuthenticatedSchoolCrmRouteImport.update({
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/alunos': typeof AuthenticatedSchoolAlunosRoute
+  '/configuracoes': typeof AuthenticatedSchoolConfiguracoesRoute
   '/crm': typeof AuthenticatedSchoolCrmRoute
   '/dashboard': typeof AuthenticatedSchoolDashboardRoute
   '/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
@@ -113,6 +121,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/alunos': typeof AuthenticatedSchoolAlunosRoute
+  '/configuracoes': typeof AuthenticatedSchoolConfiguracoesRoute
   '/crm': typeof AuthenticatedSchoolCrmRoute
   '/dashboard': typeof AuthenticatedSchoolDashboardRoute
   '/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
@@ -129,6 +138,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/_school': typeof AuthenticatedSchoolRouteRouteWithChildren
   '/_authenticated/_school/alunos': typeof AuthenticatedSchoolAlunosRoute
+  '/_authenticated/_school/configuracoes': typeof AuthenticatedSchoolConfiguracoesRoute
   '/_authenticated/_school/crm': typeof AuthenticatedSchoolCrmRoute
   '/_authenticated/_school/dashboard': typeof AuthenticatedSchoolDashboardRoute
   '/_authenticated/_school/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/alunos'
+    | '/configuracoes'
     | '/crm'
     | '/dashboard'
     | '/financeiro'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/alunos'
+    | '/configuracoes'
     | '/crm'
     | '/dashboard'
     | '/financeiro'
@@ -172,6 +184,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/_school'
     | '/_authenticated/_school/alunos'
+    | '/_authenticated/_school/configuracoes'
     | '/_authenticated/_school/crm'
     | '/_authenticated/_school/dashboard'
     | '/_authenticated/_school/financeiro'
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSchoolAlunosRouteImport
       parentRoute: typeof AuthenticatedSchoolRouteRoute
     }
+    '/_authenticated/_school/configuracoes': {
+      id: '/_authenticated/_school/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedSchoolConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedSchoolRouteRoute
+    }
     '/_authenticated/_school/crm': {
       id: '/_authenticated/_school/crm'
       path: '/crm'
@@ -286,6 +306,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedSchoolRouteRouteChildren {
   AuthenticatedSchoolAlunosRoute: typeof AuthenticatedSchoolAlunosRoute
+  AuthenticatedSchoolConfiguracoesRoute: typeof AuthenticatedSchoolConfiguracoesRoute
   AuthenticatedSchoolCrmRoute: typeof AuthenticatedSchoolCrmRoute
   AuthenticatedSchoolDashboardRoute: typeof AuthenticatedSchoolDashboardRoute
   AuthenticatedSchoolFinanceiroRoute: typeof AuthenticatedSchoolFinanceiroRoute
@@ -298,6 +319,8 @@ interface AuthenticatedSchoolRouteRouteChildren {
 const AuthenticatedSchoolRouteRouteChildren: AuthenticatedSchoolRouteRouteChildren =
   {
     AuthenticatedSchoolAlunosRoute: AuthenticatedSchoolAlunosRoute,
+    AuthenticatedSchoolConfiguracoesRoute:
+      AuthenticatedSchoolConfiguracoesRoute,
     AuthenticatedSchoolCrmRoute: AuthenticatedSchoolCrmRoute,
     AuthenticatedSchoolDashboardRoute: AuthenticatedSchoolDashboardRoute,
     AuthenticatedSchoolFinanceiroRoute: AuthenticatedSchoolFinanceiroRoute,
