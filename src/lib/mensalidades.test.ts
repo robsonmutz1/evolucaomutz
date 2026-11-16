@@ -19,3 +19,11 @@ describe('mensalidades', () => {
     expect(r.total).toBe(2); expect(r.linhas).toEqual([{ origem: 'Google', qtd: 1, pct: 50 }, { origem: 'Vídeo', qtd: 1, pct: 50 }]);
   });
 });
+
+import { valorComAtraso as vca } from './mensalidades';
+import { describe as d2, it as i2, expect as e2 } from 'vitest';
+d2('juros de atraso', () => {
+  i2('sem atraso mantém valor', () => e2(vca(150, '2026-10-10', '2026-10-10')).toBe(150));
+  i2('2% multa + 1% ao mês pro rata', () => e2(vca(150, '2026-10-10', '2026-11-09')).toBe(154.5));
+  i2('um dia de atraso', () => e2(vca(100, '2026-10-10', '2026-10-11')).toBe(102.03));
+});

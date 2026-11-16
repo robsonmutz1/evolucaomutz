@@ -40,6 +40,14 @@ export function valorSugerido(p: Pick<Parcela, 'tipo' | 'referencia' | 'valor'>,
   const d = a.descontoTipo === 'percentual' ? (p.valor * a.desconto) / 100 : a.desconto;
   return Math.max(0, Math.round((p.valor - d) * 100) / 100);
 }
+/** Late payment: 2% fine after due date + 1% per month, pro rata by day (30-day month), on the original amount. */
+export function valorComAtraso(valor: number, vencimento: string, dataPagamento: string): number {
+  if (!dataPagamento || !vencimento || dataPagamento <= vencimento) return valor;
+  const dias = Math.round((Date.parse(`${dataPagamento}T12:00:00Z`) - Date.parse(`${vencimento}T12:00:00Z`)) / 86400000);
+  if (!(dias > 0)) return valor;
+  const c = Math.round(valor * 100);
+  return Math.round(c + c * 0.02 + c * 0.01 * dias / 30) / 100;
+}
 export const emAtraso = (p: Pick<Parcela, 'situacao' | 'vencimento'>, hoje: string) => p.situacao === 'aberta' && p.vencimento < hoje;
 export const rotuloParcela = (p: Pick<Parcela, 'tipo' | 'parcela'>) => (p.tipo === 'matricula' ? 'Matrícula' : `Parcela ${p.parcela}`);
 

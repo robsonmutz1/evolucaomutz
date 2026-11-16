@@ -5,7 +5,7 @@ import { dataValida } from './financeiro-cadastros';
 import { type NovaParcela, type Parcela } from './mensalidades';
 
 const owner = async (s: { rpc: (n: 'has_owner_access') => PromiseLike<{ data: unknown; error: unknown }> }) => { const { data, error } = await s.rpc('has_owner_access'); if (error || !data) throw new Error('Acesso não autorizado.'); };
-const valorOk = (v: number) => Number.isFinite(v) && v >= 0 && Math.round(v * 100) === v * 100;
+const valorOk = (v: number) => Number.isFinite(v) && v >= 0 && Math.abs(Math.round(v * 100) - v * 100) < 1e-6;
 
 export const listarMensalidades = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   await owner(context.supabase);
@@ -54,6 +54,7 @@ export const situacaoMensalidades = createServerFn({ method: 'POST' }).middlewar
 
 export const baixarMensalidade = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((i: { id: string; data: string; valor: number; forma: string; banco: string; conta_id: string | null }) => {
+    i.valor = Math.round(Number(i.valor) * 100) / 100;
     if (!dataValida(i.data) || !valorOk(i.valor) || i.valor <= 0) throw new Error('Informe data e valor válidos.');
     i.forma = String(i.forma ?? '').trim().slice(0, 60); if (!i.forma) throw new Error('Informe a forma de pagamento.');
     return i;

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { brl, formatData, formatMes, type Aluno } from '@/lib/alunos';
 import { dataBrasilia } from '@/lib/pedagogico';
 import { caixaQuery, salvarContaCaixa } from '@/lib/caixa.functions';
-import { rotuloForma, emAtraso, gerarParcelas, rotuloParcela, valorSugerido, vencimentoNoMes, type Parcela } from '@/lib/mensalidades';
+import { rotuloForma, emAtraso, valorComAtraso, gerarParcelas, rotuloParcela, valorSugerido, vencimentoNoMes, type Parcela } from '@/lib/mensalidades';
 import { alterarMensalidades, baixarMensalidade, estornarMensalidade, gerarMensalidades, mensalidadesQuery, situacaoMensalidades, opcoesPagamentoQuery, criarOpcaoPagamento } from '@/lib/mensalidades.functions';
 
 const tone = { aberta: 'bg-accent text-accent-foreground', atraso: 'bg-destructive/15 text-destructive', paga: 'bg-primary/15 text-primary', cancelada: 'bg-muted text-muted-foreground' };
@@ -31,7 +31,7 @@ export function BaixaForm({ p, aluno, onDone }: { p: Parcela; aluno?: Aluno | un
   const baixar = useServerFn(baixarMensalidade);
   const refresh = useRefresh();
   const hoje = dataBrasilia();
-  const sug = (d: string) => (aluno ? valorSugerido(p, aluno, d) : p.valor);
+  const sug = (d: string) => (d > p.vencimento ? valorComAtraso(p.valor, p.vencimento, d) : aluno ? valorSugerido(p, aluno, d) : p.valor);
   const [data, setData] = useState(hoje);
   const [valor, setValor] = useState(String(sug(hoje)));
   const { data: opcoes } = useSuspenseQuery(opcoesPagamentoQuery);
@@ -42,8 +42,8 @@ export function BaixaForm({ p, aluno, onDone }: { p: Parcela; aluno?: Aluno | un
   const bancos = opcoes.filter((o) => o.tipo === 'banco' && o.ativo).map((o) => o.nome);
   const contas = caixa.contas.filter((c) => c.ativa);
   const principal = contas.find((c) => c.nome.trim().toLowerCase() === 'principal');
-  const [forma, setForma] = useState(formas.includes('Pix') ? 'Pix' : formas[0] ?? 'Pix');
-  const [banco, setBanco] = useState('nenhum');
+  const [forma, setForma] = useState(formas.find((f) => f.toLowerCase() === 'boleto') ?? formas[0] ?? 'Boleto');
+  const [banco, setBanco] = useState(bancos.find((b) => b.toLowerCase() === 'cora') ?? 'nenhum');
   const [conta, setConta] = useState(principal?.id ?? 'principal');
   const adicionar = async (tipo: 'forma' | 'banco') => {
     const nome = window.prompt(tipo === 'forma' ? 'Nova forma de pagamento' : 'Novo banco / maquininha')?.trim();
@@ -63,10 +63,10 @@ export function BaixaForm({ p, aluno, onDone }: { p: Parcela; aluno?: Aluno | un
   };
   const [saving, setSaving] = useState(false);
   return <div className="grid gap-3 rounded-lg border bg-card p-3 sm:grid-cols-3 lg:grid-cols-6">
-    <div className="space-y-1"><Label>Data do pagamento</Label><Input aria-label="Data do pagamento" type="date" value={data} onChange={(e) => { setData(e.target.value); setValor(String(sug(e.target.value))); }} /></div>
+    <div className="space-y-1"><Label>Data do pagamento</Label><Input aria-label="Data do pagamento" type="date" lang="pt-BR" value={data} onChange={(e) => { setData(e.target.value); setValor(String(sug(e.target.value))); }} /></div>
     <div className="space-y-1"><Label>Valor recebido (R$)</Label><Input aria-label="Valor recebido" type="number" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} /></div>
-    <div className="space-y-1"><Label>Forma</Label><Select value={forma} onValueChange={(v) => v === '__nova' ? void adicionar('forma') : setForma(v)}><SelectTrigger aria-label="Forma de pagamento"><SelectValue /></SelectTrigger><SelectContent>{[...new Set([...formas, forma])].map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}<SelectItem value="__nova">+ Adicionar forma</SelectItem></SelectContent></Select></div>
-    <div className="space-y-1"><Label>Banco / maquininha</Label><Select value={banco} onValueChange={(v) => v === '__nova' ? void adicionar('banco') : setBanco(v)}><SelectTrigger aria-label="Banco"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nenhum">Não informado</SelectItem>{[...new Set([...bancos, ...(banco === 'nenhum' ? [] : [banco])])].map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}<SelectItem value="__nova">+ Adicionar banco / maquininha</SelectItem></SelectContent></Select></div>
+    <div className="space-y-1"><Label>Forma</Label><Select value={forma} onValueChange={(v) => v === '__nova' ? void adicionar('forma') : setForma(v)}><SelectTrigger aria-label="Forma de pagamento"><SelectValue /></SelectTrigger><SelectContent>{[...new Set([...formas.filter((f) => f.toLowerCase() === 'boleto'), ...formas, forma])].map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}<SelectItem value="__nova">+ Adicionar forma</SelectItem></SelectContent></Select></div>
+    <div className="space-y-1"><Label>Banco / maquininha</Label><Select value={banco} onValueChange={(v) => v === '__nova' ? void adicionar('banco') : setBanco(v)}><SelectTrigger aria-label="Banco"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nenhum">Não informado</SelectItem>{[...new Set([...bancos.filter((b) => b.toLowerCase() === 'cora'), ...bancos, ...(banco === 'nenhum' ? [] : [banco])])].map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}<SelectItem value="__nova">+ Adicionar banco / maquininha</SelectItem></SelectContent></Select></div>
     <div className="space-y-1"><Label>Conta do caixa</Label><Select value={conta} onValueChange={(v) => v === '__nova' ? void adicionarConta() : setConta(v)}><SelectTrigger aria-label="Conta do caixa"><SelectValue /></SelectTrigger><SelectContent>{!principal && <SelectItem value="principal">Principal</SelectItem>}{contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}<SelectItem value="nenhuma">Sem conta</SelectItem><SelectItem value="__nova">+ Nova conta</SelectItem></SelectContent></Select></div>
     <div className="flex items-end gap-2"><Button type="button" disabled={saving} onClick={async () => {
       setSaving(true);
