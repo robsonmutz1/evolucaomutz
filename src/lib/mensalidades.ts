@@ -1,5 +1,7 @@
 export const FORMAS = { dinheiro: 'Dinheiro', pix: 'Pix', credito: 'Cartão de crédito', debito: 'Cartão de débito' } as const;
-export type Forma = keyof typeof FORMAS;
+export type Forma = string;
+/** Display label: legacy keys map to names, new rows store the name itself. */
+export const rotuloForma = (f: string | null) => (f ? (FORMAS as Record<string, string>)[f] ?? f : '');
 export type Situacao = 'aberta' | 'paga' | 'cancelada';
 export type Parcela = {
   id: string; aluno_id: string; tipo: 'mensalidade' | 'matricula'; parcela: number; referencia: string; vencimento: string;

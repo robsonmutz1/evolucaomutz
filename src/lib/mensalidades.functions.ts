@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { queryOptions } from '@tanstack/react-query';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { dataValida } from './financeiro-cadastros';
-import { FORMAS, type NovaParcela, type Parcela } from './mensalidades';
+import { type NovaParcela, type Parcela } from './mensalidades';
 
 const owner = async (s: { rpc: (n: 'has_owner_access') => PromiseLike<{ data: unknown; error: unknown }> }) => { const { data, error } = await s.rpc('has_owner_access'); if (error || !data) throw new Error('Acesso não autorizado.'); };
 const valorOk = (v: number) => Number.isFinite(v) && v >= 0 && Math.round(v * 100) === v * 100;
@@ -53,9 +53,9 @@ export const situacaoMensalidades = createServerFn({ method: 'POST' }).middlewar
   });
 
 export const baixarMensalidade = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((i: { id: string; data: string; valor: number; forma: keyof typeof FORMAS; banco: string; conta_id: string | null }) => {
+  .inputValidator((i: { id: string; data: string; valor: number; forma: string; banco: string; conta_id: string | null }) => {
     if (!dataValida(i.data) || !valorOk(i.valor) || i.valor <= 0) throw new Error('Informe data e valor válidos.');
-    if (!(i.forma in FORMAS)) throw new Error('Informe a forma de pagamento.');
+    i.forma = String(i.forma ?? '').trim().slice(0, 60); if (!i.forma) throw new Error('Informe a forma de pagamento.');
     return i;
   }).handler(async ({ context, data }) => {
     const { error } = await context.supabase.rpc('mensalidade_baixar', { p_id: data.id, p_data: data.data, p_valor: data.valor, p_forma: data.forma, p_banco: data.banco.trim().slice(0, 80), p_conta: data.conta_id as string });
@@ -110,4 +110,21 @@ export const editarOrigem = createServerFn({ method: 'POST' }).middleware([requi
       if (e3) throw new Error('Origem renomeada, mas não foi possível atualizar os leads.');
     }
     return { success: true };
+  });
+
+export type OpcaoPagamento = { id: string; tipo: 'forma' | 'banco'; nome: string; ativo: boolean };
+export const listarOpcoesPagamento = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  await owner(context.supabase);
+  const { data, error } = await context.supabase.from('pagamento_opcoes').select('id,tipo,nome,ativo').order('created_at');
+  if (error) throw new Error('Não foi possível carregar as opções de pagamento.');
+  return data as OpcaoPagamento[];
+});
+export const opcoesPagamentoQuery = queryOptions({ queryKey: ['school', 'pagamento-opcoes'], queryFn: () => listarOpcoesPagamento(), staleTime: 60_000 });
+export const criarOpcaoPagamento = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((i: { tipo: 'forma' | 'banco'; nome: string }) => { const nome = i.nome.trim().replace(/\s+/g, ' ').slice(0, 60); if (!nome || !['forma', 'banco'].includes(i.tipo)) throw new Error('Informe o nome.'); return { tipo: i.tipo, nome }; })
+  .handler(async ({ context, data }) => {
+    await owner(context.supabase);
+    const { data: row, error } = await context.supabase.from('pagamento_opcoes').insert({ tipo: data.tipo, nome: data.nome }).select('id,tipo,nome,ativo').single();
+    if (error) throw new Error(error.code === '23505' ? 'Essa opção já existe.' : 'Não foi possível adicionar a opção.');
+    return row as OpcaoPagamento;
   });

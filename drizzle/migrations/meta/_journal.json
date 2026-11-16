@@ -169,6 +169,13 @@
       "when": 1794841226136,
       "tag": "0023_crm_visitas",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794853408965,
+      "tag": "0024_opcoes_pagamento",
+      "breakpoints": true
     }
   ]
 }

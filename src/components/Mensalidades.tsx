@@ -9,9 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { brl, formatData, formatMes, type Aluno } from '@/lib/alunos';
 import { dataBrasilia } from '@/lib/pedagogico';
-import { caixaQuery } from '@/lib/caixa.functions';
-import { FORMAS, emAtraso, gerarParcelas, rotuloParcela, valorSugerido, vencimentoNoMes, type Forma, type Parcela } from '@/lib/mensalidades';
-import { alterarMensalidades, baixarMensalidade, estornarMensalidade, gerarMensalidades, mensalidadesQuery, situacaoMensalidades } from '@/lib/mensalidades.functions';
+import { caixaQuery, salvarContaCaixa } from '@/lib/caixa.functions';
+import { rotuloForma, emAtraso, gerarParcelas, rotuloParcela, valorSugerido, vencimentoNoMes, type Parcela } from '@/lib/mensalidades';
+import { alterarMensalidades, baixarMensalidade, estornarMensalidade, gerarMensalidades, mensalidadesQuery, situacaoMensalidades, opcoesPagamentoQuery, criarOpcaoPagamento } from '@/lib/mensalidades.functions';
 
 const tone = { aberta: 'bg-accent text-accent-foreground', atraso: 'bg-destructive/15 text-destructive', paga: 'bg-primary/15 text-primary', cancelada: 'bg-muted text-muted-foreground' };
 function Selo({ p }: { p: Parcela }) {
@@ -34,19 +34,43 @@ export function BaixaForm({ p, aluno, onDone }: { p: Parcela; aluno?: Aluno | un
   const sug = (d: string) => (aluno ? valorSugerido(p, aluno, d) : p.valor);
   const [data, setData] = useState(hoje);
   const [valor, setValor] = useState(String(sug(hoje)));
-  const [forma, setForma] = useState<Forma>('pix');
-  const [banco, setBanco] = useState('');
-  const [conta, setConta] = useState('nenhuma');
+  const { data: opcoes } = useSuspenseQuery(opcoesPagamentoQuery);
+  const qc = useQueryClient();
+  const criarOpcao = useServerFn(criarOpcaoPagamento);
+  const salvarConta = useServerFn(salvarContaCaixa);
+  const formas = opcoes.filter((o) => o.tipo === 'forma' && o.ativo).map((o) => o.nome);
+  const bancos = opcoes.filter((o) => o.tipo === 'banco' && o.ativo).map((o) => o.nome);
+  const contas = caixa.contas.filter((c) => c.ativa);
+  const principal = contas.find((c) => c.nome.trim().toLowerCase() === 'principal');
+  const [forma, setForma] = useState(formas.includes('Pix') ? 'Pix' : formas[0] ?? 'Pix');
+  const [banco, setBanco] = useState('nenhum');
+  const [conta, setConta] = useState(principal?.id ?? 'principal');
+  const adicionar = async (tipo: 'forma' | 'banco') => {
+    const nome = window.prompt(tipo === 'forma' ? 'Nova forma de pagamento' : 'Novo banco / maquininha')?.trim();
+    if (!nome) return;
+    try { const o = await criarOpcao({ data: { tipo, nome } }); await qc.invalidateQueries({ queryKey: ['school', 'pagamento-opcoes'] }); if (tipo === 'forma') setForma(o.nome); else setBanco(o.nome); toast.success('Opção adicionada'); }
+    catch (e) { toast.error(e instanceof Error ? e.message : 'Erro ao adicionar'); }
+  };
+  const novaConta = async (nome: string) => {
+    const c = await salvarConta({ data: { nome, tipo: 'banco', saldo_inicial: null, data_saldo_inicial: null, ativa: true } });
+    await qc.invalidateQueries({ queryKey: ['school', 'caixa'] });
+    return (c as { id: string }).id;
+  };
+  const adicionarConta = async () => {
+    const nome = window.prompt('Nome da nova conta do caixa')?.trim();
+    if (!nome) return;
+    try { setConta(await novaConta(nome)); toast.success('Conta criada'); } catch (e) { toast.error(e instanceof Error ? e.message : 'Erro ao criar conta'); }
+  };
   const [saving, setSaving] = useState(false);
   return <div className="grid gap-3 rounded-lg border bg-card p-3 sm:grid-cols-3 lg:grid-cols-6">
     <div className="space-y-1"><Label>Data do pagamento</Label><Input aria-label="Data do pagamento" type="date" value={data} onChange={(e) => { setData(e.target.value); setValor(String(sug(e.target.value))); }} /></div>
     <div className="space-y-1"><Label>Valor recebido (R$)</Label><Input aria-label="Valor recebido" type="number" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} /></div>
-    <div className="space-y-1"><Label>Forma</Label><Select value={forma} onValueChange={(v) => setForma(v as Forma)}><SelectTrigger aria-label="Forma de pagamento"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(FORMAS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-    <div className="space-y-1"><Label>Banco / maquininha</Label><Input aria-label="Banco" placeholder={forma === 'dinheiro' ? 'Opcional' : 'Ex.: Itaú, C6, Cora, TON'} value={banco} onChange={(e) => setBanco(e.target.value)} /></div>
-    <div className="space-y-1"><Label>Conta do caixa</Label><Select value={conta} onValueChange={setConta}><SelectTrigger aria-label="Conta do caixa"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nenhuma">Sem conta</SelectItem>{caixa.contas.filter((c) => c.ativa).map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent></Select></div>
+    <div className="space-y-1"><Label>Forma</Label><Select value={forma} onValueChange={(v) => v === '__nova' ? void adicionar('forma') : setForma(v)}><SelectTrigger aria-label="Forma de pagamento"><SelectValue /></SelectTrigger><SelectContent>{[...new Set([...formas, forma])].map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}<SelectItem value="__nova">+ Adicionar forma</SelectItem></SelectContent></Select></div>
+    <div className="space-y-1"><Label>Banco / maquininha</Label><Select value={banco} onValueChange={(v) => v === '__nova' ? void adicionar('banco') : setBanco(v)}><SelectTrigger aria-label="Banco"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nenhum">Não informado</SelectItem>{[...new Set([...bancos, ...(banco === 'nenhum' ? [] : [banco])])].map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}<SelectItem value="__nova">+ Adicionar banco / maquininha</SelectItem></SelectContent></Select></div>
+    <div className="space-y-1"><Label>Conta do caixa</Label><Select value={conta} onValueChange={(v) => v === '__nova' ? void adicionarConta() : setConta(v)}><SelectTrigger aria-label="Conta do caixa"><SelectValue /></SelectTrigger><SelectContent>{!principal && <SelectItem value="principal">Principal</SelectItem>}{contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}<SelectItem value="nenhuma">Sem conta</SelectItem><SelectItem value="__nova">+ Nova conta</SelectItem></SelectContent></Select></div>
     <div className="flex items-end gap-2"><Button type="button" disabled={saving} onClick={async () => {
       setSaving(true);
-      try { await baixar({ data: { id: p.id, data, valor: Number(valor), forma, banco, conta_id: conta === 'nenhuma' ? null : conta } }); await refresh(); toast.success('Baixa registrada e lançada como entrada no Financeiro'); onDone(); }
+      try { const contaId = conta === 'nenhuma' ? null : conta === 'principal' ? await novaConta('Principal') : conta; await baixar({ data: { id: p.id, data, valor: Number(valor), forma, banco: banco === 'nenhum' ? '' : banco, conta_id: contaId } }); await refresh(); toast.success('Baixa registrada e lançada como entrada no Financeiro'); onDone(); }
       catch (e) { toast.error(e instanceof Error ? e.message : 'Não foi possível dar baixa.'); } finally { setSaving(false); }
     }}>{saving ? 'Salvando…' : 'Confirmar baixa'}</Button><Button type="button" variant="ghost" onClick={onDone}>Voltar</Button></div>
   </div>;
@@ -54,7 +78,7 @@ export function BaixaForm({ p, aluno, onDone }: { p: Parcela; aluno?: Aluno | un
 
 function Pagamento({ p }: { p: Parcela }) {
   if (p.situacao !== 'paga') return <span className="text-muted-foreground">—</span>;
-  return <span>{formatData(p.data_pagamento ?? '')} · {brl(p.valor_pago)} · {p.forma_pagamento ? FORMAS[p.forma_pagamento] : ''}{p.banco ? ` · ${p.banco}` : ''}</span>;
+  return <span>{formatData(p.data_pagamento ?? '')} · {brl(p.valor_pago)} · {rotuloForma(p.forma_pagamento)}{p.banco ? ` · ${p.banco}` : ''}</span>;
 }
 
 function Desfazer({ p }: { p: Parcela }) {
