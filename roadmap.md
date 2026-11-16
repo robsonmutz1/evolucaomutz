@@ -29,3 +29,7 @@
 
 - [x] Adicionar nascimento, idade, outro responsável e Aniversariantes com filtros; 263 nascimentos e 70 terceiros telefones importados; edição e leitura conferidas.
 - [ ] Confirmar correspondência de cinco registros da nova planilha: códigos 701152, 701090, 700890, 700784 e 700457 têm nomes diferentes dos cadastros; não importados.
+
+- [x] Mensalidades: parcelas na ficha (lançar, alterar/cancelar/excluir em lote), baixa com forma/banco virando entrada, página Mensalidades, pergunta ao cancelar.
+- [x] Origem do lead no cadastro e relatório dos últimos N alunos por período.
+- [x] Conclusões da planilha: 32 datas preenchidas; planilha não traz datas de cancelamento.

@@ -19,6 +19,7 @@ import { Route as AuthenticatedSchoolCrmRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSchoolDashboardRouteImport } from './routes/_authenticated/_school/dashboard'
 import { Route as AuthenticatedSchoolFinanceiroRouteImport } from './routes/_authenticated/_school/financeiro'
 import { Route as AuthenticatedSchoolFluxoCaixaRouteImport } from './routes/_authenticated/_school/fluxo-caixa'
+import { Route as AuthenticatedSchoolMensalidadesRouteImport } from './routes/_authenticated/_school/mensalidades'
 import { Route as AuthenticatedSchoolPedagogicoRouteImport } from './routes/_authenticated/_school/pedagogico'
 import { Route as AuthenticatedSchoolRelatoriosRouteImport } from './routes/_authenticated/_school/relatorios'
 
@@ -75,6 +76,12 @@ const AuthenticatedSchoolFluxoCaixaRoute =
     path: '/fluxo-caixa',
     getParentRoute: () => AuthenticatedSchoolRouteRoute,
   } as any)
+const AuthenticatedSchoolMensalidadesRoute =
+  AuthenticatedSchoolMensalidadesRouteImport.update({
+    id: '/mensalidades',
+    path: '/mensalidades',
+    getParentRoute: () => AuthenticatedSchoolRouteRoute,
+  } as any)
 const AuthenticatedSchoolPedagogicoRoute =
   AuthenticatedSchoolPedagogicoRouteImport.update({
     id: '/pedagogico',
@@ -97,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedSchoolDashboardRoute
   '/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
   '/fluxo-caixa': typeof AuthenticatedSchoolFluxoCaixaRoute
+  '/mensalidades': typeof AuthenticatedSchoolMensalidadesRoute
   '/pedagogico': typeof AuthenticatedSchoolPedagogicoRoute
   '/relatorios': typeof AuthenticatedSchoolRelatoriosRoute
 }
@@ -109,6 +117,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedSchoolDashboardRoute
   '/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
   '/fluxo-caixa': typeof AuthenticatedSchoolFluxoCaixaRoute
+  '/mensalidades': typeof AuthenticatedSchoolMensalidadesRoute
   '/pedagogico': typeof AuthenticatedSchoolPedagogicoRoute
   '/relatorios': typeof AuthenticatedSchoolRelatoriosRoute
 }
@@ -124,6 +133,7 @@ export interface FileRoutesById {
   '/_authenticated/_school/dashboard': typeof AuthenticatedSchoolDashboardRoute
   '/_authenticated/_school/financeiro': typeof AuthenticatedSchoolFinanceiroRoute
   '/_authenticated/_school/fluxo-caixa': typeof AuthenticatedSchoolFluxoCaixaRoute
+  '/_authenticated/_school/mensalidades': typeof AuthenticatedSchoolMensalidadesRoute
   '/_authenticated/_school/pedagogico': typeof AuthenticatedSchoolPedagogicoRoute
   '/_authenticated/_school/relatorios': typeof AuthenticatedSchoolRelatoriosRoute
 }
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/financeiro'
     | '/fluxo-caixa'
+    | '/mensalidades'
     | '/pedagogico'
     | '/relatorios'
   fileRoutesByTo: FileRoutesByTo
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/financeiro'
     | '/fluxo-caixa'
+    | '/mensalidades'
     | '/pedagogico'
     | '/relatorios'
   id:
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_school/dashboard'
     | '/_authenticated/_school/financeiro'
     | '/_authenticated/_school/fluxo-caixa'
+    | '/_authenticated/_school/mensalidades'
     | '/_authenticated/_school/pedagogico'
     | '/_authenticated/_school/relatorios'
   fileRoutesById: FileRoutesById
@@ -247,6 +260,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSchoolFluxoCaixaRouteImport
       parentRoute: typeof AuthenticatedSchoolRouteRoute
     }
+    '/_authenticated/_school/mensalidades': {
+      id: '/_authenticated/_school/mensalidades'
+      path: '/mensalidades'
+      fullPath: '/mensalidades'
+      preLoaderRoute: typeof AuthenticatedSchoolMensalidadesRouteImport
+      parentRoute: typeof AuthenticatedSchoolRouteRoute
+    }
     '/_authenticated/_school/pedagogico': {
       id: '/_authenticated/_school/pedagogico'
       path: '/pedagogico'
@@ -270,6 +290,7 @@ interface AuthenticatedSchoolRouteRouteChildren {
   AuthenticatedSchoolDashboardRoute: typeof AuthenticatedSchoolDashboardRoute
   AuthenticatedSchoolFinanceiroRoute: typeof AuthenticatedSchoolFinanceiroRoute
   AuthenticatedSchoolFluxoCaixaRoute: typeof AuthenticatedSchoolFluxoCaixaRoute
+  AuthenticatedSchoolMensalidadesRoute: typeof AuthenticatedSchoolMensalidadesRoute
   AuthenticatedSchoolPedagogicoRoute: typeof AuthenticatedSchoolPedagogicoRoute
   AuthenticatedSchoolRelatoriosRoute: typeof AuthenticatedSchoolRelatoriosRoute
 }
@@ -281,6 +302,7 @@ const AuthenticatedSchoolRouteRouteChildren: AuthenticatedSchoolRouteRouteChildr
     AuthenticatedSchoolDashboardRoute: AuthenticatedSchoolDashboardRoute,
     AuthenticatedSchoolFinanceiroRoute: AuthenticatedSchoolFinanceiroRoute,
     AuthenticatedSchoolFluxoCaixaRoute: AuthenticatedSchoolFluxoCaixaRoute,
+    AuthenticatedSchoolMensalidadesRoute: AuthenticatedSchoolMensalidadesRoute,
     AuthenticatedSchoolPedagogicoRoute: AuthenticatedSchoolPedagogicoRoute,
     AuthenticatedSchoolRelatoriosRoute: AuthenticatedSchoolRelatoriosRoute,
   }

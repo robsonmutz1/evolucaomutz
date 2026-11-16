@@ -17,6 +17,11 @@ import { StudentFollowups } from './StudentFollowups';
 import { StudentPhoto } from './StudentPhoto';
 import { supabase } from '@/integrations/supabase/client';
 import { useStore } from '@/lib/store';
+import { useQueryClient } from '@tanstack/react-query';
+import { useServerFn } from '@tanstack/react-start';
+import { gerarMensalidades, mensalidadesQuery, origensQuery, salvarOrigem, situacaoMensalidades } from '@/lib/mensalidades.functions';
+import { gerarParcelas } from '@/lib/mensalidades';
+import { AlunoMensalidades } from './Mensalidades';
 export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => void; onSave?: (a: Aluno) => Promise<void> }) {
   const {salvar,alunos}=useStore();
   const {data:pedagogico}=useSuspenseQuery(pedagogicoQuery);
@@ -27,6 +32,13 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
   const exists=alunos.some(a=>a.id===aluno.id);
   const [f, setF] = useState(aluno);
   const [saving, setSaving] = useState(false);
+  const qc=useQueryClient();
+  const {data:mensalidades}=useSuspenseQuery(mensalidadesQuery);
+  const {data:origens}=useSuspenseQuery(origensQuery);
+  const gerar=useServerFn(gerarMensalidades);
+  const situacao=useServerFn(situacaoMensalidades);
+  const novaOrigem=useServerFn(salvarOrigem);
+  const [perguntar,setPerguntar]=useState(0);
   const set = <K extends keyof Aluno>(k: K, v: Aluno[K]) => setF((p) => ({ ...p, [k]: v }));
   const txt = (k: keyof Aluno, label: string, type = "text") => (
     <div className="space-y-1.5">
@@ -40,16 +52,13 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
     </div>
   );
 
-  return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="student-dialog max-h-[96dvh] w-[calc(100%-1rem)] max-w-none overflow-y-auto gap-3 p-4 sm:max-w-none xl:w-[calc(100%-2rem)]">
-        <DialogHeader><DialogTitle className="font-display text-2xl">{aluno.nome ? "Editar aluno" : "Novo aluno"}</DialogTitle></DialogHeader>
-        <Tabs defaultValue="cadastro"><TabsList className="mb-4"><TabsTrigger value="cadastro">Cadastro</TabsTrigger><TabsTrigger value="followup" disabled={!exists}>Follow-up</TabsTrigger></TabsList><TabsContent value="cadastro"><form
-          className="student-form grid gap-4 xl:grid-cols-3"
-          onSubmit={async (e) => {
-            e.preventDefault();
+  async function enviar(decisao?:'cancelar'|'manter'){
             if (!f.nome.trim()) { toast.error("Preencha o nome"); return; }
             try { validarMatriculas(ms); if(!exists&&ms.some(m=>!m.curso_id||!m.turma_id))throw new Error('Selecione curso e turma.'); for(const m of ms){const old=original.find(o=>o.ordem===m.ordem);if(m.curso_id!==old?.curso_id&&!m.turma_id)throw new Error('Selecione a turma do curso.');} }catch(err){toast.error(err instanceof Error?err.message:'Confira os cursos.');return;}
+            const cancelando=exists&&ms.some(m=>m.status==='cancelado'&&original.find(o=>o.ordem===m.ordem)?.status!=='cancelado')&&!ms.some(m=>m.status==='cursando');
+            const abertas=mensalidades.filter(p=>p.aluno_id===aluno.id&&p.situacao==='aberta');
+            if(cancelando&&abertas.length&&!decisao){setPerguntar(abertas.length);return;}
+            setPerguntar(0);
             setSaving(true);
             let uploaded:string|null=null;
             try {
@@ -58,11 +67,23 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
               const course=pedagogico.cursos.find(c=>c.id===ms[0]?.curso_id);
               const next={...f,curso:course?.nome??f.curso,foto_url:path,matriculas:ms};
               await (onSave??salvar)(next);
+              if(decisao==='cancelar')await situacao({data:{ids:abertas.map(p=>p.id),acao:'cancelar'}});
+              if(!exists){const novas=gerarParcelas({primeiraCobranca:next.primeiraCobranca,qtd:next.qtdMensalidades,dia:next.diaVencimento,valor:next.valorMensal,valorMatricula:next.valor_matricula??null,dataMatricula:next.data_matricula??next.dataMatricula});if(novas.length){try{await gerar({data:{aluno_id:next.id,parcelas:novas}});}catch{toast.error('Aluno salvo, mas as parcelas não foram lançadas. Lance na aba Financeiro.');}}}
+              await qc.invalidateQueries({queryKey:['school','mensalidades']});
               if(aluno.foto_url&&aluno.foto_url!==path){const {error}=await supabase.storage.from('fotos-alunos').remove([aluno.foto_url]);if(error)toast.error('Aluno salvo, mas não foi possível apagar a foto anterior.');}
               if(!onSave){toast.success('Aluno salvo');onClose();}
             } catch(err) { if(uploaded)await supabase.storage.from('fotos-alunos').remove([uploaded]);toast.error(err instanceof Error?err.message:'Não foi possível salvar o aluno.'); }
             finally { setSaving(false); }
-          }}
+          
+  }
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="student-dialog max-h-[96dvh] w-[calc(100%-1rem)] max-w-none overflow-y-auto gap-3 p-4 sm:max-w-none xl:w-[calc(100%-2rem)]">
+        <DialogHeader><DialogTitle className="font-display text-2xl">{aluno.nome ? "Editar aluno" : "Novo aluno"}</DialogTitle></DialogHeader>
+        <Tabs defaultValue="cadastro"><TabsList className="mb-4"><TabsTrigger value="cadastro">Cadastro</TabsTrigger><TabsTrigger value="financeiro" disabled={!exists}>Financeiro</TabsTrigger><TabsTrigger value="followup" disabled={!exists}>Follow-up</TabsTrigger></TabsList><TabsContent value="cadastro"><form
+          className="student-form grid gap-4 xl:grid-cols-3"
+          onSubmit={(e)=>{e.preventDefault();void enviar();}}
         >
           <div className="student-details min-w-0 space-y-3"><StudentPhoto nome={f.nome} path={f.foto_url} onChange={(blob,remove)=>{setPhoto(blob);setRemovePhoto(remove);}}/><section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-2">
             <h3 className="text-lg font-semibold sm:col-span-3">Dados do aluno</h3>
@@ -73,6 +94,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             {txt("outro_responsavel", "Outro responsável (mãe / pai)")}
             {txt("telefone_outro_responsavel", "Telefone do outro responsável", "tel")}
             {txt("telefone", "Telefone do aluno", "tel")}
+            <div className="space-y-1.5"><Label>Origem do lead</Label><Select value={f.origem_lead??'nao'} onValueChange={async v=>{if(v==='__nova'){const nome=window.prompt('Nome da nova origem');if(!nome?.trim())return;try{await novaOrigem({data:{nome}});await qc.invalidateQueries({queryKey:['school','origens']});set('origem_lead',nome.trim());}catch(err){toast.error(err instanceof Error?err.message:'Erro');}return;}set('origem_lead',v==='nao'?null:v);}}><SelectTrigger aria-label="Origem do lead"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="nao">Não informado</SelectItem>{origens.filter(o=>o.ativo||o.nome===f.origem_lead).map(o=><SelectItem key={o.id} value={o.nome}>{o.nome}</SelectItem>)}{f.origem_lead&&!origens.some(o=>o.nome===f.origem_lead)&&<SelectItem value={f.origem_lead}>{f.origem_lead}</SelectItem>}<SelectItem value="__nova">+ Adicionar origem</SelectItem></SelectContent></Select></div>
             {txt("telefoneResponsavel", "Telefone do responsável", "tel")}
             <div className="space-y-1.5">
               <Label>CEP</Label>
@@ -120,11 +142,12 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             <Resumo label="Previsão da última mensalidade" value={f.primeiraCobranca && f.qtdMensalidades > 0 ? formatMes(ultimaMensalidade(f.primeiraCobranca, f.qtdMensalidades)) : "—"} />
           </section>
 
+          {perguntar>0&&<div role="alert" className="col-span-full flex flex-wrap items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm"><span>Este aluno tem {perguntar} parcela(s) em aberto. O que fazer com elas?</span><Button type="button" size="sm" variant="destructive" disabled={saving} onClick={()=>void enviar('cancelar')}>Cancelar parcelas em aberto</Button><Button type="button" size="sm" variant="outline" disabled={saving} onClick={()=>void enviar('manter')}>Manter em aberto</Button></div>}
           <DialogFooter className="col-span-full border-t pt-3">
             <Button type="button" variant="outline" onClick={onClose}>Voltar</Button>
             <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
           </DialogFooter>
-        </form></TabsContent><TabsContent value="followup">{exists&&<StudentFollowups alunoId={aluno.id}/>}</TabsContent></Tabs>
+        </form></TabsContent><TabsContent value="financeiro">{exists&&<AlunoMensalidades aluno={aluno}/>}</TabsContent><TabsContent value="followup">{exists&&<StudentFollowups alunoId={aluno.id}/>}</TabsContent></Tabs>
       </DialogContent>
     </Dialog>
   );

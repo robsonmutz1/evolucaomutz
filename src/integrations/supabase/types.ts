@@ -75,6 +75,7 @@ export type Database = {
           nome: string
           numero: string
           observacoes: string | null
+          origem_lead: string | null
           outro_responsavel: string | null
           primeiraCobranca: string
           qtdMensalidades: number
@@ -113,6 +114,7 @@ export type Database = {
           nome: string
           numero?: string
           observacoes?: string | null
+          origem_lead?: string | null
           outro_responsavel?: string | null
           primeiraCobranca?: string
           qtdMensalidades?: number
@@ -151,6 +153,7 @@ export type Database = {
           nome?: string
           numero?: string
           observacoes?: string | null
+          origem_lead?: string | null
           outro_responsavel?: string | null
           primeiraCobranca?: string
           qtdMensalidades?: number
@@ -763,6 +766,106 @@ export type Database = {
           },
         ]
       }
+      mensalidades: {
+        Row: {
+          aluno_id: string
+          banco: string | null
+          conta_id: string | null
+          created_at: string
+          data_pagamento: string | null
+          forma_pagamento: string | null
+          id: string
+          lancamento_id: string | null
+          observacao: string | null
+          parcela: number
+          referencia: string
+          situacao: string
+          tipo: string
+          valor: number
+          valor_pago: number | null
+          vencimento: string
+        }
+        Insert: {
+          aluno_id: string
+          banco?: string | null
+          conta_id?: string | null
+          created_at?: string
+          data_pagamento?: string | null
+          forma_pagamento?: string | null
+          id?: string
+          lancamento_id?: string | null
+          observacao?: string | null
+          parcela?: number
+          referencia: string
+          situacao?: string
+          tipo?: string
+          valor: number
+          valor_pago?: number | null
+          vencimento: string
+        }
+        Update: {
+          aluno_id?: string
+          banco?: string | null
+          conta_id?: string | null
+          created_at?: string
+          data_pagamento?: string | null
+          forma_pagamento?: string | null
+          id?: string
+          lancamento_id?: string | null
+          observacao?: string | null
+          parcela?: number
+          referencia?: string
+          situacao?: string
+          tipo?: string
+          valor?: number
+          valor_pago?: number | null
+          vencimento?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensalidades_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensalidades_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas_caixa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensalidades_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "lancamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      origens_lead: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       prestador_aulas: {
         Row: {
           created_at: string
@@ -1047,6 +1150,18 @@ export type Database = {
       }
       financeiro_nome_chave: { Args: { n: string }; Returns: string }
       has_owner_access: { Args: never; Returns: boolean }
+      mensalidade_baixar: {
+        Args: {
+          p_banco: string
+          p_conta: string
+          p_data: string
+          p_forma: string
+          p_id: string
+          p_valor: number
+        }
+        Returns: string
+      }
+      mensalidade_estornar: { Args: { p_id: string }; Returns: undefined }
       pedagogico_salvar_aluno: {
         Args: { p_aluno: Json; p_matriculas: Json }
         Returns: undefined

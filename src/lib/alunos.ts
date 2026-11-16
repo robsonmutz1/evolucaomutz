@@ -30,6 +30,7 @@ export interface Aluno {
   primeiraCobranca: string; // YYYY-MM
   observacoes?: string;
   foto_url?: string | null;
+  origem_lead?: string | null;
   valor_matricula?: number | null;
   data_matricula?: string | null;
   matriculas?: import('./pedagogico').MatriculaInput[];

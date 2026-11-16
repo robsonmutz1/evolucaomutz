@@ -11,6 +11,7 @@ import { faturamentoQuery } from '@/lib/faturamento.functions';
 import { lancamentosQuery } from '@/lib/lancamentos.functions';
 import { totalPorTipo } from '@/lib/lancamentos';
 import { alunosDoRelatorio, gerarCsv, type TipoRelatorio } from '@/lib/relatorios';
+import { origensDosUltimos } from '@/lib/mensalidades';
 import { brl, formatData, formatMes, valorComDesconto } from '@/lib/alunos';
 
 export const Route = createFileRoute('/_authenticated/_school/relatorios')({
@@ -86,5 +87,26 @@ function Relatorios() {
         <tbody className="divide-y">{linhas.length === 0 ? <tr><td colSpan={cabecalho.length} className="py-8 text-center text-muted-foreground">Nenhum registro no período selecionado.</td></tr> : linhas.map((linha, i) => <tr key={i}>{linha.map((v, j) => <td key={j} className="px-3 py-3">{v === null ? 'Não informado' : typeof v === 'number' ? brl(v) : v}</td>)}</tr>)}</tbody>
       </table></div>
     </section>}
+    <OrigemLeads />
   </div>;
+}
+
+function OrigemLeads() {
+  const { alunos } = useStore();
+  const [n, setN] = useState('100');
+  const [de, setDe] = useState('');
+  const [ate, setAte] = useState('');
+  const r = useMemo(() => origensDosUltimos(alunos, Number(n) || 0, de, ate), [alunos, n, de, ate]);
+  return <section className="space-y-4 rounded-xl border bg-card p-4">
+    <h2 className="text-xl font-semibold">Origem dos alunos (lead)</h2>
+    <div className="flex flex-wrap items-end gap-3">
+      <div className="space-y-1"><Label>Últimos alunos</Label><Input aria-label="Quantidade de alunos" className="w-32" type="number" min={1} placeholder="Todos" value={n} onChange={(e) => setN(e.target.value)} /></div>
+      <div className="flex gap-1">{[20, 50, 70, 100].map((v) => <Button key={v} size="sm" variant={n === String(v) ? 'default' : 'outline'} onClick={() => setN(String(v))}>{v}</Button>)}</div>
+      <div className="space-y-1"><Label>Matrícula de</Label><Input aria-label="Matrícula de" type="date" value={de} onChange={(e) => setDe(e.target.value)} /></div>
+      <div className="space-y-1"><Label>até</Label><Input aria-label="Matrícula até" type="date" value={ate} onChange={(e) => setAte(e.target.value)} /></div>
+    </div>
+    <p className="text-sm text-muted-foreground">{r.total} aluno(s) mais recentes por data de matrícula{de || ate ? ' no período' : ''}.</p>
+    <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="text-left"><tr><th className="px-3 py-2">Origem</th><th className="px-3 py-2">Alunos</th><th className="px-3 py-2">%</th></tr></thead>
+      <tbody className="divide-y">{r.linhas.length === 0 ? <tr><td colSpan={3} className="py-6 text-center text-muted-foreground">Nenhum aluno no período.</td></tr> : r.linhas.map((l) => <tr key={l.origem}><td className="px-3 py-2">{l.origem}</td><td className="px-3 py-2">{l.qtd}</td><td className="px-3 py-2"><div className="flex items-center gap-2"><div className="h-2 rounded bg-primary" style={{ width: `${Math.max(2, l.pct)}%`, maxWidth: '12rem' }} />{l.pct.toLocaleString('pt-BR')}%</div></td></tr>)}</tbody></table></div>
+  </section>;
 }

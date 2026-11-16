@@ -12,7 +12,7 @@ export const listarAlunos = createServerFn({ method: 'GET' })
     const rows: Aluno[] = [];
     for (let start = 0; ; start += 500) {
       const { data, error } = await context.supabase.from('alunos')
-        .select('id,codigo,nome,responsavel,telefone,telefoneResponsavel,cep,rua,numero,bairro,cidade,dataMatricula,curso,turma,horario,status,dataStatus,valorMensal,descontoTipo,desconto,diaLimiteDesconto,diaVencimento,qtdMensalidades,primeiraCobranca,observacoes,foto_url,valor_matricula,data_matricula,data_nascimento,outro_responsavel,telefone_outro_responsavel')
+        .select('id,codigo,nome,responsavel,telefone,telefoneResponsavel,cep,rua,numero,bairro,cidade,dataMatricula,curso,turma,horario,status,dataStatus,valorMensal,descontoTipo,desconto,diaLimiteDesconto,diaVencimento,qtdMensalidades,primeiraCobranca,observacoes,foto_url,valor_matricula,data_matricula,data_nascimento,outro_responsavel,telefone_outro_responsavel,origem_lead')
         .order('id').range(start, start + 499);
       if (error) throw new Error('Não foi possível carregar os alunos.');
       for (const row of data) {
@@ -38,6 +38,7 @@ export const salvarAluno = createServerFn({ method: 'POST' })
       const matriculas = data.matriculas.map(enrollmentWrite);
       const { error } = await context.supabase.rpc('pedagogico_salvar_aluno', { p_aluno: JSON.parse(JSON.stringify(aluno)) as Json, p_matriculas: JSON.parse(JSON.stringify(matriculas)) as Json });
       if (error) throw new Error(error.code === 'P0001' ? error.message : 'Não foi possível salvar o aluno. Confira os cursos e turmas.');
+      if (data.origem_lead !== undefined) { const { error: oe } = await context.supabase.from('alunos').update({ origem_lead: data.origem_lead?.trim() || null }).eq('id', data.id); if (oe) throw new Error('Aluno salvo, mas não foi possível salvar a origem do lead.'); }
       return { success: true };
     }
     const { error } = await context.supabase.from('alunos').upsert({
@@ -50,6 +51,7 @@ export const salvarAluno = createServerFn({ method: 'POST' })
       dataStatus: data.dataStatus ?? null, valorMensal: data.valorMensal, descontoTipo: data.descontoTipo, desconto: data.desconto,
       diaLimiteDesconto: data.diaLimiteDesconto, diaVencimento: data.diaVencimento, qtdMensalidades: data.qtdMensalidades,
       primeiraCobranca: data.primeiraCobranca, observacoes: data.observacoes ?? null,
+      ...(data.origem_lead !== undefined ? { origem_lead: data.origem_lead?.trim() || null } : {}),
     });
     if (error) throw new Error('Não foi possível salvar o aluno.');
     return { success: true };

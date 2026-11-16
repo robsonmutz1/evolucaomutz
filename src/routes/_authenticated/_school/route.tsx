@@ -9,6 +9,8 @@ import { useNavigate, useRouter } from '@tanstack/react-router';
 import { alunosQuery } from '@/lib/alunos-query';
 import { faturamentoQuery } from '@/lib/faturamento.functions';
 import { lancamentosQuery } from '@/lib/lancamentos.functions';
+import { mensalidadesQuery, origensQuery } from '@/lib/mensalidades.functions';
+import { caixaQuery } from '@/lib/caixa.functions';
 
 export const Route = createFileRoute('/_authenticated/_school')({
   beforeLoad: async () => {
@@ -21,6 +23,9 @@ export const Route = createFileRoute('/_authenticated/_school')({
       context.queryClient.ensureQueryData(alunosQuery),
       context.queryClient.ensureQueryData(faturamentoQuery),
       context.queryClient.ensureQueryData(lancamentosQuery),
+      context.queryClient.ensureQueryData(mensalidadesQuery),
+      context.queryClient.ensureQueryData(origensQuery),
+      context.queryClient.ensureQueryData(caixaQuery),
     ]);
   },
   component: SchoolLayout,
