@@ -17,7 +17,6 @@ import { ProjecaoFaturamento } from "@/components/ProjecaoFaturamento";
 import { AlunoForm } from '@/components/AlunoForm';
 import { Button } from '@/components/ui/button';
 import type { Aluno } from '@/lib/alunos';
-import { receitasMatriculas } from '@/lib/pedagogico';
 import { CaixaAvisos } from '@/components/Caixa';
 import { caixaQuery } from '@/lib/caixa.functions';
 
@@ -37,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/_school/dashboard")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: ({context}) => context.queryClient.ensureQueryData(caixaQuery),
+  loader: ({context}) => Promise.all([context.queryClient.ensureQueryData(caixaQuery), context.queryClient.ensureQueryData(faturamentoQuery)]),
   component: Painel,
 });
 
@@ -53,8 +52,7 @@ function Painel() {
   const [mes, setMes] = useState("todos");
   const prefixo = mes === "todos" ? ano : `${ano}-${mes}`;
   const hoje = mesAtualISO();
-  const matriculaReceitas=useMemo(()=>receitasMatriculas(alunos),[alunos]);
-  const receitaMes=(mm:string)=>{const base=faturamento.find(f=>f.mes===mm)?.valor;const extra=matriculaReceitas.find(f=>f.mes===mm)?.valor;return base===undefined&&extra===undefined?null:(base??0)+(extra??0);};
+  const receitaMes=(mm:string)=>faturamento.find(f=>f.mes===mm)?.valor ?? null;
   const anos = useMemo(() => {
     const s = new Set<string>([String(new Date().getFullYear()), ...faturamento.map((f) => f.mes.slice(0, 4))]);
     alunos.forEach((a) => a.dataMatricula && s.add(a.dataMatricula.slice(0, 4)));
@@ -71,11 +69,11 @@ function Painel() {
       canc,
       taxaCanc: taxaCancelamento(novas, canc),
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
-      fat: mes === "todos" ? (totalAnual(faturamento, ano)===null&&!matriculaReceitas.some(f=>f.mes.startsWith(ano))?null:(totalAnual(faturamento, ano)??0)+matriculaReceitas.filter(f=>f.mes.startsWith(ano)).reduce((s,f)=>s+f.valor,0)) : receitaMes(prefixo),
+      fat: mes === "todos" ? totalAnual(faturamento, ano) : receitaMes(prefixo),
       desp: totalPorTipo(lancamentos, "saida", prefixo),
       alertas: alunos.filter((a) => alertaConclusao(a, hoje)),
     };
-  }, [alunos, faturamento, lancamentos, prefixo, hoje, ano, matriculaReceitas]);
+  }, [alunos, faturamento, lancamentos, prefixo, hoje, ano, mes]);
 
   const serie = useMemo(() => meses.map((m, i) => {
     const mm = `${ano}-${String(i + 1).padStart(2, "0")}`;
@@ -84,7 +82,7 @@ function Painel() {
       faturamento: receitaMes(mm),
       matriculas: alunos.filter((a) => a.dataMatricula?.startsWith(mm)).length,
     };
-  }), [ano, faturamento, alunos,matriculaReceitas]);
+  }), [ano, faturamento, alunos]);
 
   const cards = [
     { label: "Alunos ativos", value: k.ativos, icon: Users, tone: "bg-primary text-primary-foreground" },

@@ -1,4 +1,5 @@
 # Dados reais e acesso restrito
+- [x] Atualizar faturamento mensal pelas entradas realizadas, preservar ajustes editáveis e conferir entrada, edição e gráfico do Painel na conta autorizada; dados de teste removidos, 23 testes passaram.
 - [x] Fluxo de Caixa e Conferência: contas, vínculos e situação dos lançamentos existentes, sem duplicar receitas/despesas.
 - [x] Conferência salva, diagnóstico de divergências, histórico resolvido e auditoria de alterações confirmadas.
 - [x] Visão de fluxo, saldo acumulado, gráficos, alertas no Painel; saldo igual, diferença de R$ 1.500, duplicidades, pendentes e aviso de saldo inicial conferidos. Dados de teste removidos.

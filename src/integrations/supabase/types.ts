@@ -370,16 +370,19 @@ export type Database = {
       }
       faturamento_mensal: {
         Row: {
+          entradas_base: number | null
           mes: string
           unidade: string
           valor: number
         }
         Insert: {
+          entradas_base?: number | null
           mes: string
           unidade?: string
           valor: number
         }
         Update: {
+          entradas_base?: number | null
           mes?: string
           unidade?: string
           valor?: number
@@ -1176,6 +1179,19 @@ export type Database = {
       energia_salvar: {
         Args: { p_lancar?: boolean; p_row: Json }
         Returns: string
+      }
+      faturamento_listar: {
+        Args: never
+        Returns: {
+          entradas_atual: number
+          entradas_base: number
+          mes: string
+          valor_registrado: number
+        }[]
+      }
+      faturamento_salvar: {
+        Args: { p_anterior?: string; p_mes: string; p_valor: number }
+        Returns: undefined
       }
       financeiro_mesclar_categorias: {
         Args: { destino_id: string; origem_id: string }

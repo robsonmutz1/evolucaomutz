@@ -33,7 +33,7 @@ export const Route = createFileRoute("/_authenticated/_school/financeiro")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(controlesQuery), context.queryClient.ensureQueryData(registrosQuery), context.queryClient.ensureQueryData(lancamentosQuery),context.queryClient.ensureQueryData(cadastrosFinanceirosQuery)]),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(faturamentoQuery), context.queryClient.ensureQueryData(controlesQuery), context.queryClient.ensureQueryData(registrosQuery), context.queryClient.ensureQueryData(lancamentosQuery),context.queryClient.ensureQueryData(cadastrosFinanceirosQuery)]),
   component: Financeiro,
 });
 
@@ -87,7 +87,7 @@ function Faturamento() {
     } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
   }
   async function onDelete(mes: string) {
-    if (!confirm(`Excluir o faturamento de ${formatMes(mes)}?`)) return;
+    if (!confirm(`Remover o valor manual de ${formatMes(mes)}? As entradas financeiras continuarão compondo o faturamento automaticamente.`)) return;
     try { await excluir({ data: { mes } }); await qc.invalidateQueries({ queryKey: ["school", "faturamento"] }); toast.success("Excluído"); }
     catch (e) { toast.error((e as Error).message); }
   }
@@ -103,15 +103,17 @@ function Faturamento() {
         <Button onClick={() => setEdit({ mes: proximo(), valor: "" })}><Plus className="mr-1 h-4 w-4" />Adicionar mês</Button>
       </div>
       <Table>
-        <TableHeader><TableRow><TableHead>Mês</TableHead><TableHead className="text-right">Valor</TableHead><TableHead className="w-24" /></TableRow></TableHeader>
+        <TableHeader><TableRow><TableHead>Mês</TableHead><TableHead className="text-right">Entradas recebidas</TableHead><TableHead className="text-right">Ajuste manual</TableHead><TableHead className="text-right">Faturamento</TableHead><TableHead className="w-24" /></TableRow></TableHeader>
         <TableBody>
           {lista.map((f) => (
             <TableRow key={f.mes}>
               <TableCell>{formatMes(f.mes)}</TableCell>
+              <TableCell className="text-right">{brl(f.entradas)}</TableCell>
+              <TableCell className="text-right">{f.ajuste === 0 ? '—' : brl(f.ajuste)}</TableCell>
               <TableCell className="text-right">{brl(f.valor)}</TableCell>
               <TableCell className="text-right">
                 <Button size="icon" variant="ghost" aria-label={`Editar ${f.mes}`} onClick={() => setEdit({ mes: f.mes, valor: String(f.valor).replace(".", ","), anterior: f.mes })}><Pencil className="h-4 w-4" /></Button>
-                <Button size="icon" variant="ghost" aria-label={`Excluir ${f.mes}`} onClick={() => onDelete(f.mes)}><Trash2 className="h-4 w-4" /></Button>
+                {f.registrado && <Button size="icon" variant="ghost" title="Remover valor manual" aria-label={`Remover valor manual ${f.mes}`} onClick={() => onDelete(f.mes)}><Trash2 className="h-4 w-4" /></Button>}
               </TableCell>
             </TableRow>
           ))}
@@ -121,7 +123,7 @@ function Faturamento() {
         <DialogContent>
           <DialogHeader><DialogTitle>{edit?.anterior ? "Editar faturamento" : "Novo mês de faturamento"}</DialogTitle></DialogHeader>
           {edit && <div className="grid gap-3">
-            <div><Label htmlFor="fmes">Mês</Label><Input id="fmes" type="month" value={edit.mes} onChange={(e) => setEdit({ ...edit, mes: e.target.value })} /></div>
+            <div><Label htmlFor="fmes">Mês</Label><Input id="fmes" type="month" disabled={!!edit.anterior} value={edit.mes} onChange={(e) => setEdit({ ...edit, mes: e.target.value })} /></div>
             <div><Label htmlFor="fval">Valor (R$)</Label><Input id="fval" inputMode="decimal" placeholder="Ex.: 42.500,00" value={edit.valor} onChange={(e) => setEdit({ ...edit, valor: e.target.value })} /></div>
           </div>}
           <DialogFooter><Button variant="outline" onClick={() => setEdit(null)}>Cancelar</Button><Button disabled={busy} onClick={onSave}>{busy ? "Salvando…" : "Salvar"}</Button></DialogFooter>

@@ -24,3 +24,4 @@
 
 - Birthdays reuse the protected student cache and a client-safe age/filter helper; imported birthdates and contacts match both code and normalized full name and never overwrite populated contacts.
 - Tuition installments live in their own owner-only table; settling goes through a transactional RPC that creates the linked income entry, so payments and Financeiro stay consistent.
+- Monthly revenue uses a protected aggregate of realized non-transfer cash income plus preserved historical/manual offsets; transactional edits snapshot the cash baseline, and cash-cache refreshes invalidate the shared revenue query to avoid duplicate tuition and enrollment revenue.

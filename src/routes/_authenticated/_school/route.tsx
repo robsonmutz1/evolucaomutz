@@ -11,6 +11,7 @@ import { faturamentoQuery } from '@/lib/faturamento.functions';
 import { lancamentosQuery } from '@/lib/lancamentos.functions';
 import { mensalidadesQuery, origensQuery } from '@/lib/mensalidades.functions';
 import { caixaQuery } from '@/lib/caixa.functions';
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_authenticated/_school')({
   beforeLoad: async () => {
@@ -43,6 +44,14 @@ function SchoolLayout() {
   const { ownerAllowed } = Route.useRouteContext();
   const client = useQueryClient();
   const navigate = useNavigate();
+  useEffect(() => {
+    if (!ownerAllowed) return;
+    return client.getQueryCache().subscribe((event) => {
+      if (event.type === 'updated' && event.action.type === 'success' && event.query.queryKey[0] === 'school' && event.query.queryKey[1] === 'lancamentos') {
+        void client.invalidateQueries({ queryKey: faturamentoQuery.queryKey });
+      }
+    });
+  }, [client, ownerAllowed]);
   async function sair() {
     await client.cancelQueries(); client.clear();
     await supabase.auth.signOut();

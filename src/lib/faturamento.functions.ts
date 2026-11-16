@@ -3,16 +3,17 @@ import { queryOptions } from '@tanstack/react-query';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { validarMes, validarRegistro, type RegistroFinanceiro } from './financeiro';
 import { financialRecordWrite } from './write-fields';
+import { calcularFaturamento } from './faturamento';
 
 export const listarFaturamento = createServerFn({ method: 'GET' })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.from('faturamento_mensal').select('mes,valor').order('mes');
+    const { data, error } = await context.supabase.rpc('faturamento_listar');
     if (error) throw new Error('Não foi possível carregar o faturamento.');
-    return data.map((r) => ({ mes: r.mes, valor: Number(r.valor) }));
+    return data.map((r) => calcularFaturamento({ mes: r.mes, valor_registrado: r.valor_registrado === null ? null : Number(r.valor_registrado), entradas_base: r.entradas_base === null ? null : Number(r.entradas_base), entradas_atual: Number(r.entradas_atual) }));
   });
 
-export const faturamentoQuery = queryOptions({ queryKey: ['school', 'faturamento'], queryFn: () => listarFaturamento(), staleTime: 60_000 });
+export const faturamentoQuery = queryOptions({ queryKey: ['school', 'faturamento'], queryFn: () => listarFaturamento(), staleTime: 0, refetchInterval: 30_000 });
 
 export const salvarFaturamento = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
@@ -22,11 +23,7 @@ export const salvarFaturamento = createServerFn({ method: 'POST' })
     return i;
   })
   .handler(async ({ context, data }) => {
-    if (data.anterior && data.anterior !== data.mes) {
-      const { error } = await context.supabase.from('faturamento_mensal').delete().eq('mes', data.anterior);
-      if (error) throw new Error('Não foi possível alterar o mês.');
-    }
-    const { error } = await context.supabase.from('faturamento_mensal').upsert({ mes: data.mes, valor: data.valor });
+    const { error } = await context.supabase.rpc('faturamento_salvar', { p_mes: data.mes, p_valor: data.valor, ...(data.anterior ? { p_anterior: data.anterior } : {}) });
     if (error) throw new Error('Não foi possível salvar o faturamento.');
     return { success: true };
   });
