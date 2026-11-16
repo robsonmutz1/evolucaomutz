@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
 import { toast } from 'sonner';
+import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -77,6 +78,7 @@ export function AlunoMensalidades({ aluno }: { aluno: Aluno }) {
   const [baixa, setBaixa] = useState<string | null>(null);
   const [novoValor, setNovoValor] = useState('');
   const [novoDia, setNovoDia] = useState('');
+  const [novaData, setNovaData] = useState('');
   const [g, setG] = useState({ primeira: aluno.primeiraCobranca || dataBrasilia().slice(0, 7), qtd: String(aluno.qtdMensalidades || 12), dia: String(aluno.diaVencimento || 10), valor: aluno.valorMensal === null ? '' : String(aluno.valorMensal), matricula: parcelas.some((p) => p.tipo === 'matricula' && p.situacao !== 'cancelada') || !aluno.valor_matricula ? '' : String(aluno.valor_matricula) });
   const [mostrarGerar, setMostrarGerar] = useState(!parcelas.length);
   const abertas = parcelas.filter((p) => sel.includes(p.id) && p.situacao !== 'paga');
@@ -105,10 +107,11 @@ export function AlunoMensalidades({ aluno }: { aluno: Aluno }) {
 
     {parcelas.length > 0 && <>
       <div className="flex flex-wrap items-end gap-2 rounded-lg border p-3">
-        <span className="text-sm text-muted-foreground">{sel.length ? `${sel.length} selecionada(s)` : 'Selecione parcelas para alterar ou excluir em lote'}</span>
+        <span className="text-sm text-muted-foreground">{sel.length ? `${sel.length} selecionada(s)` : 'Selecione parcelas para alterar ou excluir em lote'}<br /><span className="text-xs">Novo dia: ajusta o dia mantendo o mês. Data: mesma data para todas. Para uma só, use o lápis.</span></span>
         <Input aria-label="Novo valor em lote" className="w-36" type="number" step="0.01" placeholder="Novo valor" value={novoValor} onChange={(e) => setNovoValor(e.target.value)} />
         <Input aria-label="Novo dia em lote" className="w-28" type="number" min={1} max={31} placeholder="Novo dia" value={novoDia} onChange={(e) => setNovoDia(e.target.value)} />
-        <Button type="button" size="sm" disabled={!abertas.length || (!novoValor && !novoDia)} onClick={() => run(() => alterar({ data: { rows: abertas.filter((p) => p.situacao === 'aberta').map((p) => ({ id: p.id, valor: novoValor ? Number(novoValor) : p.valor, vencimento: novoDia && p.tipo === 'mensalidade' ? vencimentoNoMes(p.referencia, Number(novoDia)) : p.vencimento })) } }), 'Parcelas alteradas')}>Alterar</Button>
+        <Input aria-label="Nova data de vencimento em lote" title="Mesma data para todas as selecionadas" className="w-40" type="date" value={novaData} onChange={(e) => setNovaData(e.target.value)} />
+        <Button type="button" size="sm" disabled={!abertas.length || (!novoValor && !novoDia && !novaData)} onClick={() => run(async () => { await alterar({ data: { rows: abertas.filter((p) => p.situacao === 'aberta').map((p) => ({ id: p.id, valor: novoValor ? Number(novoValor) : p.valor, vencimento: novaData || (novoDia && p.tipo === 'mensalidade' ? vencimentoNoMes(p.referencia, Number(novoDia)) : p.vencimento) })) } }); setNovoValor(''); setNovoDia(''); setNovaData(''); }, 'Parcelas alteradas')}>Alterar</Button>
         <Button type="button" size="sm" variant="outline" disabled={!abertas.length} onClick={() => run(() => situacao({ data: { ids: abertas.map((p) => p.id), acao: 'cancelar' } }), 'Parcelas canceladas')}>Cancelar</Button>
         <Button type="button" size="sm" variant="outline" disabled={!abertas.some((p) => p.situacao === 'cancelada')} onClick={() => run(() => situacao({ data: { ids: abertas.map((p) => p.id), acao: 'reabrir' } }), 'Parcelas reabertas')}>Reabrir</Button>
         <Button type="button" size="sm" variant="destructive" disabled={!abertas.length} onClick={() => { if (window.confirm(`Excluir ${abertas.length} parcela(s)? Parcelas pagas não são excluídas.`)) void run(() => situacao({ data: { ids: abertas.map((p) => p.id), acao: 'excluir' } }), 'Parcelas excluídas'); }}>Excluir</Button>
@@ -131,10 +134,26 @@ function ParcelaLinha({ p, aluno, sel, onSel, baixa, setBaixa, mostrarAluno }: {
         : <td className="p-2"><input type="checkbox" aria-label={`Selecionar ${rotuloParcela(p)}`} disabled={p.situacao === 'paga'} checked={!!sel} onChange={(e) => onSel?.(e.target.checked)} /></td>}
       <td className="p-2">{rotuloParcela(p)}</td><td className="p-2">{formatMes(p.referencia)}</td><td className="p-2">{formatData(p.vencimento)}</td>
       <td className="p-2">{brl(p.valor)}</td><td className="p-2"><Selo p={p} /></td><td className="p-2"><Pagamento p={p} /></td>
-      <td className="p-2 text-right">{p.situacao === 'aberta' && !baixa && <Button type="button" size="sm" onClick={() => setBaixa(p.id)}>Dar baixa</Button>}{p.situacao === 'paga' && <Desfazer p={p} />}</td>
+      <td className="p-2 text-right whitespace-nowrap">{p.situacao === 'aberta' && !mostrarAluno && <EditarParcela p={p} />}{p.situacao === 'aberta' && !baixa && <Button type="button" size="sm" onClick={() => setBaixa(p.id)}>Dar baixa</Button>}{p.situacao === 'paga' && <Desfazer p={p} />}</td>
     </tr>
     {baixa && <tr><td colSpan={cols} className="p-2"><BaixaForm p={p} aluno={aluno} onDone={() => setBaixa(null)} /></td></tr>}
   </>;
+}
+
+/** Renegotiate one open installment: due date and amount. */
+function EditarParcela({ p }: { p: Parcela }) {
+  const alterar = useServerFn(alterarMensalidades);
+  const refresh = useRefresh();
+  const [open, setOpen] = useState(false);
+  const [venc, setVenc] = useState(p.vencimento);
+  const [valor, setValor] = useState(String(p.valor));
+  if (!open) return <Button type="button" size="sm" variant="ghost" aria-label={`Editar ${rotuloParcela(p)}`} onClick={() => { setVenc(p.vencimento); setValor(String(p.valor)); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>;
+  return <span className="mr-2 inline-flex items-center gap-1">
+    <Input aria-label="Vencimento da parcela" className="h-8 w-36" type="date" value={venc} onChange={(e) => setVenc(e.target.value)} />
+    <Input aria-label="Valor da parcela editada" className="h-8 w-24" type="number" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} />
+    <Button type="button" size="sm" onClick={async () => { try { await alterar({ data: { rows: [{ id: p.id, vencimento: venc, valor: Number(valor) }] } }); await refresh(); setOpen(false); toast.success('Parcela alterada'); } catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); } }}>Salvar</Button>
+    <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>×</Button>
+  </span>;
 }
 
 function Card({ label, value }: { label: string; value: string }) {

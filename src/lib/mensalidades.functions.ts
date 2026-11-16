@@ -27,7 +27,7 @@ export const gerarMensalidades = createServerFn({ method: 'POST' }).middleware([
     const dup = data.parcelas.find((p) => exist.some((x) => x.tipo === p.tipo && (p.tipo === 'matricula' || x.referencia === p.referencia)));
     if (dup) throw new Error(dup.tipo === 'matricula' ? 'A matrícula já foi lançada.' : `Já existe parcela para ${dup.referencia.split('-').reverse().join('/')}.`);
     const { error } = await context.supabase.from('mensalidades').insert(data.parcelas.map((p) => ({ aluno_id: data.aluno_id, tipo: p.tipo, parcela: p.parcela, referencia: p.referencia, vencimento: p.vencimento, valor: p.valor })));
-    if (error) throw new Error('Não foi possível lançar as parcelas.');
+    if (error) throw new Error(error.code === '23505' ? 'O financeiro deste aluno já foi gerado.' : 'Não foi possível lançar as parcelas.');
     return { success: true };
   });
 
@@ -48,7 +48,7 @@ export const situacaoMensalidades = createServerFn({ method: 'POST' }).middlewar
     const { error } = data.acao === 'excluir' ? await q.delete().in('id', data.ids).neq('situacao', 'paga')
       : data.acao === 'cancelar' ? await q.update({ situacao: 'cancelada' }).in('id', data.ids).eq('situacao', 'aberta')
       : await q.update({ situacao: 'aberta' }).in('id', data.ids).eq('situacao', 'cancelada');
-    if (error) throw new Error(error.code === 'P0001' ? error.message : 'Não foi possível atualizar as parcelas.');
+    if (error) throw new Error(error.code === '23505' ? 'Já existe parcela ativa para esse mês ou matrícula.' : error.code === 'P0001' ? error.message : 'Não foi possível atualizar as parcelas.');
     return { success: true };
   });
 

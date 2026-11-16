@@ -52,6 +52,19 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
     </div>
   );
 
+  const [gerando,setGerando]=useState(false);
+  const jaGerado=mensalidades.filter(p=>p.aluno_id===aluno.id&&p.situacao!=='cancelada').length;
+  async function gerarFinanceiro(){
+    if(jaGerado){toast.error('O financeiro deste aluno já foi gerado.');return;}
+    const novas=gerarParcelas({primeiraCobranca:f.primeiraCobranca,qtd:f.qtdMensalidades,dia:f.diaVencimento,valor:f.valorMensal,valorMatricula:f.valor_matricula??null,dataMatricula:f.data_matricula??(f.dataMatricula||dataBrasilia())});
+    if(!novas.length){toast.error('Informe valor mensal, quantidade e mês da 1ª cobrança.');return;}
+    if(!window.confirm(`Gerar ${novas.length} parcela(s) para este aluno?`))return;
+    setGerando(true);
+    try{await gerar({data:{aluno_id:aluno.id,parcelas:novas}});await qc.invalidateQueries({queryKey:['school','mensalidades']});toast.success('Financeiro gerado. Veja na aba Financeiro.');}
+    catch(err){toast.error(err instanceof Error?err.message:'Não foi possível gerar o financeiro.');}
+    finally{setGerando(false);}
+  }
+
   async function enviar(decisao?:'cancelar'|'manter'){
             if (!f.nome.trim()) { toast.error("Preencha o nome"); return; }
             try { validarMatriculas(ms); if(!exists&&ms.some(m=>!m.curso_id||!m.turma_id))throw new Error('Selecione curso e turma.'); for(const m of ms){const old=original.find(o=>o.ordem===m.ordem);if(m.curso_id!==old?.curso_id&&!m.turma_id)throw new Error('Selecione a turma do curso.');} }catch(err){toast.error(err instanceof Error?err.message:'Confira os cursos.');return;}
@@ -139,6 +152,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             {txt("qtdMensalidades", "Quantidade de mensalidades", "number")}
             {txt("primeiraCobranca", "Mês da 1ª cobrança", "month")}
             <Resumo label="Valor com desconto" value={brl(valorComDesconto(f))} />
+            <div className="sm:col-span-3 xl:col-span-2">{exists&&(jaGerado?<p className="rounded-md border bg-muted/50 p-2 text-sm text-muted-foreground">Financeiro já gerado ({jaGerado} parcela(s)). Para alterar, use a aba Financeiro.</p>:<Button type="button" disabled={gerando||saving} onClick={()=>void gerarFinanceiro()}>{gerando?'Gerando…':'Gerar Financeiro'}</Button>)}</div>
             <Resumo label="Previsão da última mensalidade" value={f.primeiraCobranca && f.qtdMensalidades > 0 ? formatMes(ultimaMensalidade(f.primeiraCobranca, f.qtdMensalidades)) : "—"} />
           </section>
 

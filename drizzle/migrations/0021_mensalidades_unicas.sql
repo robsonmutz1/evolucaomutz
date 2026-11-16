@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX IF NOT EXISTS mensalidades_matricula_unica ON public.mensalidades (aluno_id) WHERE tipo = 'matricula' AND situacao <> 'cancelada';
+CREATE UNIQUE INDEX IF NOT EXISTS mensalidades_mes_unico ON public.mensalidades (aluno_id, referencia) WHERE tipo = 'mensalidade' AND situacao <> 'cancelada';
