@@ -34,3 +34,15 @@ export function metricasCRM(leads: Lead[], mes: string) {
  mensalMatriculados: valores.reduce((n,v)=>n+v,0), ticket: valores.length ? valores.reduce((n,v)=>n+v,0)/valores.length : null,
  tempo: tempos.length ? tempos.reduce((n,v)=>n+v,0)/tempos.length : null};
 }
+export const visitaStatus = { agendada: 'Agendada', compareceu: 'Compareceu', reagendou: 'Reagendou', nao_respondeu: 'Não respondeu mais' } as const;
+export type VisitaStatus = keyof typeof visitaStatus;
+/** Visit report for leads whose visit date falls in [de, ate] (Brasília dates, inclusive). Percentages over all scheduled visits. */
+export function relatorioVisitas(leads: Lead[], de = '', ate = '') {
+ const rows = leads.filter(l => { if (!l.data_visita) return false; const d = hojeCRM(new Date(l.data_visita)); return (!de || d >= de) && (!ate || d <= ate); });
+ const total = rows.length;
+ const conta = (k: VisitaStatus) => rows.filter(l => (l.visita_status ?? 'agendada') === k).length;
+ const pct = (n: number) => total ? Math.round((n / total) * 1000) / 10 : 0;
+ const itens = (Object.keys(visitaStatus) as VisitaStatus[]).map(k => ({ status: k, label: visitaStatus[k], qtd: conta(k), pct: pct(conta(k)) }));
+ const comReagendamento = rows.filter(l => l.visita_reagendamentos > 0 || l.visita_status === 'reagendou').length;
+ return { total, itens, comReagendamento, pctReagendamento: pct(comReagendamento), rows };
+}

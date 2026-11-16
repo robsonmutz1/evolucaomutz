@@ -628,6 +628,7 @@ export type Database = {
           data_pos_venda: string | null
           data_proximo_contato: string | null
           data_ultimo_contato: string | null
+          data_visita: string | null
           etapa: string
           id: string
           idade_aluno: number | null
@@ -640,6 +641,8 @@ export type Database = {
           telefone: string
           turno_interesse: string
           valor_mensalidade_negociado: number | null
+          visita_reagendamentos: number
+          visita_status: string | null
         }
         Insert: {
           aluno_id?: string | null
@@ -650,6 +653,7 @@ export type Database = {
           data_pos_venda?: string | null
           data_proximo_contato?: string | null
           data_ultimo_contato?: string | null
+          data_visita?: string | null
           etapa?: string
           id?: string
           idade_aluno?: number | null
@@ -662,6 +666,8 @@ export type Database = {
           telefone: string
           turno_interesse?: string
           valor_mensalidade_negociado?: number | null
+          visita_reagendamentos?: number
+          visita_status?: string | null
         }
         Update: {
           aluno_id?: string | null
@@ -672,6 +678,7 @@ export type Database = {
           data_pos_venda?: string | null
           data_proximo_contato?: string | null
           data_ultimo_contato?: string | null
+          data_visita?: string | null
           etapa?: string
           id?: string
           idade_aluno?: number | null
@@ -684,6 +691,8 @@ export type Database = {
           telefone?: string
           turno_interesse?: string
           valor_mensalidade_negociado?: number | null
+          visita_reagendamentos?: number
+          visita_status?: string | null
         }
         Relationships: [
           {

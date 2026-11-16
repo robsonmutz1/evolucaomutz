@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { origensQuery } from '@/lib/mensalidades.functions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { etapas, turnos, tiposContato, normalizarTelefone, type Lead } from '@/lib/crm';
+import { visitaStatus, etapas, turnos, tiposContato, normalizarTelefone, type Lead } from '@/lib/crm';
 import { historicoLead, registrarContatoCRM, salvarLead, verificarTelefoneCRM } from '@/lib/crm.functions';
 import { useStore } from '@/lib/store';
 export type Consultor = {id:string;nome:string};
@@ -60,6 +60,7 @@ export function CRMLeadPanel({lead,novo,consultores,onClose}:{lead:Lead;novo:boo
     <div className="space-y-1.5"><Label>Consultor responsável</Label><Select value={f.consultor_responsavel??'nenhum'} onValueChange={v=>set('consultor_responsavel',v==='nenhum'?null:v)}><SelectTrigger className="w-full"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="nenhum">Não atribuído</SelectItem>{consultores.map(c=><SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent></Select></div>
     {txt('valor_mensalidade_negociado','Mensalidade negociada (R$)','number')}
     <CRMSelect label="Etapa" value={f.etapa} options={etapas} onChange={v=>set('etapa',v)}/>
+    <div className="grid gap-4 rounded-md border p-3 sm:col-span-2 sm:grid-cols-2"><h4 className="font-semibold sm:col-span-2">Visita marcada</h4>{txt('data_visita','Data e horário da visita','datetime-local')}<div className="space-y-1.5"><Label>Resultado da visita</Label><Select disabled={!f.data_visita} value={f.visita_status??'agendada'} onValueChange={v=>set('visita_status',v)}><SelectTrigger className="w-full" aria-label="Resultado da visita"><SelectValue/></SelectTrigger><SelectContent>{Object.entries(visitaStatus).map(([k,l])=><SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent></Select></div>{f.visita_reagendamentos>0&&<p className="text-xs text-muted-foreground sm:col-span-2">Reagendada {f.visita_reagendamentos} vez(es). Trocar a data conta um novo reagendamento.</p>}</div>
     {txt('data_ultimo_contato','Último contato','datetime-local')}{txt('data_proximo_contato','Próximo contato','date')}
     {f.etapa==='Perdido'&&<div className="sm:col-span-2">{txt('motivo_perda','Motivo da perda')}</div>}
     {f.etapa==='Matriculado'&&<>{txt('data_fechamento','Data da matrícula no CRM','datetime-local')}<div className="self-end text-sm text-muted-foreground">{f.pos_venda_realizado?'Pós-venda realizado':'Pós-venda pendente'}{f.aluno_id&&<p>Aluno: {alunos.find(a=>a.id===f.aluno_id)?.nome??'Vinculado'}</p>}</div></>}

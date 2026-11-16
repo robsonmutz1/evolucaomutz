@@ -34,7 +34,7 @@ export const leadWrite = (r: Lead) => fields(r, [
   'id', 'telefone', 'nome_responsavel', 'nome_aluno', 'idade_aluno', 'turno_interesse',
   'curso_interesse', 'origem', 'consultor_responsavel', 'valor_mensalidade_negociado',
   'etapa', 'observacoes', 'data_ultimo_contato', 'data_proximo_contato', 'aluno_id',
-  'data_fechamento', 'motivo_perda',
+  'data_fechamento', 'motivo_perda', 'data_visita', 'visita_status',
 ] as const);
 
 export const enrollmentWrite = (r: MatriculaInput) => fields(r, [

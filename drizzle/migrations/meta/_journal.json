@@ -162,6 +162,13 @@
       "when": 1794840784645,
       "tag": "0022_crm_origens_compartilhadas",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794841226136,
+      "tag": "0023_crm_visitas",
+      "breakpoints": true
     }
   ]
 }

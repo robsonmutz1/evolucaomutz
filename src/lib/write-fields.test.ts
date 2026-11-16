@@ -25,8 +25,8 @@ describe('editable write field allowlists', () => {
     expect(classWrite(inject(cls))).toEqual(cls);
   });
   it('lead inserts and updates cannot forge post-sale completion or creation time', () => {
-    const editable = { id: 'lead', telefone: '27999999999', nome_responsavel: 'Responsável', nome_aluno: null, idade_aluno: null, turno_interesse: 'Ainda não definiu', curso_interesse: '', origem: 'WhatsApp direto', consultor_responsavel: null, valor_mensalidade_negociado: null, etapa: 'Novo lead', observacoes: '', data_ultimo_contato: null, data_proximo_contato: null, aluno_id: null, data_fechamento: null, motivo_perda: null };
-    const payload = inject({ ...editable, created_at: '2026-11-01', pos_venda_realizado: true, data_pos_venda: '2026-11-01' });
+    const editable = { id: 'lead', telefone: '27999999999', nome_responsavel: 'Responsável', nome_aluno: null, idade_aluno: null, turno_interesse: 'Ainda não definiu', curso_interesse: '', origem: 'WhatsApp direto', data_visita: null, visita_status: null, consultor_responsavel: null, valor_mensalidade_negociado: null, etapa: 'Novo lead', observacoes: '', data_ultimo_contato: null, data_proximo_contato: null, aluno_id: null, data_fechamento: null, motivo_perda: null };
+    const payload = inject({ ...editable, created_at: '2026-11-01', visita_reagendamentos: 9, pos_venda_realizado: true, data_pos_venda: '2026-11-01' });
     expect(leadWrite(payload)).toEqual(editable);
   });
   it('student and nested enrollments preserve editable fields, not import or audit fields', () => {
