@@ -1,4 +1,5 @@
 # Dados reais e acesso restrito
+- [x] Organizar alertas de conclusão em mês atual, próximo e daqui a dois meses, usando a última mensalidade lançada aberta ou paga; 24 testes passaram e quantidades, abertura do cadastro e visualização no celular conferidas.
 - [x] Atualizar faturamento mensal pelas entradas realizadas, preservar ajustes editáveis e conferir entrada, edição e gráfico do Painel na conta autorizada; dados de teste removidos, 23 testes passaram.
 - [x] Fluxo de Caixa e Conferência: contas, vínculos e situação dos lançamentos existentes, sem duplicar receitas/despesas.
 - [x] Conferência salva, diagnóstico de divergências, histórico resolvido e auditoria de alterações confirmadas.

@@ -7,8 +7,10 @@ import { Card } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStore } from "@/lib/store";
-import { AlertaBadge } from "@/components/AlertaBadge";
-import { alertaConclusao, brl, mesAtualISO } from "@/lib/alunos";
+import { brl } from "@/lib/alunos";
+import { conclusoesPorMes } from '@/lib/conclusoes';
+import { mensalidadesQuery } from '@/lib/mensalidades.functions';
+import { hojeFinanceiro } from '@/lib/financeiro-cadastros';
 import { faturamentoQuery } from "@/lib/faturamento.functions";
 import { lancamentosQuery } from "@/lib/lancamentos.functions";
 import { totalPorTipo } from "@/lib/lancamentos";
@@ -36,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/_school/dashboard")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: ({context}) => Promise.all([context.queryClient.ensureQueryData(caixaQuery), context.queryClient.ensureQueryData(faturamentoQuery)]),
+  loader: ({context}) => Promise.all([context.queryClient.ensureQueryData(caixaQuery), context.queryClient.ensureQueryData(faturamentoQuery), context.queryClient.ensureQueryData(mensalidadesQuery)]),
   component: Painel,
 });
 
@@ -48,10 +50,12 @@ function Painel() {
   const [editando,setEditando]=useState<Aluno|null>(null);
   const { data: faturamento } = useSuspenseQuery(faturamentoQuery);
   const { data: lancamentos } = useSuspenseQuery(lancamentosQuery);
+  const { data: parcelas } = useSuspenseQuery(mensalidadesQuery);
   const [ano, setAno] = useState(() => String(new Date().getFullYear()));
   const [mes, setMes] = useState("todos");
   const prefixo = mes === "todos" ? ano : `${ano}-${mes}`;
-  const hoje = mesAtualISO();
+  const hoje = hojeFinanceiro().slice(0, 7);
+  const conclusoes = useMemo(() => conclusoesPorMes(alunos, parcelas, hoje), [alunos, parcelas, hoje]);
   const receitaMes=(mm:string)=>faturamento.find(f=>f.mes===mm)?.valor ?? null;
   const anos = useMemo(() => {
     const s = new Set<string>([String(new Date().getFullYear()), ...faturamento.map((f) => f.mes.slice(0, 4))]);
@@ -71,7 +75,6 @@ function Painel() {
       concl: alunos.filter((a) => a.status === "Concluído" && noPeriodo(a.dataStatus)).length,
       fat: mes === "todos" ? totalAnual(faturamento, ano) : receitaMes(prefixo),
       desp: totalPorTipo(lancamentos, "saida", prefixo),
-      alertas: alunos.filter((a) => alertaConclusao(a, hoje)),
     };
   }, [alunos, faturamento, lancamentos, prefixo, hoje, ano, mes]);
 
@@ -170,30 +173,35 @@ function Painel() {
 
       <ProjecaoFaturamento receitas={faturamento} />
 
-      <Card className="p-5">
+      <section className="border-t pt-5" aria-label="Alertas de conclusão">
         <div className="mb-3 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-warning" />
           <h2 className="text-xl font-semibold">Alertas de conclusão</h2>
         </div>
-        {k.alertas.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum aluno para verificar neste mês.</p>
-        ) : (
-          <ul className="divide-y">
-            {k.alertas.map((a) => {
-              const al = alertaConclusao(a, hoje);
-              return (
-                <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
-                  <span><Button variant="link" className="h-auto p-0 whitespace-normal" onClick={()=>setEditando(a)}>{a.nome}</Button> · {a.curso}</span>
-                  <AlertaBadge alerta={al} />
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-3">
+          {conclusoes.map((grupo) => (
+            <div key={grupo.mes} className="min-w-0" data-conclusao-mes={grupo.mes}>
+              <div className="mb-2 flex items-center justify-between gap-2 border-b pb-2">
+                <h3 className="font-semibold capitalize">{new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${grupo.mes}-01T12:00:00Z`))}</h3>
+                <span className="text-sm font-semibold tabular-nums text-primary" aria-label={`${grupo.alunos.length} alunos`}>{grupo.alunos.length}</span>
+              </div>
+              {grupo.alunos.length === 0 ? <p className="py-2 text-sm text-muted-foreground">Nenhum aluno previsto.</p> : (
+                <ul className="divide-y">
+                  {grupo.alunos.map(a => (
+                    <li key={a.id} className="min-w-0 py-2.5 text-sm">
+                      <Button variant="link" className="h-auto max-w-full p-0 text-left whitespace-normal break-words" onClick={() => setEditando(a)}>{a.nome}</Button>
+                      <p className="mt-1 break-words text-xs text-muted-foreground">{a.curso}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
         <Link to="/alunos" className="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline">
           Ver cadastro de alunos →
         </Link>
-      </Card>
+      </section>
       </div>
       {editando&&<AlunoForm aluno={editando} onClose={()=>setEditando(null)}/>}
     </div>

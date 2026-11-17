@@ -26,3 +26,4 @@
 - Tuition installments live in their own owner-only table; settling goes through a transactional RPC that creates the linked income entry, so payments and Financeiro stay consistent.
 - Settlement suggestions use the shared client-safe helper and current student form values; derive the amount from the selected date unless manually overridden, so discount edits and early payments are reflected immediately.
 - Monthly revenue uses a protected aggregate of realized non-transfer cash income plus preserved historical/manual offsets; transactional edits snapshot the cash baseline, and cash-cache refreshes invalidate the shared revenue query to avoid duplicate tuition and enrollment revenue.
+- Dashboard completion forecasts reuse the protected tuition cache and a tested client-safe grouping helper keyed by the last non-cancelled tuition reference, so contract-only students never appear and settled installments remain eligible.
