@@ -3,6 +3,7 @@ import type { Aluno } from './alunos';
 export type ReceitaMensal = { mes: string; valor: number };
 export type TipoRelatorio = 'financeiro' | 'matriculas' | 'ativos' | 'cancelamentos' | 'formados';
 export const horizontes = [1, 3, 6, 9, 12] as const;
+export const prazoPadraoPrevisao = 1;
 
 export function totalAnual(receitas: ReceitaMensal[], ano: string): number | null {
   const registros = receitas.filter((r) => r.mes.startsWith(`${ano}-`));

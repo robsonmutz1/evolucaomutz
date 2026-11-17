@@ -27,3 +27,4 @@
 - Settlement suggestions use the shared client-safe helper and current student form values; derive the amount from the selected date unless manually overridden, so discount edits and early payments are reflected immediately.
 - Monthly revenue uses a protected aggregate of realized non-transfer cash income plus preserved historical/manual offsets; transactional edits snapshot the cash baseline, and cash-cache refreshes invalidate the shared revenue query to avoid duplicate tuition and enrollment revenue.
 - Dashboard completion forecasts reuse the protected tuition cache and a tested client-safe grouping helper keyed by the last non-cancelled tuition reference, so contract-only students never appear and settled installments remain eligible.
+- Apply discount-day due-date suggestions through the shared student form setter and a client-safe helper; do not rewrite existing installments or override stored contracts merely by opening the form, preserving renegotiations.

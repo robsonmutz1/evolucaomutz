@@ -10,6 +10,12 @@ export type Parcela = {
 };
 export type NovaParcela = Pick<Parcela, 'tipo' | 'parcela' | 'referencia' | 'vencimento' | 'valor'>;
 
+/** Suggested recurring due day; only valid discount days trigger a change. */
+export function diaSeguinteAoDesconto(dia: number): number | null {
+  if (!Number.isInteger(dia) || dia < 1 || dia > 31) return null;
+  return dia === 31 ? 1 : dia + 1;
+}
+
 /** Adds n months to a YYYY-MM reference. */
 export function somarMes(ref: string, n: number): string {
   const [y = 0, m = 1] = ref.split('-').map(Number);

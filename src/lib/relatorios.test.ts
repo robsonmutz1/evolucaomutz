@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { alunosDoRelatorio, gerarCsv, horizontes, projetarFaturamento, taxaCancelamento, totalAnual } from './relatorios';
+import { alunosDoRelatorio, gerarCsv, horizontes, prazoPadraoPrevisao, projetarFaturamento, taxaCancelamento, totalAnual } from './relatorios';
 import type { Aluno } from './alunos';
 
 describe('Faturamento e projeções', () => {
+  it('abre a previsão com horizonte de um mês', () => {
+    expect(prazoPadraoPrevisao).toBe(1);
+  });
   const receitas = [{ mes: '2025-12', valor: 90 }, { mes: '2026-01', valor: 120 }, { mes: '2026-02', valor: 150 }, { mes: '2026-03', valor: 900 }];
   it('soma o ano inteiro independentemente do filtro mensal', () => {
     expect(totalAnual(receitas, '2026')).toBe(1170);

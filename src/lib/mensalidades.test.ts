@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { gerarParcelas, valorSugerido, valorParaBaixa, vencimentoNoMes, origensDosUltimos } from './mensalidades';
+import { diaSeguinteAoDesconto, gerarParcelas, valorSugerido, valorParaBaixa, vencimentoNoMes, origensDosUltimos } from './mensalidades';
 const desc = { descontoTipo: 'percentual' as const, desconto: 10, diaLimiteDesconto: 5 };
 describe('mensalidades', () => {
+  it('sugere vencimento no dia seguinte ao limite do desconto', () => {
+    expect(diaSeguinteAoDesconto(10)).toBe(11);
+    expect(diaSeguinteAoDesconto(15)).toBe(16);
+    for (let dia = 1; dia < 31; dia++) expect(diaSeguinteAoDesconto(dia)).toBe(dia + 1);
+    expect(diaSeguinteAoDesconto(31)).toBe(1);
+    expect(diaSeguinteAoDesconto(0)).toBeNull();
+    expect(diaSeguinteAoDesconto(32)).toBeNull();
+  });
   it('gera parcelas com valor cheio e matrícula separada', () => {
     const p = gerarParcelas({ primeiraCobranca: '2026-11', qtd: 3, dia: 10, valor: 200, valorMatricula: 50, dataMatricula: '2026-11-03' });
     expect(p.map((x) => [x.tipo, x.vencimento, x.valor])).toEqual([['matricula', '2026-11-03', 50], ['mensalidade', '2026-11-10', 200], ['mensalidade', '2026-12-10', 200], ['mensalidade', '2027-01-10', 200]]);

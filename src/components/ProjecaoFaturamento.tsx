@@ -3,10 +3,10 @@ import { TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { brl, formatMes, mesAtualISO } from '@/lib/alunos';
-import { horizontes, projetarFaturamento, type ReceitaMensal } from '@/lib/relatorios';
+import { horizontes, prazoPadraoPrevisao, projetarFaturamento, type ReceitaMensal } from '@/lib/relatorios';
 
 export function ProjecaoFaturamento({ receitas }: { receitas: ReceitaMensal[] }) {
-  const [prazo, setPrazo] = useState('12');
+  const [prazo, setPrazo] = useState(String(prazoPadraoPrevisao));
   const mesAtual = mesAtualISO();
   const projecao = useMemo(() => projetarFaturamento(receitas, mesAtual), [receitas, mesAtual]);
   return <section className="space-y-4 border-t pt-6" aria-labelledby="projecao-titulo">

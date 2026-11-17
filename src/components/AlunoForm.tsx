@@ -20,7 +20,7 @@ import { useStore } from '@/lib/store';
 import { useQueryClient } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
 import { gerarMensalidades, mensalidadesQuery, origensQuery, salvarOrigem, situacaoMensalidades } from '@/lib/mensalidades.functions';
-import { gerarParcelas } from '@/lib/mensalidades';
+import { diaSeguinteAoDesconto, gerarParcelas } from '@/lib/mensalidades';
 import { AlunoMensalidades } from './Mensalidades';
 export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => void; onSave?: (a: Aluno) => Promise<void> }) {
   const {salvar,alunos}=useStore();
@@ -39,7 +39,10 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
   const situacao=useServerFn(situacaoMensalidades);
   const novaOrigem=useServerFn(salvarOrigem);
   const [perguntar,setPerguntar]=useState(0);
-  const set = <K extends keyof Aluno>(k: K, v: Aluno[K]) => setF((p) => ({ ...p, [k]: v }));
+  const set = <K extends keyof Aluno>(k: K, v: Aluno[K]) => setF((p) => {
+    const vencimento = k === 'diaLimiteDesconto' ? diaSeguinteAoDesconto(Number(v)) : null;
+    return { ...p, [k]: v, ...(vencimento !== null ? { diaVencimento: vencimento } : {}) };
+  });
   const txt = (k: keyof Aluno, label: string, type = "text") => (
     <div className="space-y-1.5">
       <Label>{label}</Label>
