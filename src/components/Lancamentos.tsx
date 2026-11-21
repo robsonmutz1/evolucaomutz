@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Pencil, Plus, Trash2, Settings, ArrowUpDown } from "lucide-react";
@@ -30,17 +30,28 @@ export function Lancamentos() {
   const meses = useMemo(() => [...new Set([hojeFinanceiro().slice(0, 7), ...data.map((l) => l.mes)])].sort().reverse(), [data]);
   const [mes, setMes] = useState(data[0]?.mes ?? meses[0] ?? "");
   const [edit, setEdit] = useState<Edit | null>(null);
+  const valorInput = useRef<HTMLInputElement>(null);
+  const descricaoInput = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [de,setDe]=useState(''),[ate,setAte]=useState(''),[fGrupo,setFGrupo]=useState(''),[fCategoria,setFCategoria]=useState(''),[asc,setAsc]=useState(false),[manager,setManager]=useState(false);
   const saveItem=useServerFn(salvarCadastroFinanceiro);
-  const lista = data.filter((l) => (mes==='todos'||l.mes===mes)&&(!de||(l.data_lancamento??`${l.mes}-01`)>=de)&&(!ate||(l.data_lancamento??`${l.mes}-01`)<=ate)&&(!fGrupo||nomeChave(l.grupo)===nomeChave(fGrupo))&&(!fCategoria||nomeChave(l.categoria)===nomeChave(fCategoria))).sort((a,b)=>((a.data_lancamento??`${a.mes}-01`).localeCompare(b.data_lancamento??`${b.mes}-01`))*(asc?1:-1));
+  const lista = useMemo(() => data.filter((l) => (mes==='todos'||l.mes===mes)&&(!de||(l.data_lancamento??`${l.mes}-01`)>=de)&&(!ate||(l.data_lancamento??`${l.mes}-01`)<=ate)&&(!fGrupo||nomeChave(l.grupo)===nomeChave(fGrupo))&&(!fCategoria||nomeChave(l.categoria)===nomeChave(fCategoria))).sort((a,b)=>((a.data_lancamento??`${a.mes}-01`).localeCompare(b.data_lancamento??`${b.mes}-01`))*(asc?1:-1)), [data, mes, de, ate, fGrupo, fCategoria, asc]);
+  const usos = useMemo(() => {
+    const grupo = new Map<string, number>(), categoria = new Map<string, number>();
+    for (const l of data) {
+      const g = nomeChave(l.grupo), c = nomeChave(l.categoria);
+      grupo.set(g, (grupo.get(g) ?? 0) + 1);
+      categoria.set(c, (categoria.get(c) ?? 0) + 1);
+    }
+    return { grupo, categoria };
+  }, [data]);
   const ent = totalPorTipo(lista, "entrada", ''), sai = totalPorTipo(lista, "saida", '');
   function options(kind:'grupo'|'categoria',tipo?:Lancamento['tipo'],selected=''){
    const rows=kind==='grupo'?cadastros.grupos:cadastros.categorias;
    const groupId=cadastros.grupos.find(g=>nomeChave(g.nome)===nomeChave(edit?.grupo??''))?.id;
    return rows.filter(i=>!tipo||(i.nome===selected)||(i.ativo&&tipoPermitido(i,tipo))).sort((a,b)=>{
     if(kind==='categoria'&&groupId){const priority=Number(b.grupo_id===groupId)-Number(a.grupo_id===groupId);if(priority)return priority;}
-    const used=(i:ItemFinanceiro)=>data.filter(l=>nomeChave(kind==='grupo'?l.grupo:l.categoria)===nomeChave(i.nome)).length;
+    const used=(i:ItemFinanceiro)=>usos[kind].get(nomeChave(i.nome)) ?? 0;
     return used(b)-used(a)||b.created_at.localeCompare(a.created_at)||a.nome.localeCompare(b.nome,'pt-BR');
    });
   }
@@ -56,11 +67,13 @@ export function Lancamentos() {
 
   async function onSave() {
     if (!edit) return;
+    const valor = valorInput.current?.value ?? edit.valor;
+    const descricao = descricaoInput.current?.value ?? edit.descricao;
     if(!edit.data_lancamento){toast.error('Informe a data do lançamento.');return;}
-    if(!edit.valor.trim()){toast.error('Informe o valor do lançamento.');return;}
+    if(!valor.trim()){toast.error('Informe o valor do lançamento.');return;}
     setBusy(true);
     try {
-      const row: Lancamento = { id: edit.id, mes: edit.data_lancamento.slice(0,7),data_lancamento:edit.data_lancamento, tipo: edit.tipo, grupo: edit.grupo, categoria: edit.categoria, valor: Number(edit.valor.replace(/\./g, "").replace(",", ".")), descricao: edit.descricao || null };
+      const row: Lancamento = { id: edit.id, mes: edit.data_lancamento.slice(0,7),data_lancamento:edit.data_lancamento, tipo: edit.tipo, grupo: edit.grupo, categoria: edit.categoria, valor: Number(valor.replace(/\./g, "").replace(",", ".")), descricao: descricao || null };
       try { await salvar({data:row}); } catch(e) { if(e instanceof Error && e.message.includes("conferência fechada") && confirm("Esta alteração afeta uma conferência fechada e será registrada. Continuar?")) await salvar({data:{...row,confirmar_caixa:true}}); else throw e; }
       await qc.invalidateQueries({ queryKey: ["school", "lancamentos"] });
       toast.success("Lançamento salvo"); setMes(edit.data_lancamento.slice(0,7)); setDe('');setAte('');setEdit(null);
@@ -119,8 +132,8 @@ export function Lancamentos() {
             </div>
             <div><div className="mb-1 flex items-center justify-between"><Label>Grupo</Label><Button size="icon" variant="ghost" title="Gerenciar grupos" aria-label="Gerenciar grupos do formulário" onClick={()=>setManager(true)}><Settings className="h-4 w-4"/></Button></div><FinanceiroCombobox label="Grupo do lançamento" value={edit.grupo} items={options('grupo',edit.tipo,edit.grupo)} onChange={v=>setEdit({...edit,grupo:v})} onCreate={v=>createItem('grupo',v)} optional/></div>
             <div><div className="mb-1 flex items-center justify-between"><Label>Categoria</Label><Button size="icon" variant="ghost" title="Gerenciar categorias" aria-label="Gerenciar categorias do formulário" onClick={()=>setManager(true)}><Settings className="h-4 w-4"/></Button></div><FinanceiroCombobox label="Categoria do lançamento" value={edit.categoria} items={options('categoria',edit.tipo,edit.categoria)} onChange={v=>setEdit({...edit,categoria:v})} onCreate={v=>createItem('categoria',v)}/></div>
-            <div><Label htmlFor="lval">Valor (R$)</Label><Input id="lval" inputMode="decimal" placeholder="Ex.: 1.250,00" value={edit.valor} onChange={(e) => setEdit({ ...edit, valor: e.target.value })} /></div>
-            <div><Label htmlFor="ldesc">Descrição (opcional)</Label><Input id="ldesc" value={edit.descricao} onChange={(e) => setEdit({ ...edit, descricao: e.target.value })} /></div>
+            <div><Label htmlFor="lval">Valor (R$)</Label><Input ref={valorInput} id="lval" inputMode="decimal" placeholder="Ex.: 1.250,00" defaultValue={edit.valor} /></div>
+            <div><Label htmlFor="ldesc">Descrição (opcional)</Label><Input ref={descricaoInput} id="ldesc" defaultValue={edit.descricao} /></div>
           </div>}
           <DialogFooter><Button variant="outline" onClick={() => setEdit(null)}>Cancelar</Button><Button disabled={busy} onClick={onSave}>{busy ? "Salvando…" : "Salvar"}</Button></DialogFooter>
         </DialogContent>

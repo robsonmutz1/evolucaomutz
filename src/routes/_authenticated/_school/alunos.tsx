@@ -1,7 +1,8 @@
 import { idadeAluno, idadeTexto } from "@/lib/aniversariantes";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ArrowUpDown, Pencil, Plus, Search } from "lucide-react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { ArrowUpDown, ChevronLeft, ChevronRight, Pencil, Plus, Search } from "lucide-react";
+import { paginaAlunos, quantidadeAlunos, quantidadePadraoAlunos, quantidadesAlunos } from '@/lib/visualizacao-alunos';
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -70,6 +71,25 @@ function Alunos() {
   const { alunos, salvar } = useStore();
   const {data:pedagogico}=useSuspenseQuery(pedagogicoQuery);
   const [q, setQ] = useState("");
+  const busca = useDeferredValue(q);
+  const [quantidade, setQuantidade] = useState(quantidadePadraoAlunos);
+  const [personalizada, setPersonalizada] = useState(false);
+  const [pagina, setPagina] = useState(1);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('school:alunos:quantidade');
+      if (saved !== null) {
+        const n = quantidadeAlunos(saved);
+        setQuantidade(n);
+        setPersonalizada(!quantidadesAlunos.some(v => v === n));
+      }
+    } catch { /* Storage can be unavailable in private browsing. */ }
+  }, []);
+  const mudarQuantidade = (n: number) => {
+    const size = quantidadeAlunos(n);
+    setQuantidade(size); setPagina(1);
+    try { localStorage.setItem('school:alunos:quantidade', String(size)); } catch { /* Session still works. */ }
+  };
   const [fStatus, setFStatus] = useState("Ativo");
   const [fCurso, setFCurso] = useState("todos");
   const [fTurma, setFTurma] = useState("todos");
@@ -86,7 +106,7 @@ function Alunos() {
   const limpar = () => { setQ(""); setFStatus("todos"); setFCurso("todos"); setFTurma("todos"); setVMin(""); setVMax(""); setPMat(vazio); setPCanc(vazio); setPConc(vazio); };
 
   const lista = useMemo(() => {
-    const t = q.toLowerCase();
+    const t = busca.toLowerCase();
     const r = alunos.filter((a) => {
       const v = valorComDesconto(a);
       if (fStatus !== "todos" && a.status !== fStatus) return false;
@@ -106,7 +126,9 @@ function Alunos() {
       const c = typeof a === "number" ? a - Number(b ?? 0) : String(a ?? '').localeCompare(String(b ?? ''), "pt-BR");
       return sort.asc ? c : -c;
     });
-  }, [pedagogico, alunos, q, fStatus, fCurso, fTurma, vMin, vMax, pMat, pCanc, pConc, sort]);
+  }, [pedagogico, alunos, busca, fStatus, fCurso, fTurma, vMin, vMax, pMat, pCanc, pConc, sort]);
+  useEffect(() => { setPagina(1); }, [busca, fStatus, fCurso, fTurma, vMin, vMax, pMat, pCanc, pConc, sort]);
+  const visualizacao = paginaAlunos(lista, pagina, quantidade);
 
   const novo = (): Aluno => ({
     id: crypto.randomUUID(), codigo: proximoCodigo(alunos.map((a) => a.codigo)), nome: "", responsavel: "", bairro: "", cidade: "",
@@ -117,9 +139,9 @@ function Alunos() {
 
   const Th = ({ col, children }: { col: Col; children: string }) => (
     <th className="px-3 py-3 text-left font-semibold">
-      <button className="inline-flex items-center gap-1 hover:text-primary" onClick={() => setSort({ col, asc: sort.col === col ? !sort.asc : true })}>
+      <Button variant="ghost" className="h-auto p-0 hover:text-primary" onClick={() => setSort({ col, asc: sort.col === col ? !sort.asc : true })}>
         {children} <ArrowUpDown className="h-3 w-3 opacity-50" />
-      </button>
+      </Button>
     </th>
   );
 
@@ -130,7 +152,16 @@ function Alunos() {
           <h1 className="text-3xl font-semibold md:text-4xl">Alunos</h1>
           <p className="text-muted-foreground">{lista.length} de {alunos.length} alunos</p>
         </div>
-        <Button onClick={() => setEditando(novo())}><Plus /> Novo aluno</Button>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1"><Label htmlFor="visualizar-alunos">Visualizar</Label>
+            <Select value={personalizada ? 'personalizada' : String(quantidade)} onValueChange={v => { setPersonalizada(v === 'personalizada'); if (v !== 'personalizada') mudarQuantidade(Number(v)); }}>
+              <SelectTrigger id="visualizar-alunos" aria-label="Quantidade de alunos" className="w-40"><SelectValue /></SelectTrigger>
+              <SelectContent>{quantidadesAlunos.map(n => <SelectItem key={n} value={String(n)}>{n} alunos</SelectItem>)}<SelectItem value="personalizada">Personalizar</SelectItem></SelectContent>
+            </Select>
+          </div>
+          {personalizada && <div className="space-y-1"><Label htmlFor="quantidade-alunos">Quantidade</Label><Input id="quantidade-alunos" className="w-24" type="number" min={1} max={500} defaultValue={quantidade} key={personalizada ? 'custom' : 'preset'} onBlur={e => { const n = quantidadeAlunos(e.target.value); mudarQuantidade(n); e.target.value = String(n); }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} /></div>}
+          <Button onClick={() => setEditando(novo())}><Plus /> Novo aluno</Button>
+        </div>
       </div>
 
       <Card className="space-y-3 p-4">
@@ -191,7 +222,7 @@ function Alunos() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {lista.map((a) => (
+            {visualizacao.itens.map((a) => (
               <tr key={a.id} className="hover:bg-muted/40">
                 <td className="px-3 py-3 font-mono text-xs"><Button variant="link" className="h-auto p-0" onClick={()=>setEditando(a)}>{a.codigo}</Button></td>
                 <td className="px-3 py-3">
@@ -217,6 +248,15 @@ function Alunos() {
           </tbody>
         </table>
       </Card>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+        <p className="text-muted-foreground">{lista.length ? `${visualizacao.inicio + 1}–${visualizacao.fim} de ${lista.length} alunos` : 'Nenhum aluno encontrado'}</p>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="icon" aria-label="Página anterior" disabled={visualizacao.atual === 1} onClick={() => setPagina(visualizacao.atual - 1)}><ChevronLeft /></Button>
+          <span>Página {visualizacao.atual} de {visualizacao.paginas}</span>
+          <Button variant="outline" size="icon" aria-label="Próxima página" disabled={visualizacao.atual === visualizacao.paginas} onClick={() => setPagina(visualizacao.atual + 1)}><ChevronRight /></Button>
+        </div>
+      </div>
 
       {editando && (
         <AlunoForm

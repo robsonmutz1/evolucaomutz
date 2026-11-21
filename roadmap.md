@@ -1,4 +1,5 @@
 # Dados reais e acesso restrito
+- [x] Tornar a digitação dos lançamentos fluida e paginar a visualização dos alunos em 20 por padrão, com quantidade configurável e cache reutilizado; 22 testes passaram, paginação/preferência/filtros e gravação/exclusão temporária conferidos na conta autorizada, sem excesso de largura no celular.
 - [x] Previsão padrão de 1 mês e vencimento automático ao alterar o limite do desconto; 22 testes passaram e 10→11, 15→16 e edição manual conferidos na ficha, sem alterar parcelas existentes.
 - [x] Organizar alertas de conclusão em mês atual, próximo e daqui a dois meses, usando a última mensalidade lançada aberta ou paga; 24 testes passaram e quantidades, abertura do cadastro e visualização no celular conferidas.
 - [x] Atualizar faturamento mensal pelas entradas realizadas, preservar ajustes editáveis e conferir entrada, edição e gráfico do Painel na conta autorizada; dados de teste removidos, 23 testes passaram.
