@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
 import { MessageCircle, Phone, UserRoundCheck } from 'lucide-react';
@@ -41,7 +41,8 @@ export function CRMLeadPanel({lead,novo,consultores,onClose}:{lead:Lead;novo:boo
   const displayed=type==='datetime-local'&&typeof val==='string'&&val ? new Date(new Date(val).getTime()-new Date(val).getTimezoneOffset()*60000).toISOString().slice(0,16) : String(val??'');
   return <div className="min-w-0 space-y-1.5"><Label htmlFor={`crm-${k}`}>{label}</Label><Input id={`crm-${k}`} className="min-w-0" required={k==='nome_responsavel'||k==='telefone'||k==='motivo_perda'} type={type} min={type==='number'?0:undefined} step={k==='valor_mensalidade_negociado'?'0.01':undefined} value={displayed} onChange={e=>set(k,(type==='number'?(e.target.value===''?null:Number(e.target.value)):type==='datetime-local'?(e.target.value?new Date(e.target.value).toISOString():null):['nome_responsavel','telefone'].includes(k)?e.target.value:e.target.value||null) as never)}/></div>;
  };
- const resultados=alunos.filter(a=>a.status==='Ativo'&&[a.nome,a.codigo,a.responsavel].some(v=>v.toLowerCase().includes(alunoBusca.toLowerCase()))).slice(0,30);
+ const resultados=useMemo(()=>alunos.filter(a=>a.status==='Ativo'&&[a.nome,a.codigo,a.responsavel].some(v=>v.toLowerCase().includes(alunoBusca.toLowerCase()))).slice(0,30),[alunos,alunoBusca]);
+ const cursos=useMemo(()=>[...new Set(alunos.map(a=>a.curso).filter(Boolean))].sort(),[alunos]);
  return <Sheet open onOpenChange={o=>{if(!o&&!saving)onClose();}}><SheetContent className="w-full overflow-y-auto sm:max-w-2xl" aria-describedby="crm-panel-description">
   <SheetHeader className="mb-6 text-left"><SheetTitle className="text-2xl">{novo?'Novo lead':f.nome_responsavel}</SheetTitle><SheetDescription id="crm-panel-description">{novo?'Cadastro de interessado':'Dados e histórico de atendimento'}</SheetDescription></SheetHeader>
   {!novo&&<div className="mb-6 flex flex-wrap gap-2"><Button variant="outline" asChild><a href={`https://wa.me/55${normalizarTelefone(f.telefone)}`} target="_blank" rel="noopener noreferrer"><MessageCircle/>Abrir WhatsApp</a></Button><Button variant="outline" onClick={()=>{setContato(true);setTipo('WhatsApp');}}><Phone/>Registrar contato</Button><Button variant="outline" onClick={()=>setVincular(v=>!v)}><UserRoundCheck/>Vincular a um aluno</Button><Button variant="destructive" onClick={()=>{set('etapa','Perdido');setTimeout(()=>document.getElementById('crm-motivo_perda')?.focus(),0);}}>Marcar como perdido</Button>{f.etapa==='Matriculado'&&!f.pos_venda_realizado&&<Button variant="outline" onClick={()=>{setContato(true);setTipo('Pós-venda');}}>Registrar pós-venda</Button>}</div>}
@@ -55,7 +56,7 @@ export function CRMLeadPanel({lead,novo,consultores,onClose}:{lead:Lead;novo:boo
     {(checking||aviso)&&<p role="status" className="text-sm text-destructive sm:col-span-2">{checking?'Verificando telefone…':aviso}</p>}
     {txt('nome_aluno','Nome do aluno')}{txt('idade_aluno','Idade do aluno','number')}
     <CRMSelect label="Turno de interesse" value={f.turno_interesse} options={turnos} onChange={v=>set('turno_interesse',v)}/>
-    <div className="space-y-1.5"><Label htmlFor="crm-curso">Curso de interesse</Label><Input id="crm-curso" list="crm-cursos" value={f.curso_interesse} onChange={e=>set('curso_interesse',e.target.value)}/><datalist id="crm-cursos">{[...new Set(alunos.map(a=>a.curso).filter(Boolean))].sort().map(c=><option key={c} value={c}/>)}</datalist></div>
+    <div className="space-y-1.5"><Label htmlFor="crm-curso">Curso de interesse</Label><Input id="crm-curso" list="crm-cursos" value={f.curso_interesse} onChange={e=>set('curso_interesse',e.target.value)}/><datalist id="crm-cursos">{cursos.map(c=><option key={c} value={c}/>)}</datalist></div>
     <CRMSelect label="Origem" value={f.origem} options={[...origensLista.filter(o=>o.ativo||o.nome===f.origem).map(o=>o.nome),...(f.origem&&!origensLista.some(o=>o.nome===f.origem)?[f.origem]:[])]} onChange={v=>set('origem',v)}/>
     <div className="space-y-1.5"><Label>Consultor responsável</Label><Select value={f.consultor_responsavel??'nenhum'} onValueChange={v=>set('consultor_responsavel',v==='nenhum'?null:v)}><SelectTrigger className="w-full"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="nenhum">Não atribuído</SelectItem>{consultores.map(c=><SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent></Select></div>
     {txt('valor_mensalidade_negociado','Mensalidade negociada (R$)','number')}

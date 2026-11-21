@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Pencil, Plus, Trash2 } from "lucide-react";
@@ -72,12 +72,13 @@ function Faturamento() {
   const salvar = useServerFn(salvarFaturamento);
   const excluir = useServerFn(excluirFaturamento);
   const [edit, setEdit] = useState<{ mes: string; valor: string; anterior?: string | undefined } | null>(null);
+  const valorInput = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const lista = [...data].sort((a, b) => b.mes.localeCompare(a.mes));
 
   async function onSave() {
     if (!edit) return;
-    const valor = Number(edit.valor.replace(/\./g, "").replace(",", "."));
+    const valor = Number((valorInput.current?.value ?? edit.valor).replace(/\./g, "").replace(",", "."));
     if (lista.some((l) => l.mes === edit.mes) && edit.anterior !== edit.mes && !confirm("Esse mês já tem faturamento. Substituir?")) return;
     setBusy(true);
     try {
@@ -124,7 +125,7 @@ function Faturamento() {
           <DialogHeader><DialogTitle>{edit?.anterior ? "Editar faturamento" : "Novo mês de faturamento"}</DialogTitle></DialogHeader>
           {edit && <div className="grid gap-3">
             <div><Label htmlFor="fmes">Mês</Label><Input id="fmes" type="month" disabled={!!edit.anterior} value={edit.mes} onChange={(e) => setEdit({ ...edit, mes: e.target.value })} /></div>
-            <div><Label htmlFor="fval">Valor (R$)</Label><Input id="fval" inputMode="decimal" placeholder="Ex.: 42.500,00" value={edit.valor} onChange={(e) => setEdit({ ...edit, valor: e.target.value })} /></div>
+            <div><Label htmlFor="fval">Valor (R$)</Label><Input ref={valorInput} id="fval" inputMode="decimal" placeholder="Ex.: 42.500,00" defaultValue={edit.valor} /></div>
           </div>}
           <DialogFooter><Button variant="outline" onClick={() => setEdit(null)}>Cancelar</Button><Button disabled={busy} onClick={onSave}>{busy ? "Salvando…" : "Salvar"}</Button></DialogFooter>
         </DialogContent>
@@ -151,13 +152,16 @@ function Registros({ tipo }: { tipo: TipoRegistro }) {
   const lista = data.filter((r) => r.tipo === tipo);
   const total = totalConhecido(lista);
   const [edit, setEdit] = useState<(ReturnType<typeof vazio> & { id?: string | undefined }) | null>(null);
+  const valorInput = useRef<HTMLInputElement>(null);
+  const descricaoInput = useRef<HTMLInputElement>(null);
+  const observacoesInput = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
 
   async function onSave() {
     if (!edit) return;
     const reg: RegistroFinanceiro = {
-      id: edit.id, tipo, descricao: edit.descricao, categoria: edit.categoria, data: edit.data || null,
-      valor: num(edit.valor), quantidade: tipo === "despesa" ? null : num(edit.quantidade), observacoes: edit.observacoes || null,
+      id: edit.id, tipo, descricao: descricaoInput.current?.value ?? edit.descricao, categoria: edit.categoria, data: edit.data || null,
+      valor: num(valorInput.current?.value ?? edit.valor), quantidade: tipo === "despesa" ? null : num(edit.quantidade), observacoes: (observacoesInput.current?.value ?? edit.observacoes) || null,
     };
     setBusy(true);
     try { await salvar({ data: reg }); await qc.invalidateQueries({ queryKey: ["school", "financeiro"] }); toast.success("Salvo"); setEdit(null); }
@@ -208,14 +212,14 @@ function Registros({ tipo }: { tipo: TipoRegistro }) {
         <DialogContent>
           <DialogHeader><DialogTitle>{edit?.id ? "Editar" : t.novo}</DialogTitle></DialogHeader>
           {edit && <div className="grid gap-3">
-            <div><Label htmlFor="rdesc">Descrição</Label><Input id="rdesc" value={edit.descricao} onChange={(e) => setEdit({ ...edit, descricao: e.target.value })} /></div>
+            <div><Label htmlFor="rdesc">Descrição</Label><Input ref={descricaoInput} id="rdesc" defaultValue={edit.descricao} /></div>
             <div><Label htmlFor="rcat">{t.cat}</Label><Input id="rcat" value={edit.categoria} onChange={(e) => setEdit({ ...edit, categoria: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label htmlFor="rdata">{t.data}</Label><Input id="rdata" type="date" value={edit.data} onChange={(e) => setEdit({ ...edit, data: e.target.value })} /></div>
-              <div><Label htmlFor="rval">{tipo === "despesa" ? "Valor (R$)" : "Valor unitário (R$)"}</Label><Input id="rval" inputMode="decimal" value={edit.valor} onChange={(e) => setEdit({ ...edit, valor: e.target.value })} /></div>
+              <div><Label htmlFor="rval">{tipo === "despesa" ? "Valor (R$)" : "Valor unitário (R$)"}</Label><Input ref={valorInput} id="rval" inputMode="decimal" defaultValue={edit.valor} /></div>
             </div>
             {tipo !== "despesa" && <div><Label htmlFor="rqtd">Quantidade</Label><Input id="rqtd" inputMode="numeric" value={edit.quantidade} onChange={(e) => setEdit({ ...edit, quantidade: e.target.value })} /></div>}
-            <div><Label htmlFor="robs">Observações</Label><Input id="robs" value={edit.observacoes} onChange={(e) => setEdit({ ...edit, observacoes: e.target.value })} /></div>
+            <div><Label htmlFor="robs">Observações</Label><Input ref={observacoesInput} id="robs" defaultValue={edit.observacoes} /></div>
           </div>}
           <DialogFooter><Button variant="outline" onClick={() => setEdit(null)}>Cancelar</Button><Button disabled={busy} onClick={onSave}>{busy ? "Salvando…" : "Salvar"}</Button></DialogFooter>
         </DialogContent>

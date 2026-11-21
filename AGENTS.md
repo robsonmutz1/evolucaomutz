@@ -29,4 +29,4 @@
 - Dashboard completion forecasts reuse the protected tuition cache and a tested client-safe grouping helper keyed by the last non-cancelled tuition reference, so contract-only students never appear and settled installments remain eligible.
 - Apply discount-day due-date suggestions through the shared student form setter and a client-safe helper; do not rewrite existing installments or override stored contracts merely by opening the form, preserving renegotiations.
 - Paginate the student table after shared-cache filtering and sorting, and retain its page-size preference locally; this limits rendered rows without truncating reports, filters or next-code calculation.
-- Keep financial value/description drafts in form-local inputs and precompute catalog usage counts; this avoids rebuilding the transaction table and scanning history for every keystroke.
+- Keep financial value/description drafts in form-local inputs and precompute catalog usage counts; this avoids rebuilding transaction tables for every keystroke, while isolated settlement/contract forms retain reactive calculations.

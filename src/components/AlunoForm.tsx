@@ -1,5 +1,5 @@
 import { idadeAluno, idadeTexto } from '@/lib/aniversariantes';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { FinanceiroDatePicker } from './FinanceiroDatePicker';
@@ -25,7 +25,7 @@ import { AlunoMensalidades } from './Mensalidades';
 export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: () => void; onSave?: (a: Aluno) => Promise<void> }) {
   const {salvar,alunos}=useStore();
   const {data:pedagogico}=useSuspenseQuery(pedagogicoQuery);
-  const original:MatriculaInput[]=pedagogico.matriculas.filter(m=>m.aluno_id===aluno.id).sort((a,b)=>a.ordem-b.ordem);
+  const original=useMemo<MatriculaInput[]>(()=>pedagogico.matriculas.filter(m=>m.aluno_id===aluno.id).sort((a,b)=>a.ordem-b.ordem),[pedagogico.matriculas,aluno.id]);
   const [ms,setMs]=useState<MatriculaInput[]>(original.length?original:[emptyCourse(1)]);
   const [photo,setPhoto]=useState<Blob|null>(null);
   const [removePhoto,setRemovePhoto]=useState(false);
@@ -56,7 +56,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
   );
 
   const [gerando,setGerando]=useState(false);
-  const jaGerado=mensalidades.filter(p=>p.aluno_id===aluno.id&&p.situacao!=='cancelada').length;
+  const jaGerado=useMemo(()=>mensalidades.filter(p=>p.aluno_id===aluno.id&&p.situacao!=='cancelada').length,[mensalidades,aluno.id]);
   async function gerarFinanceiro(){
     if(jaGerado){toast.error('O financeiro deste aluno já foi gerado.');return;}
     const novas=gerarParcelas({primeiraCobranca:f.primeiraCobranca,qtd:f.qtdMensalidades,dia:f.diaVencimento,valor:f.valorMensal,valorMatricula:f.valor_matricula??null,dataMatricula:f.data_matricula??(f.dataMatricula||dataBrasilia())});
