@@ -3,6 +3,7 @@ import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
 import { toast } from 'sonner';
 import { Pencil } from 'lucide-react';
+import { ParcelasExtras } from './ParcelasExtras';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -91,7 +92,7 @@ function Desfazer({ p }: { p: Parcela }) {
 }
 
 /** Student financial tab: generate, bulk edit/cancel/delete and settle installments. */
-export function AlunoMensalidades({ aluno }: { aluno: Aluno }) {
+export function AlunoMensalidades({ aluno, abrirExtras = false }: { aluno: Aluno; abrirExtras?: boolean }) {
   const { data: todas } = useSuspenseQuery(mensalidadesQuery);
   const parcelas = useMemo(() => todas.filter((p) => p.aluno_id === aluno.id).sort((a, b) => (a.tipo === b.tipo ? a.vencimento.localeCompare(b.vencimento) : a.tipo === 'matricula' ? -1 : 1)), [todas, aluno.id]);
   const gerar = useServerFn(gerarMensalidades);
@@ -104,12 +105,12 @@ export function AlunoMensalidades({ aluno }: { aluno: Aluno }) {
   const [novoDia, setNovoDia] = useState('');
   const [novaData, setNovaData] = useState('');
   const [g, setG] = useState({ primeira: aluno.primeiraCobranca || dataBrasilia().slice(0, 7), qtd: String(aluno.qtdMensalidades || 12), dia: String(aluno.diaVencimento || 10), valor: aluno.valorMensal === null ? '' : String(aluno.valorMensal), matricula: parcelas.some((p) => p.tipo === 'matricula' && p.situacao !== 'cancelada') || !aluno.valor_matricula ? '' : String(aluno.valor_matricula) });
-  const [mostrarGerar, setMostrarGerar] = useState(!parcelas.length);
+  const [mostrarGerar, setMostrarGerar] = useState(!parcelas.length && !abrirExtras);
   const abertas = parcelas.filter((p) => sel.includes(p.id) && p.situacao !== 'paga');
   const run = async (fn: () => Promise<unknown>, ok: string) => { try { await fn(); await refresh(); setSel([]); toast.success(ok); } catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); } };
   const total = (s: Parcela['situacao']) => parcelas.filter((p) => p.situacao === s).reduce((t, p) => t + (s === 'paga' ? p.valor_pago ?? 0 : p.valor), 0);
 
-  return <div className="space-y-4">
+  return <div className="min-w-0 space-y-4">
     <div className="grid gap-3 sm:grid-cols-3">
       <Card label="Em aberto" value={brl(Math.round(total('aberta') * 100) / 100)} />
       <Card label="Recebido" value={brl(Math.round(total('paga') * 100) / 100)} />
@@ -129,6 +130,7 @@ export function AlunoMensalidades({ aluno }: { aluno: Aluno }) {
       }, 'Parcelas lançadas')}>Lançar</Button>{parcelas.length > 0 && <Button type="button" variant="ghost" onClick={() => setMostrarGerar(false)}>Fechar</Button>}</div>
     </section> : <Button type="button" variant="outline" onClick={() => setMostrarGerar(true)}>Lançar mais parcelas</Button>}
 
+    <ParcelasExtras aluno={aluno} initialOpen={abrirExtras} />
     {parcelas.length > 0 && <>
       <div className="flex flex-wrap items-end gap-2 rounded-lg border p-3">
         <span className="text-sm text-muted-foreground">{sel.length ? `${sel.length} selecionada(s)` : 'Selecione parcelas para alterar ou excluir em lote'}<br /><span className="text-xs">Novo dia: ajusta o dia mantendo o mês. Data: mesma data para todas. Para uma só, use o lápis.</span></span>
@@ -156,7 +158,7 @@ function ParcelaLinha({ p, aluno, sel, onSel, baixa, setBaixa, mostrarAluno }: {
     <tr>
       {mostrarAluno ? <td className="p-2"><div className="font-medium">{aluno?.nome ?? '—'}</div><div className="text-xs text-muted-foreground">{aluno?.codigo}</div></td>
         : <td className="p-2"><input type="checkbox" aria-label={`Selecionar ${rotuloParcela(p)}`} disabled={p.situacao === 'paga'} checked={!!sel} onChange={(e) => onSel?.(e.target.checked)} /></td>}
-      <td className="p-2">{rotuloParcela(p)}</td><td className="p-2">{formatMes(p.referencia)}</td><td className="p-2">{formatData(p.vencimento)}</td>
+      <td className="p-2">{rotuloParcela(p)}{p.observacao?.startsWith('Curso extra: ') && <div className="max-w-48 break-words text-xs text-muted-foreground">{p.observacao}</div>}</td><td className="p-2">{formatMes(p.referencia)}</td><td className="p-2">{formatData(p.vencimento)}</td>
       <td className="p-2">{brl(p.valor)}</td><td className="p-2"><Selo p={p} /></td><td className="p-2"><Pagamento p={p} /></td>
       <td className="p-2 text-right whitespace-nowrap">{p.situacao === 'aberta' && !mostrarAluno && <EditarParcela p={p} />}{p.situacao === 'aberta' && !baixa && <Button type="button" size="sm" onClick={() => setBaixa(p.id)}>Dar baixa</Button>}{p.situacao === 'paga' && <Desfazer p={p} />}</td>
     </tr>

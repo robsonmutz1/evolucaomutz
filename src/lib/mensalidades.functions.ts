@@ -22,13 +22,29 @@ export const gerarMensalidades = createServerFn({ method: 'POST' }).middleware([
     return i;
   }).handler(async ({ context, data }) => {
     await owner(context.supabase);
-    const { data: exist, error: e1 } = await context.supabase.from('mensalidades').select('tipo,referencia').eq('aluno_id', data.aluno_id).neq('situacao', 'cancelada');
+    const { data: exist, error: e1 } = await context.supabase.from('mensalidades').select('tipo,referencia').eq('aluno_id', data.aluno_id).is('extra_lote', null).neq('situacao', 'cancelada');
     if (e1) throw new Error('Não foi possível verificar as parcelas.');
     const dup = data.parcelas.find((p) => exist.some((x) => x.tipo === p.tipo && (p.tipo === 'matricula' || x.referencia === p.referencia)));
     if (dup) throw new Error(dup.tipo === 'matricula' ? 'A matrícula já foi lançada.' : `Já existe parcela para ${dup.referencia.split('-').reverse().join('/')}.`);
     const { error } = await context.supabase.from('mensalidades').insert(data.parcelas.map((p) => ({ aluno_id: data.aluno_id, tipo: p.tipo, parcela: p.parcela, referencia: p.referencia, vencimento: p.vencimento, valor: p.valor })));
     if (error) throw new Error(error.code === '23505' ? 'O financeiro deste aluno já foi gerado.' : 'Não foi possível lançar as parcelas.');
     return { success: true };
+  });
+
+export const adicionarParcelasExtras = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((i: { aluno_id: string; lote: string; descricao: string; parcelas: NovaParcela[] }) => {
+    const descricao = i.descricao.trim();
+    if (!i.aluno_id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(i.lote) || !descricao || descricao.length > 120 || !i.parcelas.length || i.parcelas.length > 60) throw new Error('Confira os dados das parcelas extras.');
+    const parcelas = i.parcelas.map((p) => {
+      if (p.tipo !== 'mensalidade' || !dataValida(p.vencimento) || !/^\d{4}-(0[1-9]|1[0-2])$/.test(p.referencia) || !valorOk(p.valor) || p.valor <= 0 || !Number.isInteger(p.parcela) || p.parcela < 1 || p.parcela > 60) throw new Error('Confira valores e vencimentos.');
+      return { tipo: p.tipo, parcela: p.parcela, referencia: p.referencia, vencimento: p.vencimento, valor: p.valor };
+    });
+    return { aluno_id: i.aluno_id, lote: i.lote, descricao, parcelas };
+  }).handler(async ({ context, data }) => {
+    await owner(context.supabase);
+    const { data: quantidade, error } = await context.supabase.rpc('mensalidades_adicionar_extras', { p_aluno: data.aluno_id, p_lote: data.lote, p_descricao: data.descricao, p_parcelas: data.parcelas });
+    if (error) throw new Error(error.code === 'P0001' ? error.message : 'Não foi possível adicionar as parcelas extras.');
+    return { quantidade };
   });
 
 export const alterarMensalidades = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])

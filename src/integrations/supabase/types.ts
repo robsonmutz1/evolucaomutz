@@ -785,6 +785,7 @@ export type Database = {
           conta_id: string | null
           created_at: string
           data_pagamento: string | null
+          extra_lote: string | null
           forma_pagamento: string | null
           id: string
           lancamento_id: string | null
@@ -803,6 +804,7 @@ export type Database = {
           conta_id?: string | null
           created_at?: string
           data_pagamento?: string | null
+          extra_lote?: string | null
           forma_pagamento?: string | null
           id?: string
           lancamento_id?: string | null
@@ -821,6 +823,7 @@ export type Database = {
           conta_id?: string | null
           created_at?: string
           data_pagamento?: string | null
+          extra_lote?: string | null
           forma_pagamento?: string | null
           id?: string
           lancamento_id?: string | null
@@ -1211,6 +1214,15 @@ export type Database = {
         Returns: string
       }
       mensalidade_estornar: { Args: { p_id: string }; Returns: undefined }
+      mensalidades_adicionar_extras: {
+        Args: {
+          p_aluno: string
+          p_descricao: string
+          p_lote: string
+          p_parcelas: Json
+        }
+        Returns: number
+      }
       pedagogico_salvar_aluno: {
         Args: { p_aluno: Json; p_matriculas: Json }
         Returns: undefined

@@ -1,4 +1,5 @@
 import { idadeAluno, idadeTexto } from '@/lib/aniversariantes';
+import { Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -32,6 +33,8 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
   const exists=alunos.some(a=>a.id===aluno.id);
   const [f, setF] = useState(aluno);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState('cadastro');
+  const [extrasOpen, setExtrasOpen] = useState(false);
   const qc=useQueryClient();
   const {data:mensalidades}=useSuspenseQuery(mensalidadesQuery);
   const {data:origens}=useSuspenseQuery(origensQuery);
@@ -97,7 +100,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="student-dialog max-h-[96dvh] w-[calc(100%-1rem)] max-w-none overflow-y-auto gap-3 p-4 sm:max-w-none xl:w-[calc(100%-2rem)]">
         <DialogHeader><DialogTitle className="font-display text-2xl">{aluno.nome ? "Editar aluno" : "Novo aluno"}</DialogTitle></DialogHeader>
-        <Tabs defaultValue="cadastro"><TabsList className="mb-4"><TabsTrigger value="cadastro">Cadastro</TabsTrigger><TabsTrigger value="financeiro" disabled={!exists}>Financeiro</TabsTrigger><TabsTrigger value="followup" disabled={!exists}>Follow-up</TabsTrigger></TabsList><TabsContent value="cadastro"><form
+        <Tabs className="min-w-0 w-full" value={tab} onValueChange={setTab}><TabsList className="mb-4"><TabsTrigger value="cadastro">Cadastro</TabsTrigger><TabsTrigger value="financeiro" disabled={!exists}>Financeiro</TabsTrigger><TabsTrigger value="followup" disabled={!exists}>Follow-up</TabsTrigger></TabsList><TabsContent value="cadastro"><form
           className="student-form grid gap-4 xl:grid-cols-3"
           onSubmit={(e)=>{e.preventDefault();void enviar();}}
         >
@@ -156,6 +159,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             {txt("primeiraCobranca", "Mês da 1ª cobrança", "month")}
             <Resumo label="Valor com desconto" value={brl(valorComDesconto(f))} />
             <div className="sm:col-span-3 xl:col-span-2">{exists&&(jaGerado?<p className="rounded-md border bg-muted/50 p-2 text-sm text-muted-foreground">Financeiro já gerado ({jaGerado} parcela(s)). Para alterar, use a aba Financeiro.</p>:<Button type="button" disabled={gerando||saving} onClick={()=>void gerarFinanceiro()}>{gerando?'Gerando…':'Gerar Financeiro'}</Button>)}</div>
+            {exists && <div className="sm:col-span-3 xl:col-span-2"><Button type="button" variant="outline" disabled={saving || gerando} onClick={() => { setExtrasOpen(true); setTab('financeiro'); }}><Plus className="h-4 w-4" />Adicionar parcelas extras</Button></div>}
             <Resumo label="Previsão da última mensalidade" value={f.primeiraCobranca && f.qtdMensalidades > 0 ? formatMes(ultimaMensalidade(f.primeiraCobranca, f.qtdMensalidades)) : "—"} />
           </section>
 
@@ -164,7 +168,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             <Button type="button" variant="outline" onClick={onClose}>Voltar</Button>
             <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
           </DialogFooter>
-        </form></TabsContent><TabsContent value="financeiro">{exists&&<AlunoMensalidades aluno={f}/>}</TabsContent><TabsContent value="followup">{exists&&<StudentFollowups alunoId={aluno.id}/>}</TabsContent></Tabs>
+        </form></TabsContent><TabsContent value="financeiro" className="min-w-0">{exists&&<AlunoMensalidades aluno={f} abrirExtras={extrasOpen}/>}</TabsContent><TabsContent value="followup">{exists&&<StudentFollowups alunoId={aluno.id}/>}</TabsContent></Tabs>
       </DialogContent>
     </Dialog>
   );

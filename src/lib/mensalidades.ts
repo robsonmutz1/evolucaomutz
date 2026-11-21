@@ -10,6 +10,15 @@ export type Parcela = {
 };
 export type NovaParcela = Pick<Parcela, 'tipo' | 'parcela' | 'referencia' | 'vencimento' | 'valor'>;
 
+/** Extra tuition is a separate schedule; never changes the original contract or charges enrollment again. */
+export function gerarParcelasExtras(i: { primeiroVencimento: string; qtd: number; valor: number }): NovaParcela[] {
+  const d = new Date(`${i.primeiroVencimento}T12:00:00Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(i.primeiroVencimento) || !Number.isFinite(d.getTime()) || d.toISOString().slice(0, 10) !== i.primeiroVencimento
+    || !Number.isInteger(i.qtd) || i.qtd < 1 || i.qtd > 60 || !Number.isFinite(i.valor) || i.valor <= 0
+    || Math.abs(Math.round(i.valor * 100) - i.valor * 100) > 1e-6) throw new Error('Informe vencimento, quantidade de 1 a 60 e valor válido.');
+  return gerarParcelas({ primeiraCobranca: i.primeiroVencimento.slice(0, 7), qtd: i.qtd, dia: d.getUTCDate(), valor: i.valor });
+}
+
 /** Suggested recurring due day; only valid discount days trigger a change. */
 export function diaSeguinteAoDesconto(dia: number): number | null {
   if (!Number.isInteger(dia) || dia < 1 || dia > 31) return null;

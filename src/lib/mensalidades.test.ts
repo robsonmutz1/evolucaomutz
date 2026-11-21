@@ -1,7 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { diaSeguinteAoDesconto, gerarParcelas, valorSugerido, valorParaBaixa, vencimentoNoMes, origensDosUltimos } from './mensalidades';
+import { diaSeguinteAoDesconto, gerarParcelas, gerarParcelasExtras, valorSugerido, valorParaBaixa, vencimentoNoMes, origensDosUltimos } from './mensalidades';
 const desc = { descontoTipo: 'percentual' as const, desconto: 10, diaLimiteDesconto: 5 };
 describe('mensalidades', () => {
+  it('adiciona parcelas de outro curso sem substituir as mensalidades de informática de 150', () => {
+    const original = gerarParcelas({ primeiraCobranca: '2026-11', qtd: 3, dia: 11, valor: 150 });
+    const extras = gerarParcelasExtras({ primeiroVencimento: '2026-11-16', qtd: 2, valor: 80 });
+    expect(original.map((p) => p.valor)).toEqual([150, 150, 150]);
+    expect([...original, ...extras].filter((p) => p.referencia === '2026-11').map((p) => p.valor)).toEqual([150, 80]);
+    expect(extras.map((p) => [p.tipo, p.vencimento])).toEqual([['mensalidade', '2026-11-16'], ['mensalidade', '2026-12-16']]);
+  });
+  it('extras ajustam o último dia do mês e não criam outra matrícula', () => {
+    expect(gerarParcelasExtras({ primeiroVencimento: '2027-01-31', qtd: 2, valor: 80.50 }).map((p) => [p.tipo, p.vencimento, p.valor])).toEqual([['mensalidade', '2027-01-31', 80.5], ['mensalidade', '2027-02-28', 80.5]]);
+  });
+  it('rejeita extras com data impossível ou quantidade fracionada', () => {
+    expect(() => gerarParcelasExtras({ primeiroVencimento: '2027-02-30', qtd: 2, valor: 80 })).toThrow();
+    expect(() => gerarParcelasExtras({ primeiroVencimento: '2027-02-28', qtd: 1.5, valor: 80 })).toThrow();
+  });
   it('sugere vencimento no dia seguinte ao limite do desconto', () => {
     expect(diaSeguinteAoDesconto(10)).toBe(11);
     expect(diaSeguinteAoDesconto(15)).toBe(16);
