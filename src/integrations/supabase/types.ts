@@ -55,6 +55,7 @@ export type Database = {
           cep: string
           cidade: string
           codigo: string
+          conclusao_prevista: string | null
           created_at: string
           curso: string
           data_matricula: string | null
@@ -94,6 +95,7 @@ export type Database = {
           cep?: string
           cidade?: string
           codigo?: string
+          conclusao_prevista?: string | null
           created_at?: string
           curso?: string
           data_matricula?: string | null
@@ -133,6 +135,7 @@ export type Database = {
           cep?: string
           cidade?: string
           codigo?: string
+          conclusao_prevista?: string | null
           created_at?: string
           curso?: string
           data_matricula?: string | null

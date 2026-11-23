@@ -59,6 +59,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
   );
 
   const [gerando,setGerando]=useState(false);
+  const ultimaParcela=useMemo(()=>mensalidades.filter(p=>p.aluno_id===aluno.id&&p.tipo==='mensalidade'&&p.situacao!=='cancelada').reduce<string|null>((m,p)=>!m||p.referencia>m?p.referencia:m,null),[mensalidades,aluno.id]);
   const jaGerado=useMemo(()=>mensalidades.filter(p=>p.aluno_id===aluno.id&&p.situacao!=='cancelada').length,[mensalidades,aluno.id]);
   async function gerarFinanceiro(){
     if(jaGerado){toast.error('O financeiro deste aluno já foi gerado.');return;}
@@ -161,6 +162,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             <div className="sm:col-span-3 xl:col-span-2">{exists&&(jaGerado?<p className="rounded-md border bg-muted/50 p-2 text-sm text-muted-foreground">Financeiro já gerado ({jaGerado} parcela(s)). Para alterar, use a aba Financeiro.</p>:<Button type="button" disabled={gerando||saving} onClick={()=>void gerarFinanceiro()}>{gerando?'Gerando…':'Gerar Financeiro'}</Button>)}</div>
             {exists && <div className="sm:col-span-3 xl:col-span-2"><Button type="button" variant="outline" disabled={saving || gerando} onClick={() => { setExtrasOpen(true); setTab('financeiro'); }}><Plus className="h-4 w-4" />Adicionar parcelas extras</Button></div>}
             <Resumo label="Previsão da última mensalidade" value={f.primeiraCobranca && f.qtdMensalidades > 0 ? formatMes(ultimaMensalidade(f.primeiraCobranca, f.qtdMensalidades)) : "—"} />
+            <div className="space-y-1.5"><Label htmlFor="conclusao_prevista">Conclusão prevista (mês/ano)</Label><Input id="conclusao_prevista" type="month" lang="pt-BR" value={f.conclusao_prevista ?? ultimaParcela ?? ''} onChange={e=>set('conclusao_prevista', e.target.value || null)} /></div>
           </section>
 
           {perguntar>0&&<div role="alert" className="col-span-full flex flex-wrap items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm"><span>Este aluno tem {perguntar} parcela(s) em aberto. O que fazer com elas?</span><Button type="button" size="sm" variant="destructive" disabled={saving} onClick={()=>void enviar('cancelar')}>Cancelar parcelas em aberto</Button><Button type="button" size="sm" variant="outline" disabled={saving} onClick={()=>void enviar('manter')}>Manter em aberto</Button></div>}

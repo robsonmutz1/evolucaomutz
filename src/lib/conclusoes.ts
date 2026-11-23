@@ -1,8 +1,8 @@
 import type { Aluno } from './alunos';
 import { somarMes, type Parcela } from './mensalidades';
 
-/** Forecast from the last recorded tuition month, regardless of settlement. */
-export function conclusoesPorMes<T extends Pick<Aluno, 'id' | 'nome' | 'status'>>(
+/** Forecast from the student's expected completion month, else the last recorded tuition month. */
+export function conclusoesPorMes<T extends Pick<Aluno, 'id' | 'nome' | 'status'> & { conclusao_prevista?: string | null }>(
   alunos: T[],
   parcelas: Pick<Parcela, 'aluno_id' | 'tipo' | 'referencia' | 'situacao'>[],
   mesAtual: string,
@@ -17,7 +17,7 @@ export function conclusoesPorMes<T extends Pick<Aluno, 'id' | 'nome' | 'status'>
     const mes = somarMes(mesAtual, i);
     return {
       mes,
-      alunos: alunos.filter(a => a.status === 'Ativo' && ultimas.get(a.id) === mes)
+      alunos: alunos.filter(a => a.status === 'Ativo' && (a.conclusao_prevista || ultimas.get(a.id)) === mes)
         .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
     };
   });

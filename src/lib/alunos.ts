@@ -31,6 +31,7 @@ export interface Aluno {
   observacoes?: string;
   foto_url?: string | null;
   origem_lead?: string | null;
+  conclusao_prevista?: string | null;
   valor_matricula?: number | null;
   data_matricula?: string | null;
   matriculas?: import('./pedagogico').MatriculaInput[];

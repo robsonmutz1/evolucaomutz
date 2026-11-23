@@ -26,3 +26,13 @@ describe('conclusões baseadas nas mensalidades lançadas', () => {
     expect(grupos.flatMap(g => g.alunos)).toEqual([]);
   });
 });
+describe('conclusão prevista manual', () => {
+  it('inclui aluno sem parcelas com conclusão prevista informada', () => {
+    const r = conclusoesPorMes([{ id: 'x', nome: 'Ana', status: 'Ativo', conclusao_prevista: '2026-12' }], [], '2026-11');
+    expect(r[1]?.alunos.map(a => a.nome)).toEqual(['Ana']);
+  });
+  it('aluno sem parcelas e sem conclusão prevista não aparece', () => {
+    const r = conclusoesPorMes([{ id: 'x', nome: 'Ana', status: 'Ativo', conclusao_prevista: null }], [], '2026-11');
+    expect(r.every(c => c.alunos.length === 0)).toBe(true);
+  });
+});
