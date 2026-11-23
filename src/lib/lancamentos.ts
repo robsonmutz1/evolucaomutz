@@ -9,6 +9,23 @@ export function totalPorTipo(ls: Lancamento[], tipo: Lancamento['tipo'], prefixo
   return v.length ? Math.round(v.reduce((s, l) => s + l.valor, 0) * 100) / 100 : null;
 }
 
+/** Groups the visible rows in their existing date order; daily balance is not cumulative. */
+export function lancamentosPorDia(lista: Lancamento[]) {
+  const dias = new Map<string, { data: string; lancamentos: Lancamento[]; entradas: number; saidas: number }>();
+  for (const l of lista) {
+    const data = l.data_lancamento ?? `${l.mes}-01`;
+    const dia = dias.get(data) ?? { data, lancamentos: [], entradas: 0, saidas: 0 };
+    dia.lancamentos.push(l);
+    if (l.tipo === 'entrada') dia.entradas += Math.round(l.valor * 100);
+    else dia.saidas += Math.round(l.valor * 100);
+    dias.set(data, dia);
+  }
+  return [...dias.values()].map(dia => ({
+    ...dia, entradas: dia.entradas / 100, saidas: dia.saidas / 100,
+    saldo: (dia.entradas - dia.saidas) / 100,
+  }));
+}
+
 import { dataValida } from './financeiro-cadastros';
 export function validarLancamento(l: Lancamento): Lancamento {
   if(l.data_lancamento){if(!dataValida(l.data_lancamento))throw new Error('Informe uma data válida.');l={...l,mes:l.data_lancamento.slice(0,7)};}

@@ -31,3 +31,4 @@
 - Apply discount-day due-date suggestions through the shared student form setter and a client-safe helper; do not rewrite existing installments or override stored contracts merely by opening the form, preserving renegotiations.
 - Paginate the student table after shared-cache filtering and sorting, and retain its page-size preference locally; this limits rendered rows without truncating reports, filters or next-code calculation.
 - Keep financial value/description drafts in form-local inputs and precompute catalog usage counts; this avoids rebuilding transaction tables for every keystroke, while isolated settlement/contract forms retain reactive calculations.
+- Group the visible financial list by launch date using a memoized client-safe helper and integer-cent daily totals; preserve filters, ordering and original rows, and keep daily net movement distinct from cumulative cash balance.

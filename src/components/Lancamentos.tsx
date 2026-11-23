@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Pencil, Plus, Trash2, Settings, ArrowUpDown } from "lucide-react";
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { brl, formatMes } from "@/lib/alunos";
-import { totalPorTipo, type Lancamento } from "@/lib/lancamentos";
+import { lancamentosPorDia, totalPorTipo, type Lancamento } from "@/lib/lancamentos";
 import { excluirLancamento, lancamentosQuery, salvarLancamento } from "@/lib/lancamentos.functions";
 import { cadastrosFinanceirosQuery, salvarCadastroFinanceiro } from '@/lib/financeiro-cadastros.functions';
 import { hojeFinanceiro, nomeChave, tipoPermitido, type ItemFinanceiro } from '@/lib/financeiro-cadastros';
@@ -46,6 +46,7 @@ export function Lancamentos() {
     return { grupo, categoria };
   }, [data]);
   const ent = totalPorTipo(lista, "entrada", ''), sai = totalPorTipo(lista, "saida", '');
+  const dias = useMemo(() => lancamentosPorDia(lista), [lista]);
   function options(kind:'grupo'|'categoria',tipo?:Lancamento['tipo'],selected=''){
    const rows=kind==='grupo'?cadastros.grupos:cadastros.categorias;
    const groupId=cadastros.grupos.find(g=>nomeChave(g.nome)===nomeChave(edit?.grupo??''))?.id;
@@ -108,7 +109,19 @@ export function Lancamentos() {
       {lista.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum lançamento neste mês.</p> : (
         <div className="overflow-x-auto"><Table>
           <TableHeader><TableRow><TableHead className="sticky left-0 z-10 bg-background"><Button variant="ghost" className="h-auto px-0" onClick={()=>setAsc(v=>!v)}>Data<ArrowUpDown className="h-3 w-3"/></Button></TableHead><TableHead>Tipo</TableHead><TableHead>Grupo</TableHead><TableHead>Categoria</TableHead><TableHead>Descrição</TableHead><TableHead className="text-right">Valor</TableHead><TableHead className="w-24" /></TableRow></TableHeader>
-          <TableBody>{lista.map((l) => (
+          <TableBody>{dias.map((dia) => (
+            <Fragment key={dia.data}>
+              <TableRow className="bg-muted/60 hover:bg-muted/60" data-dia={dia.data}>
+                <TableCell colSpan={7} className="py-3">
+                  <div className="sticky left-0 grid w-[calc(100vw-4rem)] max-w-full grid-cols-2 gap-x-4 gap-y-2 text-sm sm:w-auto lg:grid-cols-4">
+                    <strong className="whitespace-nowrap">{dia.data.split('-').reverse().join('/')}</strong>
+                    <span className="whitespace-nowrap">Entradas: <strong className="text-success tabular-nums">{brl(dia.entradas)}</strong></span>
+                    <span className="whitespace-nowrap">Saídas: <strong className="text-destructive tabular-nums">{brl(dia.saidas)}</strong></span>
+                    <span className="whitespace-nowrap">Saldo do dia: <strong className="tabular-nums">{brl(dia.saldo)}</strong></span>
+                  </div>
+                </TableCell>
+              </TableRow>
+              {dia.lancamentos.map((l) => (
             <TableRow key={l.id}>
               <TableCell className="sticky left-0 z-10 whitespace-nowrap bg-background font-medium">{(l.data_lancamento??`${l.mes}-01`).split('-').reverse().join('/')}</TableCell>
               <TableCell className={l.tipo === "entrada" ? "text-success" : "text-destructive"}>{l.tipo === "entrada" ? "Entrada" : "Saída"}</TableCell>
@@ -119,6 +132,7 @@ export function Lancamentos() {
                 <Button size="icon" variant="ghost" aria-label="Excluir" onClick={() => onDelete(l)}><Trash2 className="h-4 w-4" /></Button>
               </TableCell>
             </TableRow>))}
+            </Fragment>))}
           </TableBody>
         </Table></div>
       )}
