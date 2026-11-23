@@ -18,6 +18,7 @@ export function saldoConta(c:ContaCaixa, ls:Lancamento[], data:string):number|nu
  return (centavos(Number(c.saldo_inicial))+ls.filter(l=>l.conta_id===c.id&&l.situacao==='realizado'&&dataCaixa(l)>String(c.data_saldo_inicial)&&dataCaixa(l)<=data).reduce((s,l)=>s+(l.tipo==='entrada'?1:-1)*centavos(l.valor),0))/100;
 }
 export function diasSemConferencia(c:Conferencia|undefined,hoje:string){return c?Math.floor((Date.parse(hoje+'T12:00:00Z')-Date.parse(c.criado_em.slice(0,10)+'T12:00:00Z'))/86400000):null;}
+export function inicioCaixa(cs:ContaCaixa[]){const ds=cs.flatMap(c=>c.data_saldo_inicial?[String(c.data_saldo_inicial)]:[]).sort();return ds[0]??null;}
 export type CausaCaixa={tipo:string;texto:string;ids:string[]};
 export function diagnosticarCaixa(cs:ContaCaixa[],ls:Lancamento[],conta:string|null,data:string,diferenca:number,ultima?:Conferencia){
  const causas:CausaCaixa[]=[];const rows=ls.filter(l=>conta===null||l.conta_id===conta);const alvo=Math.abs(centavos(diferenca));
@@ -29,7 +30,7 @@ export function diagnosticarCaixa(cs:ContaCaixa[],ls:Lancamento[],conta:string|n
  }
  const dup=new Map<string,Lancamento[]>();for(const l of valores){const key=[dataCaixa(l),centavos(l.valor),nomeChave(l.descricao??l.categoria),l.aluno_id??'',l.tipo,l.conta_id??''].join('|');dup.set(key,[...(dup.get(key)??[]),l]);}for(const group of dup.values())if(group.length>1)add('duplicado','Mesma data, valor e descrição ou aluno: estes registros podem representar um pagamento contado duas vezes.',group);
  if(alvo>0){const typo=valores.filter(l=>{const v=centavos(l.valor);if(Math.abs(v-v*10)===alvo||v%10===0&&Math.abs(v-v/10)===alvo)return true;for(const esperado of [v-alvo,v+alvo])if(esperado>=0&&esperado!==v&&String(esperado).split('').sort().join('')===String(v).split('').sort().join(''))return true;return false;});if(typo.length)add('digitacao','Confira os números e os centavos: trocar dígitos ou deslocar a vírgula nestes valores pode explicar a diferença.',typo);}
- const sem=ls.filter(l=>!l.conta_id&&dataCaixa(l)<=data);if(sem.length)add('sem-conta','Não sabemos em qual banco ou caixa este dinheiro entrou ou saiu. Defina a conta para completar o saldo.',sem);
+ const corte=inicioCaixa(cs);const sem=ls.filter(l=>!l.conta_id&&dataCaixa(l)<=data&&(!corte||dataCaixa(l)>corte));if(sem.length)add('sem-conta','Não sabemos em qual banco ou caixa este dinheiro entrou ou saiu. Defina a conta para completar o saldo.',sem);
  const pend=valores.filter(l=>l.situacao==='pendente'&&dataCaixa(l)<data);if(pend.length)add('pendente','Estes pagamentos venceram e ainda estão pendentes. Se já foram pagos ou recebidos, atualize a situação.',pend);
  const fora=rows.filter(l=>dataCaixa(l)>data||cs.some(c=>c.id===l.conta_id&&c.data_saldo_inicial&&dataCaixa(l)<=c.data_saldo_inicial));if(fora.length)add('periodo','Estes valores não entram no saldo: são futuros ou já pertencem ao saldo inicial. Confira as datas no extrato.',fora);
  for(const c of cs.filter(c=>conta===null||c.id===conta)){if(c.saldo_inicial===null||!c.data_saldo_inicial)add('inicial',`${c.nome}: conta sem saldo inicial. Informe o saldo real e a data de partida.`);else if(!dataValida(c.data_saldo_inicial)||c.data_saldo_inicial>data)add('inicial',`${c.nome}: a data do saldo inicial está depois da data de referência.`);}

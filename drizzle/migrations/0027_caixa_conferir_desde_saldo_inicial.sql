@@ -1,0 +1,13 @@
+CREATE OR REPLACE FUNCTION public.caixa_conferir(p_conta uuid,p_data date,p_saldo numeric,p_observacao text DEFAULT '') RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE saldo numeric(12,2); cid uuid; corte date; BEGIN
+IF NOT public.has_owner_access() THEN RAISE EXCEPTION 'Acesso não autorizado.'; END IF;
+IF p_data IS NULL OR p_saldo IS NULL OR p_saldo::text IN('NaN','Infinity','-Infinity') OR round(p_saldo,2)<>p_saldo THEN RAISE EXCEPTION 'Informe data e saldo válidos com até dois centavos.'; END IF;
+PERFORM pg_advisory_xact_lock(hashtextextended('caixa:'||auth.uid()::text,0));
+PERFORM 1 FROM public.contas_caixa WHERE user_id=auth.uid() AND (p_conta IS NULL OR id=p_conta) FOR SHARE;
+IF NOT FOUND THEN RAISE EXCEPTION 'Cadastre ou selecione uma conta.'; END IF;
+IF EXISTS(SELECT 1 FROM public.contas_caixa WHERE user_id=auth.uid() AND (p_conta IS NULL OR id=p_conta) AND (saldo_inicial IS NULL OR data_saldo_inicial IS NULL OR data_saldo_inicial>p_data)) THEN RAISE EXCEPTION 'Conta sem saldo inicial válido: informe saldo e data antes de conferir.'; END IF;
+SELECT min(data_saldo_inicial) INTO corte FROM public.contas_caixa WHERE user_id=auth.uid();
+IF p_conta IS NULL AND EXISTS(SELECT 1 FROM public.lancamentos WHERE caixa_owner_id=auth.uid() AND conta_id IS NULL AND situacao='realizado' AND data_pagamento<=p_data AND (corte IS NULL OR data_pagamento>corte)) THEN RAISE EXCEPTION 'Há lançamentos sem conta definida. Vincule-os antes de conferir todas as contas.'; END IF;
+SELECT sum(c.saldo_inicial+coalesce((SELECT sum(CASE WHEN l.tipo='entrada' THEN l.valor ELSE -l.valor END) FROM public.lancamentos l WHERE l.conta_id=c.id AND l.caixa_owner_id=auth.uid() AND l.situacao='realizado' AND l.data_pagamento>c.data_saldo_inicial AND l.data_pagamento<=p_data),0)) INTO saldo FROM public.contas_caixa c WHERE c.user_id=auth.uid() AND (p_conta IS NULL OR c.id=p_conta);
+INSERT INTO public.conferencias_caixa(conta_id,data_referencia,saldo_informado,saldo_sistema,diferenca,status,observacao,criado_por) VALUES(p_conta,p_data,p_saldo,saldo,p_saldo-saldo,CASE WHEN p_saldo=saldo THEN 'ok' ELSE 'divergente' END,coalesce(p_observacao,''),auth.uid()) RETURNING id INTO cid; RETURN cid; END $$;
+REVOKE ALL ON FUNCTION public.caixa_conferir(uuid,date,numeric,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.caixa_conferir(uuid,date,numeric,text) TO authenticated;

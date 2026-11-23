@@ -15,7 +15,7 @@ import {Table,TableHeader,TableHead,TableRow,TableBody,TableCell} from '@/compon
 import {ChartContainer,ChartTooltip,ChartTooltipContent} from '@/components/ui/chart';
 import {caixaQuery,salvarContaCaixa,conferirCaixa,resolverCaixa,transferirCaixa} from '@/lib/caixa.functions';
 import {lancamentosQuery,salvarLancamento} from '@/lib/lancamentos.functions';
-import {saldoConta,lerDinheiro,centavos,dataCaixa,diagnosticarCaixa,diasSemConferencia,type ContaCaixa,type Conferencia} from '@/lib/caixa';
+import {saldoConta,inicioCaixa,lerDinheiro,centavos,dataCaixa,diagnosticarCaixa,diasSemConferencia,type ContaCaixa,type Conferencia} from '@/lib/caixa';
 import {hojeFinanceiro} from '@/lib/financeiro-cadastros';
 import {brl,formatData} from '@/lib/alunos';
 import type {Lancamento} from '@/lib/lancamentos';
@@ -32,7 +32,7 @@ export function Caixa(){
  const realizados=rows.filter(l=>l.situacao==='realizado');
  const total=(tipo:'entrada'|'saida',pend=false)=>rows.filter(l=>l.tipo===tipo&&(pend?l.situacao==='pendente':realizados.includes(l))).reduce((s,l)=>s+centavos(l.valor),0)/100;
  const saldos=contas.map(c=>saldoConta(c,ls,ate));const saldo=saldos.some(v=>v===null)||!saldos.length?null:saldos.reduce<number>((s,v)=>s+centavos(v??0),0)/100;
- const sem=ls.filter(l=>!l.conta_id);const atual=data.conferencias.find(c=>c.id===result);const ultima=data.conferencias.find(c=>c.status==='ok'&&(conta==='todas'?c.conta_id===null:c.conta_id===conta));
+ const corte=inicioCaixa(data.contas);const sem=ls.filter(l=>!l.conta_id&&(!corte||dataCaixa(l)>corte));const atual=data.conferencias.find(c=>c.id===result);const ultima=data.conferencias.find(c=>c.status==='ok'&&(conta==='todas'?c.conta_id===null:c.conta_id===conta));
  const causas=diagnosticarCaixa(data.contas,ls,atual?.conta_id??(conta==='todas'?null:conta),atual?.data_referencia??ref,Number(atual?.diferenca??0),ultima);
  const serie=Array.from(new Set(realizados.map(l=>dataCaixa(l).slice(0,7)))).sort().map(m=>({mes:m,entrada:realizados.filter(l=>l.tipo==='entrada'&&dataCaixa(l).startsWith(m)).reduce((s,l)=>s+centavos(l.valor),0)/100,saida:realizados.filter(l=>l.tipo==='saida'&&dataCaixa(l).startsWith(m)).reduce((s,l)=>s+centavos(l.valor),0)/100,saldo:!contas.length||contas.some(c=>saldoConta(c,ls,ate)===null)?null:contas.reduce((s,c)=>s+centavos(saldoConta(c,ls,[ate,m+'-'+new Date(Number(m.slice(0,4)),Number(m.slice(5)),0).getDate()].sort()[0]??ate)??0),0)/100}));
  const posicao=(l:Lancamento)=>{const d=dataCaixa(l);const vals=contas.map(c=>saldoConta(c,ls,d));if(!contas.length||vals.some(v=>v===null)||!l.conta_id)return null;const after=realizados.filter(r=>dataCaixa(r)===d&&rows.indexOf(r)>rows.indexOf(l)&&contas.some(c=>c.id===r.conta_id&&c.data_saldo_inicial&&dataCaixa(r)>c.data_saldo_inicial)).reduce((s,r)=>s+(r.tipo==='entrada'?1:-1)*centavos(r.valor),0);return (vals.reduce<number>((s,v)=>s+centavos(v??0),0)-after)/100;};

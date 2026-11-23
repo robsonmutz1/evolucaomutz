@@ -17,3 +17,5 @@ describe('caixa',()=>{
  it('rejeita vazio texto e três centavos',()=>{for(const v of ['','abc','1,234'])expect(()=>lerDinheiro(v)).toThrow();});
  it('lembrete após sete dias',()=>expect(diasSemConferencia({criado_em:'2026-02-01T12:00:00Z'} as Conferencia,'2026-02-09')).toBe(8));
 });
+import {inicioCaixa as _ini} from './caixa';
+describe('início da conferência',()=>{it('usa a data mais antiga do saldo inicial',()=>{expect(_ini([{data_saldo_inicial:'2026-10-31'},{data_saldo_inicial:'2026-11-05'}] as never)).toBe('2026-10-31');});});
