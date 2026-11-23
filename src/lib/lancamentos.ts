@@ -10,7 +10,20 @@ export function totalPorTipo(ls: Lancamento[], tipo: Lancamento['tipo'], prefixo
 }
 
 /** Groups the visible rows in their existing date order; daily balance is not cumulative. */
-export function lancamentosPorDia(lista: Lancamento[]) {
+export function lancamentosPorDia(lista: Lancamento[], baseAcumulado: Lancamento[] = lista) {
+  const movimentos = new Map<string, number>();
+  for (const l of baseAcumulado) {
+    const data = l.data_lancamento ?? `${l.mes}-01`;
+    movimentos.set(data, (movimentos.get(data) ?? 0) + Math.round(l.valor * 100) * (l.tipo === 'entrada' ? 1 : -1));
+  }
+  const acumulados = new Map<string, number>();
+  let mesAtual = '', acumulado = 0;
+  for (const data of [...movimentos.keys()].sort()) {
+    const mes = data.slice(0, 7);
+    if (mes !== mesAtual) { acumulado = 0; mesAtual = mes; }
+    acumulado += movimentos.get(data) ?? 0;
+    acumulados.set(data, acumulado / 100);
+  }
   const dias = new Map<string, { data: string; lancamentos: Lancamento[]; entradas: number; saidas: number }>();
   for (const l of lista) {
     const data = l.data_lancamento ?? `${l.mes}-01`;
@@ -23,6 +36,7 @@ export function lancamentosPorDia(lista: Lancamento[]) {
   return [...dias.values()].map(dia => ({
     ...dia, entradas: dia.entradas / 100, saidas: dia.saidas / 100,
     saldo: (dia.entradas - dia.saidas) / 100,
+    acumulado: acumulados.get(dia.data) ?? 0,
   }));
 }
 

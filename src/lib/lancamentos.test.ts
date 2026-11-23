@@ -5,6 +5,28 @@ import { dataValida, hojeFinanceiro, nomeChave, tipoPermitido } from './financei
 const l = (mes: string, tipo: 'entrada' | 'saida', valor: number) => ({ mes, tipo, grupo: '', categoria: 'x', valor, descricao: null });
 
 describe('lancamentos', () => {
+  it('no dia 10 acumula os saldos desde o dia 1 independentemente da ordenação', () => {
+    const rows = [
+      {...l('2026-11', 'entrada', 150.10), data_lancamento:'2026-11-10'},
+      {...l('2026-11', 'saida', 50.15), data_lancamento:'2026-11-05'},
+      {...l('2026-11', 'entrada', 170.20), data_lancamento:'2026-11-01'},
+    ];
+    expect(lancamentosPorDia(rows).map(d => d.acumulado)).toEqual([270.15,120.05,170.20]);
+    expect(lancamentosPorDia([...rows].reverse()).map(d => d.acumulado)).toEqual([170.20,120.05,270.15]);
+  });
+  it('reinicia o valor acumulado no dia 1 de cada mês sem trazer saldo anterior', () => {
+    expect(lancamentosPorDia([
+      {...l('2026-10','entrada',1000),data_lancamento:'2026-10-31'},
+      {...l('2026-11','saida',25),data_lancamento:'2026-11-01'},
+      {...l('2026-11','entrada',100),data_lancamento:'2026-11-10'},
+    ]).map(d => d.acumulado)).toEqual([1000,-25,75]);
+  });
+  it('mantém o total desde o dia 1 mesmo quando dias anteriores não estão visíveis', () => {
+    const primeiro={...l('2026-11','entrada',150),data_lancamento:'2026-11-01'};
+    const decimo={...l('2026-11','saida',50),data_lancamento:'2026-11-10'};
+    expect(lancamentosPorDia([decimo],[primeiro,decimo]).map(d => ({saldo:d.saldo,acumulado:d.acumulado})))
+      .toEqual([{saldo:-50,acumulado:100}]);
+  });
   it('separa os dias mantendo todos os dados e a ordem da lista', () => {
     const rows = [
       {...l('2026-11', 'entrada', 150), data_lancamento: '2026-11-19'},

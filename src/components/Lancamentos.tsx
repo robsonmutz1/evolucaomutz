@@ -46,7 +46,7 @@ export function Lancamentos() {
     return { grupo, categoria };
   }, [data]);
   const ent = totalPorTipo(lista, "entrada", ''), sai = totalPorTipo(lista, "saida", '');
-  const dias = useMemo(() => lancamentosPorDia(lista), [lista]);
+  const dias = useMemo(() => lancamentosPorDia(lista, data), [lista, data]);
   function options(kind:'grupo'|'categoria',tipo?:Lancamento['tipo'],selected=''){
    const rows=kind==='grupo'?cadastros.grupos:cadastros.categorias;
    const groupId=cadastros.grupos.find(g=>nomeChave(g.nome)===nomeChave(edit?.grupo??''))?.id;
@@ -113,11 +113,12 @@ export function Lancamentos() {
             <Fragment key={dia.data}>
               <TableRow className="bg-muted/60 hover:bg-muted/60" data-dia={dia.data}>
                 <TableCell colSpan={7} className="py-3">
-                  <div className="sticky left-0 grid w-[calc(100vw-4rem)] max-w-full grid-cols-2 gap-x-4 gap-y-2 text-sm sm:w-auto lg:grid-cols-4">
+                  <div className="sticky left-0 grid w-[calc(100vw-4rem)] max-w-full grid-cols-2 gap-x-4 gap-y-2 text-sm sm:w-auto lg:grid-cols-3 2xl:grid-cols-5">
                     <strong className="whitespace-nowrap">{dia.data.split('-').reverse().join('/')}</strong>
                     <span className="whitespace-nowrap">Entradas: <strong className="text-success tabular-nums">{brl(dia.entradas)}</strong></span>
                     <span className="whitespace-nowrap">Saídas: <strong className="text-destructive tabular-nums">{brl(dia.saidas)}</strong></span>
                     <span className="whitespace-nowrap">Saldo do dia: <strong className="tabular-nums">{brl(dia.saldo)}</strong></span>
+                    <span className="col-span-2 whitespace-nowrap lg:col-span-1">Valor acumulado: <strong className="tabular-nums">{brl(dia.acumulado)}</strong></span>
                   </div>
                 </TableCell>
               </TableRow>
