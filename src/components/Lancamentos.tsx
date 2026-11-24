@@ -17,13 +17,17 @@ import { hojeFinanceiro, nomeChave, tipoPermitido, type ItemFinanceiro } from '@
 import { FinanceiroCombobox } from './FinanceiroCombobox';
 import { FinanceiroDatePicker } from './FinanceiroDatePicker';
 import { Link } from '@tanstack/react-router';
+import { caixaQuery } from '@/lib/caixa.functions';
 import { FinanceiroCadastrosManager } from './FinanceiroCadastrosManager';
 
-type Edit = { id?: string | undefined; mes: string; data_lancamento:string; tipo: Lancamento["tipo"]; grupo: string; categoria: string; valor: string; descricao: string };
+type Edit = { id?: string | undefined; mes: string; data_lancamento:string; tipo: Lancamento["tipo"]; grupo: string; categoria: string; valor: string; descricao: string; conta_id: string };
 
 export function Lancamentos() {
   const { data } = useSuspenseQuery(lancamentosQuery);
   const {data:cadastros}=useSuspenseQuery(cadastrosFinanceirosQuery);
+  const {data:caixa}=useSuspenseQuery(caixaQuery);
+  const contaPadrao=()=>{const a=caixa.contas.filter(c=>c.ativa);return (a.find(c=>c.nome==='Principal')??a[0])?.id??'';};
+  const contaNome=(id?:string|null)=>caixa.contas.find(c=>c.id===id)?.nome;
   const qc = useQueryClient();
   const salvar = useServerFn(salvarLancamento);
   const excluir = useServerFn(excluirLancamento);
@@ -71,12 +75,13 @@ export function Lancamentos() {
     const valor = valorInput.current?.value ?? edit.valor;
     const descricao = descricaoInput.current?.value ?? edit.descricao;
     if(!edit.data_lancamento){toast.error('Informe a data do lançamento.');return;}
+    if(!edit.conta_id){toast.error('Informe a conta.');return;}
     if(!valor.trim()){toast.error('Informe o valor do lançamento.');return;}
     setBusy(true);
     try {
-      const row: Lancamento = { id: edit.id, mes: edit.data_lancamento.slice(0,7),data_lancamento:edit.data_lancamento, tipo: edit.tipo, grupo: edit.grupo, categoria: edit.categoria, valor: Number(valor.replace(/\./g, "").replace(",", ".")), descricao: descricao || null };
+      const row: Lancamento = { id: edit.id, mes: edit.data_lancamento.slice(0,7),data_lancamento:edit.data_lancamento, tipo: edit.tipo, grupo: edit.grupo, categoria: edit.categoria, valor: Number(valor.replace(/\./g, "").replace(",", ".")), descricao: descricao || null, conta_id: edit.conta_id };
       try { await salvar({data:row}); } catch(e) { if(e instanceof Error && e.message.includes("conferência fechada") && confirm("Esta alteração afeta uma conferência fechada e será registrada. Continuar?")) await salvar({data:{...row,confirmar_caixa:true}}); else throw e; }
-      await qc.invalidateQueries({ queryKey: ["school", "lancamentos"] });
+      await qc.invalidateQueries({ queryKey: ["school", "lancamentos"] }); void qc.invalidateQueries({ queryKey: caixaQuery.queryKey });
       toast.success("Lançamento salvo"); setMes(edit.data_lancamento.slice(0,7)); setDe('');setAte('');setEdit(null);
     } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
   }
@@ -96,8 +101,8 @@ export function Lancamentos() {
             <SelectContent><SelectItem value="todos">Todos os meses</SelectItem>{meses.map((m) => <SelectItem key={m} value={m}>{formatMes(m)}</SelectItem>)}</SelectContent></Select>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => setEdit({ mes:hojeFinanceiro().slice(0,7),data_lancamento:hojeFinanceiro(), tipo: "entrada", grupo: "", categoria: "", valor: "", descricao: "" })}><Plus className="mr-1 h-4 w-4" />Nova entrada</Button>
-          <Button onClick={() => setEdit({ mes:hojeFinanceiro().slice(0,7),data_lancamento:hojeFinanceiro(), tipo: "saida", grupo: "", categoria: "", valor: "", descricao: "" })}><Plus className="mr-1 h-4 w-4" />Nova saída</Button>
+          <Button variant="outline" onClick={() => setEdit({ mes:hojeFinanceiro().slice(0,7),data_lancamento:hojeFinanceiro(), tipo: "entrada", grupo: "", categoria: "", valor: "", descricao: "", conta_id: contaPadrao() })}><Plus className="mr-1 h-4 w-4" />Nova entrada</Button>
+          <Button onClick={() => setEdit({ mes:hojeFinanceiro().slice(0,7),data_lancamento:hojeFinanceiro(), tipo: "saida", grupo: "", categoria: "", valor: "", descricao: "", conta_id: contaPadrao() })}><Plus className="mr-1 h-4 w-4" />Nova saída</Button>
           <Button size="icon" variant="outline" title="Gerenciar grupos e categorias" aria-label="Gerenciar grupos e categorias" onClick={()=>setManager(true)}><Settings/></Button>
         </div>
       </div>
@@ -126,10 +131,10 @@ export function Lancamentos() {
             <TableRow key={l.id}>
               <TableCell className="sticky left-0 z-10 whitespace-nowrap bg-background font-medium">{(l.data_lancamento??`${l.mes}-01`).split('-').reverse().join('/')}</TableCell>
               <TableCell className={l.tipo === "entrada" ? "text-success" : "text-destructive"}>{l.tipo === "entrada" ? "Entrada" : "Saída"}</TableCell>
-              <TableCell>{l.grupo || "—"}</TableCell><TableCell className="font-medium">{l.categoria}</TableCell><TableCell>{l.descricao || "—"}</TableCell>
+              <TableCell>{l.grupo || "—"}</TableCell><TableCell className="font-medium">{l.categoria}</TableCell><TableCell>{l.descricao || "—"}{contaNome(l.conta_id)&&<span className="block text-xs text-muted-foreground">Conta: {contaNome(l.conta_id)}</span>}</TableCell>
               <TableCell className="text-right tabular-nums">{brl(l.valor)}</TableCell>
               <TableCell className="whitespace-nowrap text-right">
-                <Button size="icon" variant="ghost" aria-label="Editar" onClick={() => setEdit({ id: l.id, mes: l.mes,data_lancamento:l.data_lancamento??`${l.mes}-01`, tipo: l.tipo, grupo: l.grupo, categoria: l.categoria, valor: String(l.valor).replace(".", ","), descricao: l.descricao ?? "" })}><Pencil className="h-4 w-4" /></Button>
+                <Button size="icon" variant="ghost" aria-label="Editar" onClick={() => setEdit({ id: l.id, mes: l.mes,data_lancamento:l.data_lancamento??`${l.mes}-01`, tipo: l.tipo, grupo: l.grupo, categoria: l.categoria, valor: String(l.valor).replace(".", ","), descricao: l.descricao ?? "", conta_id: l.conta_id ?? "" })}><Pencil className="h-4 w-4" /></Button>
                 <Button size="icon" variant="ghost" aria-label="Excluir" onClick={() => onDelete(l)}><Trash2 className="h-4 w-4" /></Button>
               </TableCell>
             </TableRow>))}
@@ -147,6 +152,7 @@ export function Lancamentos() {
             </div>
             <div><div className="mb-1 flex items-center justify-between"><Label>Grupo</Label><Button size="icon" variant="ghost" title="Gerenciar grupos" aria-label="Gerenciar grupos do formulário" onClick={()=>setManager(true)}><Settings className="h-4 w-4"/></Button></div><FinanceiroCombobox label="Grupo do lançamento" value={edit.grupo} items={options('grupo',edit.tipo,edit.grupo)} onChange={v=>setEdit({...edit,grupo:v})} onCreate={v=>createItem('grupo',v)} optional/></div>
             <div><div className="mb-1 flex items-center justify-between"><Label>Categoria</Label><Button size="icon" variant="ghost" title="Gerenciar categorias" aria-label="Gerenciar categorias do formulário" onClick={()=>setManager(true)}><Settings className="h-4 w-4"/></Button></div><FinanceiroCombobox label="Categoria do lançamento" value={edit.categoria} items={options('categoria',edit.tipo,edit.categoria)} onChange={v=>setEdit({...edit,categoria:v})} onCreate={v=>createItem('categoria',v)}/></div>
+            <div><Label>{edit.tipo==="saida"?"Conta de saída (de onde sai o dinheiro)":"Conta de entrada (onde o dinheiro entra)"}</Label><Select value={edit.conta_id} onValueChange={v=>setEdit({...edit,conta_id:v})}><SelectTrigger aria-label="Conta"><SelectValue placeholder="Selecione a conta"/></SelectTrigger><SelectContent>{caixa.contas.filter(c=>c.ativa||c.id===edit.conta_id).map(c=><SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent></Select>{!caixa.contas.some(c=>c.ativa)&&<Link to="/fluxo-caixa" className="text-xs text-primary underline">Cadastrar conta</Link>}</div>
             <div><Label htmlFor="lval">Valor (R$)</Label><Input ref={valorInput} id="lval" inputMode="decimal" placeholder="Ex.: 1.250,00" defaultValue={edit.valor} /></div>
             <div><Label htmlFor="ldesc">Descrição (opcional)</Label><Input ref={descricaoInput} id="ldesc" defaultValue={edit.descricao} /></div>
           </div>}
