@@ -211,6 +211,13 @@
       "when": 1795521414161,
       "tag": "0029_contas_pagar",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1795544489866,
+      "tag": "0030_prestador_recibo",
+      "breakpoints": true
     }
   ]
 }

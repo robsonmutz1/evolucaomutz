@@ -49,8 +49,8 @@ export const studentWrite = (r: Aluno) => fields(r, [
   'valor_matricula', 'data_matricula', 'data_nascimento', 'outro_responsavel', 'telefone_outro_responsavel', 'origem_lead', 'conclusao_prevista',
 ] as const);
 
-type ProviderInput = {id?: string; nome: string; valor_hora: number; ativo: boolean};
-export const providerWrite = (r: ProviderInput) => fields(r, ['id', 'nome', 'valor_hora', 'ativo'] as const);
+type ProviderInput = {id?: string; nome: string; cpf?: string|null; valor_hora: number; ativo: boolean};
+export const providerWrite = (r: ProviderInput) => fields(r, ['id', 'nome', 'cpf', 'valor_hora', 'ativo'] as const);
 type LessonInput = {id?: string; prestador_id: string; data: string; horas: number; valor_hora: number; descricao: string};
 export const lessonWrite = (r: LessonInput) => fields(r, [
   'id', 'prestador_id', 'data', 'horas', 'valor_hora', 'descricao',

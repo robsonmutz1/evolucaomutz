@@ -1069,27 +1069,39 @@ export type Database = {
       prestador_pagamentos: {
         Row: {
           data_pagamento: string
+          extras: Json
           id: string
           lancamento_id: string
           mes: string
+          passagem_valor: number
+          passagens_qtd: number
           prestador_id: string
           valor: number
+          valor_aulas: number | null
         }
         Insert: {
           data_pagamento: string
+          extras?: Json
           id?: string
           lancamento_id: string
           mes: string
+          passagem_valor?: number
+          passagens_qtd?: number
           prestador_id: string
           valor: number
+          valor_aulas?: number | null
         }
         Update: {
           data_pagamento?: string
+          extras?: Json
           id?: string
           lancamento_id?: string
           mes?: string
+          passagem_valor?: number
+          passagens_qtd?: number
           prestador_id?: string
           valor?: number
+          valor_aulas?: number | null
         }
         Relationships: [
           {
@@ -1111,6 +1123,7 @@ export type Database = {
       prestadores: {
         Row: {
           ativo: boolean
+          cpf: string | null
           created_at: string
           id: string
           nome: string
@@ -1118,6 +1131,7 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean
+          cpf?: string | null
           created_at?: string
           id?: string
           nome: string
@@ -1125,6 +1139,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean
+          cpf?: string | null
           created_at?: string
           id?: string
           nome?: string
@@ -1309,6 +1324,18 @@ export type Database = {
       }
       prestador_pagar: {
         Args: { p_data: string; p_mes: string; p_prestador: string }
+        Returns: string
+      }
+      prestador_pagar_completo: {
+        Args: {
+          p_conta: string
+          p_data: string
+          p_extras: Json
+          p_mes: string
+          p_passagem_valor: number
+          p_passagens: number
+          p_prestador: string
+        }
         Returns: string
       }
     }
