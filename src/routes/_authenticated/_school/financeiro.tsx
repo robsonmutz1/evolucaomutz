@@ -21,6 +21,9 @@ import { Lancamentos } from "@/components/Lancamentos";
 import { cadastrosFinanceirosQuery } from '@/lib/financeiro-cadastros.functions';
 import { controlesQuery } from '@/lib/energia-prestadores.functions';
 import { EnergiaControl, PrestadoresControl } from '@/components/EnergiaPrestadores';
+import { ContasPagar } from '@/components/ContasPagar';
+import { contasPagarQuery } from '@/lib/contas-pagar.functions';
+import { caixaQuery } from '@/lib/caixa.functions';
 
 export const Route = createFileRoute("/_authenticated/_school/financeiro")({
   head: () => ({
@@ -33,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/_school/financeiro")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(faturamentoQuery), context.queryClient.ensureQueryData(controlesQuery), context.queryClient.ensureQueryData(registrosQuery), context.queryClient.ensureQueryData(lancamentosQuery),context.queryClient.ensureQueryData(cadastrosFinanceirosQuery)]),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(faturamentoQuery), context.queryClient.ensureQueryData(controlesQuery), context.queryClient.ensureQueryData(registrosQuery), context.queryClient.ensureQueryData(lancamentosQuery),context.queryClient.ensureQueryData(cadastrosFinanceirosQuery),context.queryClient.ensureQueryData(contasPagarQuery),context.queryClient.ensureQueryData(caixaQuery)]),
   component: Financeiro,
 });
 
@@ -47,6 +50,7 @@ function Financeiro() {
       <Tabs defaultValue="lancamentos">
         <TabsList className="h-auto flex-wrap gap-y-1">
           <TabsTrigger value="lancamentos">Entradas e saídas</TabsTrigger>
+          <TabsTrigger value="contas-pagar">Contas a pagar</TabsTrigger>
           <TabsTrigger value="faturamento">Faturamento</TabsTrigger>
           <TabsTrigger value="despesa">Despesas</TabsTrigger>
           <TabsTrigger value="produto">Produtos</TabsTrigger>
@@ -55,6 +59,7 @@ function Financeiro() {
           <TabsTrigger value="prestadores">Prestadores</TabsTrigger>
         </TabsList>
         <TabsContent value="lancamentos"><Lancamentos /></TabsContent>
+        <TabsContent value="contas-pagar"><ContasPagar /></TabsContent>
         <TabsContent value="faturamento"><Faturamento /></TabsContent>
         <TabsContent value="despesa"><Registros tipo="despesa" /></TabsContent>
         <TabsContent value="produto"><Registros tipo="produto" /></TabsContent>

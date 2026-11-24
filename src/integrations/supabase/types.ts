@@ -297,6 +297,78 @@ export type Database = {
         }
         Relationships: []
       }
+      contas_pagar: {
+        Row: {
+          categoria: string
+          conta_id: string | null
+          created_at: string
+          data_pagamento: string | null
+          descricao: string
+          grupo: string
+          id: string
+          lancamento_id: string | null
+          observacao: string | null
+          parcela: number | null
+          recorrencia_id: string | null
+          situacao: string
+          total_parcelas: number | null
+          valor: number
+          valor_pago: number | null
+          vencimento: string
+        }
+        Insert: {
+          categoria?: string
+          conta_id?: string | null
+          created_at?: string
+          data_pagamento?: string | null
+          descricao: string
+          grupo?: string
+          id?: string
+          lancamento_id?: string | null
+          observacao?: string | null
+          parcela?: number | null
+          recorrencia_id?: string | null
+          situacao?: string
+          total_parcelas?: number | null
+          valor: number
+          valor_pago?: number | null
+          vencimento: string
+        }
+        Update: {
+          categoria?: string
+          conta_id?: string | null
+          created_at?: string
+          data_pagamento?: string | null
+          descricao?: string
+          grupo?: string
+          id?: string
+          lancamento_id?: string | null
+          observacao?: string | null
+          parcela?: number | null
+          recorrencia_id?: string | null
+          situacao?: string
+          total_parcelas?: number | null
+          valor?: number
+          valor_pago?: number | null
+          vencimento?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contas_pagar_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas_caixa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contas_pagar_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "lancamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cursos: {
         Row: {
           ativo: boolean
@@ -1164,6 +1236,11 @@ export type Database = {
         }
         Returns: string
       }
+      conta_pagar_baixar: {
+        Args: { p_conta: string; p_data: string; p_id: string; p_valor: number }
+        Returns: string
+      }
+      conta_pagar_estornar: { Args: { p_id: string }; Returns: undefined }
       crm_chave_telefone: { Args: { numero: string }; Returns: string }
       crm_consultores: {
         Args: never

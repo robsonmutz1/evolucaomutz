@@ -204,6 +204,13 @@
       "when": 1795457075028,
       "tag": "0028_alunos_conclusao_prevista",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1795521414161,
+      "tag": "0029_contas_pagar",
+      "breakpoints": true
     }
   ]
 }
