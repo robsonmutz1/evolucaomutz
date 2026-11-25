@@ -1,10 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { filtrarPorTipo, lancamentosPorDia, totalPorTipo, validarLancamento } from './lancamentos';
+import { filtrarPorTipo, lancamentosPorDia, responsaveisPorAluno, totalPorTipo, validarLancamento } from './lancamentos';
 import { dataValida, hojeFinanceiro, nomeChave, tipoPermitido } from './financeiro-cadastros';
 
 const l = (mes: string, tipo: 'entrada' | 'saida', valor: number) => ({ mes, tipo, grupo: '', categoria: 'x', valor, descricao: null });
 
 describe('lancamentos', () => {
+  it('associa somente o primeiro responsável pelo id do aluno, sem usar outro responsável', () => {
+    const alunos = [
+      {id: 'amy', responsavel: ' MARCELA FAÇANHA VIEIRA ', outro_responsavel: 'JOÃO DA SILVA'},
+      {id: 'sem-primeiro', responsavel: '', outro_responsavel: 'Outro responsável'},
+      {id: 'legado', responsavel: '—'},
+    ];
+    const mapa = responsaveisPorAluno(alunos);
+    expect(mapa.get('amy')).toBe('MARCELA FAÇANHA VIEIRA');
+    expect(mapa.get('sem-primeiro')).toBe('');
+    expect(mapa.get('legado')).toBe('');
+    expect(mapa.get('inexistente')).toBeUndefined();
+  });
   it('no dia 10 acumula os saldos desde o dia 1 independentemente da ordenação', () => {
     const rows = [
       {...l('2026-11', 'entrada', 150.10), data_lancamento:'2026-11-10'},

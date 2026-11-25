@@ -3,6 +3,11 @@ export type Lancamento = {
   conta_id?:string|null; situacao?:'realizado'|'pendente'|'cancelado'|'estornado'; data_pagamento?:string|null; aluno_id?:string|null; referencia_mensalidade?:string|null; transferencia_id?:string|null; created_at?:string; updated_at?:string; confirmar_caixa?:boolean;
 };
 
+/** Uses only the primary guardian from the protected student cache. */
+export function responsaveisPorAluno(alunos: readonly { id: string; responsavel: string }[]) {
+  return new Map(alunos.map(a => [a.id, a.responsavel.trim().replace(/^[—-]$/, '')]));
+}
+
 /** Sums entries of one type whose month starts with the prefix ("2025" or "2025-03"); null when none exist. */
 export function totalPorTipo(ls: Lancamento[], tipo: Lancamento['tipo'], prefixo: string) {
   const v = ls.filter((l) => l.tipo === tipo && l.mes.startsWith(prefixo));

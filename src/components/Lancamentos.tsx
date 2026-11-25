@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { brl, formatMes } from "@/lib/alunos";
-import { filtrarPorTipo, lancamentosPorDia, totalPorTipo, type Lancamento } from "@/lib/lancamentos";
+import { filtrarPorTipo, lancamentosPorDia, responsaveisPorAluno, totalPorTipo, type Lancamento } from "@/lib/lancamentos";
+import { useStore } from '@/lib/store';
 import { excluirLancamento, lancamentosQuery, salvarLancamento } from "@/lib/lancamentos.functions";
 import { cadastrosFinanceirosQuery, salvarCadastroFinanceiro } from '@/lib/financeiro-cadastros.functions';
 import { hojeFinanceiro, nomeChave, tipoPermitido, type ItemFinanceiro } from '@/lib/financeiro-cadastros';
@@ -23,6 +24,8 @@ import { FinanceiroCadastrosManager } from './FinanceiroCadastrosManager';
 type Edit = { id?: string | undefined; mes: string; data_lancamento:string; tipo: Lancamento["tipo"]; grupo: string; categoria: string; valor: string; descricao: string; conta_id: string };
 
 export function Lancamentos() {
+  const { alunos } = useStore();
+  const responsaveis = useMemo(() => responsaveisPorAluno(alunos), [alunos]);
   const { data } = useSuspenseQuery(lancamentosQuery);
   const {data:cadastros}=useSuspenseQuery(cadastrosFinanceirosQuery);
   const {data:caixa}=useSuspenseQuery(caixaQuery);
@@ -135,7 +138,7 @@ export function Lancamentos() {
             <TableRow key={l.id}>
               <TableCell className="sticky left-0 z-10 whitespace-nowrap bg-background font-medium">{(l.data_lancamento??`${l.mes}-01`).split('-').reverse().join('/')}</TableCell>
               <TableCell className={l.tipo === "entrada" ? "text-success" : "text-destructive"}>{l.tipo === "entrada" ? "Entrada" : "Saída"}</TableCell>
-              <TableCell>{l.grupo || "—"}</TableCell><TableCell className="font-medium">{l.categoria}</TableCell><TableCell>{l.descricao || "—"}{contaNome(l.conta_id)&&<span className="block text-xs text-muted-foreground">Conta: {contaNome(l.conta_id)}</span>}</TableCell>
+              <TableCell>{l.grupo || "—"}</TableCell><TableCell className="font-medium">{l.categoria}</TableCell><TableCell>{l.descricao || "—"}{(contaNome(l.conta_id)||(l.aluno_id&&responsaveis.get(l.aluno_id)))&&<span className="block text-xs text-muted-foreground">{l.aluno_id&&responsaveis.get(l.aluno_id)}{l.aluno_id&&responsaveis.get(l.aluno_id)&&contaNome(l.conta_id)?' | ':''}{contaNome(l.conta_id)&&<>Conta: {contaNome(l.conta_id)}</>}</span>}</TableCell>
               <TableCell className="text-right tabular-nums">{brl(l.valor)}</TableCell>
               <TableCell className="whitespace-nowrap text-right">
                 <Button size="icon" variant="ghost" aria-label="Editar" onClick={() => setEdit({ id: l.id, mes: l.mes,data_lancamento:l.data_lancamento??`${l.mes}-01`, tipo: l.tipo, grupo: l.grupo, categoria: l.categoria, valor: String(l.valor).replace(".", ","), descricao: l.descricao ?? "", conta_id: l.conta_id ?? "" })}><Pencil className="h-4 w-4" /></Button>
