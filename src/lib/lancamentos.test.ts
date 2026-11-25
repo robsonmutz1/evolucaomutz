@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lancamentosPorDia, totalPorTipo, validarLancamento } from './lancamentos';
+import { filtrarPorTipo, lancamentosPorDia, totalPorTipo, validarLancamento } from './lancamentos';
 import { dataValida, hojeFinanceiro, nomeChave, tipoPermitido } from './financeiro-cadastros';
 
 const l = (mes: string, tipo: 'entrada' | 'saida', valor: number) => ({ mes, tipo, grupo: '', categoria: 'x', valor, descricao: null });
@@ -65,4 +65,11 @@ describe('lancamentos', () => {
   it('normaliza acentos, caixa e espaços sem duplicar',()=>expect(nomeChave('  ALIMENTAÇÃO   funcionários ')).toBe(nomeChave('alimentacao funcionarios')));
   it('filtra Entrada Saída e Ambos',()=>{const base={id:'a',nome:'Teste',tipo:'Entrada',ativo:true,created_at:''};expect(tipoPermitido(base,'entrada')).toBe(true);expect(tipoPermitido(base,'saida')).toBe(false);expect(tipoPermitido({...base,tipo:'Ambos'},'saida')).toBe(true);});
   it('totais mensais e anuais continuam iguais com datas antigas no dia 1',()=>{const rows=[{...l('2025-01','saida',10),data_lancamento:'2025-01-01'},{...l('2025-12','saida',5),data_lancamento:'2025-12-01'}];expect(totalPorTipo(rows,'saida','2025')).toBe(15);expect(totalPorTipo(rows,'saida','2025-01')).toBe(10);});
+  it('mostra só entradas, só saídas ou as duas quando o filtro é todas',()=>{
+    const rows=[l('2026-11','entrada',150),l('2026-11','saida',50),l('2026-11','entrada',30)];
+    expect(filtrarPorTipo(rows,'todos')).toEqual(rows);
+    expect(filtrarPorTipo(rows,'entrada')).toEqual([rows[0],rows[2]]);
+    expect(filtrarPorTipo(rows,'saida')).toEqual([rows[1]]);
+    expect(filtrarPorTipo([l('2026-11','saida',50)],'entrada')).toEqual([]);
+  });
 });

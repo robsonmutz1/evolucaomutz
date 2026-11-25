@@ -9,6 +9,11 @@ export function totalPorTipo(ls: Lancamento[], tipo: Lancamento['tipo'], prefixo
   return v.length ? Math.round(v.reduce((s, l) => s + l.valor, 0) * 100) / 100 : null;
 }
 
+/** Keeps only rows of the chosen type; "todos" keeps everything. */
+export function filtrarPorTipo(ls: Lancamento[], tipo: 'todos' | Lancamento['tipo']) {
+  return tipo === 'todos' ? ls : ls.filter((l) => l.tipo === tipo);
+}
+
 /** Groups the visible rows in their existing date order; daily balance is not cumulative. */
 export function lancamentosPorDia(lista: Lancamento[], baseAcumulado: Lancamento[] = lista) {
   const movimentos = new Map<string, number>();
