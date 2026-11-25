@@ -1,4 +1,5 @@
 # Dados reais e acesso restrito
+- [x] Permitir corrigir data e conta de pagamentos de prestador pelos formulários financeiros, sincronizando as datas do caixa e do recibo; Rafael corrigido pela tela para 03/11/2026, pagamento e recibo relidos, 40 testes passaram sem alterar valores, horas ou mês das aulas.
 - [x] Acrescentar valor acumulado desde o dia 1 de cada mês ao resumo diário; 16 testes passaram e os acumulados dos 20 dias exibidos conferem com os saldos cronológicos, iguais ao inverter a ordenação; computador e celular conferidos sem alterar registros.
 - [x] Separar a lista de entradas e saídas por dia com entradas, saídas e saldo diário, preservando dados, filtros e ações; 13 testes passaram e os 20 resumos do mês conferem com as linhas exibidas, ordenação e edição verificadas, sem excesso de largura no celular e sem alterar registros.
 - [x] Adicionar parcelas extras na ficha com descrição, valor, quantidade e primeiro vencimento; geração, releitura, repetição sem duplicidade e abertura da baixa conferidas, 26 testes passaram, ficha ajustada no celular e parcelas temporárias removidas sem alterar as originais.

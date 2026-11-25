@@ -81,7 +81,11 @@ export function Lancamentos() {
     try {
       const row: Lancamento = { id: edit.id, mes: edit.data_lancamento.slice(0,7),data_lancamento:edit.data_lancamento, tipo: edit.tipo, grupo: edit.grupo, categoria: edit.categoria, valor: Number(valor.replace(/\./g, "").replace(",", ".")), descricao: descricao || null, conta_id: edit.conta_id };
       try { await salvar({data:row}); } catch(e) { if(e instanceof Error && e.message.includes("conferência fechada") && confirm("Esta alteração afeta uma conferência fechada e será registrada. Continuar?")) await salvar({data:{...row,confirmar_caixa:true}}); else throw e; }
-      await qc.invalidateQueries({ queryKey: ["school", "lancamentos"] }); void qc.invalidateQueries({ queryKey: caixaQuery.queryKey });
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["school", "lancamentos"] }),
+        qc.invalidateQueries({ queryKey: caixaQuery.queryKey }),
+        qc.invalidateQueries({ queryKey: ["school", "controles"] }),
+      ]);
       toast.success("Lançamento salvo"); setMes(edit.data_lancamento.slice(0,7)); setDe('');setAte('');setEdit(null);
     } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
   }

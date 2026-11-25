@@ -225,6 +225,13 @@
       "when": 1795545452327,
       "tag": "0031_energia_sync_lancamento",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1795571499030,
+      "tag": "0032_prestador_payment_date_sync",
+      "breakpoints": true
     }
   ]
 }
