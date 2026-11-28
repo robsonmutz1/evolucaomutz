@@ -114,7 +114,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
             {txt("outro_responsavel", "Outro responsável (mãe / pai)")}
             {txt("telefone_outro_responsavel", "Telefone do outro responsável", "tel")}
             {txt("telefone", "Telefone do aluno", "tel")}
-            <div className="space-y-1.5"><Label>Origem do lead</Label><Select value={f.origem_lead??'nao'} onValueChange={async v=>{if(v==='__nova'){const nome=window.prompt('Nome da nova origem');if(!nome?.trim())return;try{await novaOrigem({data:{nome}});await qc.invalidateQueries({queryKey:['school','origens']});set('origem_lead',nome.trim());}catch(err){toast.error(err instanceof Error?err.message:'Erro');}return;}set('origem_lead',v==='nao'?null:v);}}><SelectTrigger aria-label="Origem do lead"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="nao">Não informado</SelectItem>{origens.filter(o=>o.ativo||o.nome===f.origem_lead).map(o=><SelectItem key={o.id} value={o.nome}>{o.nome}</SelectItem>)}{f.origem_lead&&!origens.some(o=>o.nome===f.origem_lead)&&<SelectItem value={f.origem_lead}>{f.origem_lead}</SelectItem>}<SelectItem value="__nova">+ Adicionar origem</SelectItem></SelectContent></Select></div>
+            <div className="space-y-1.5"><Label>Origem do lead</Label><Select value={f.origem_lead??'nao'} onValueChange={async v=>{if(v==='__nova'){const nome=window.prompt('Nome da nova origem');if(!nome?.trim())return;try{await novaOrigem({data:{nome}});await qc.invalidateQueries({queryKey:['school','origens']});set('origem_lead',nome.trim());}catch(err){toast.error(err instanceof Error?err.message:'Erro');}return;}set('origem_lead',v==='nao'?null:v);}}><SelectTrigger aria-label="Origem do lead"><SelectValue/></SelectTrigger><SelectContent ordenar><SelectItem value="nao">Não informado</SelectItem>{origens.filter(o=>o.ativo||o.nome===f.origem_lead).map(o=><SelectItem key={o.id} value={o.nome}>{o.nome}</SelectItem>)}{f.origem_lead&&!origens.some(o=>o.nome===f.origem_lead)&&<SelectItem value={f.origem_lead}>{f.origem_lead}</SelectItem>}<SelectItem value="__nova">+ Adicionar origem</SelectItem></SelectContent></Select></div>
             {txt("telefoneResponsavel", "Telefone do responsável", "tel")}
             <div className="space-y-1.5">
               <Label>CEP</Label>
@@ -147,7 +147,7 @@ export function AlunoForm({ aluno, onClose, onSave }: { aluno: Aluno; onClose: (
               <Label>Tipo de desconto</Label>
               <Select value={f.descontoTipo} onValueChange={(v) => set("descontoTipo", v as Aluno["descontoTipo"])}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
+                <SelectContent ordenar>
                   <SelectItem value="percentual">Percentual (%)</SelectItem>
                   <SelectItem value="valor">Valor (R$)</SelectItem>
                 </SelectContent>

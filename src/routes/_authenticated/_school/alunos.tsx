@@ -185,7 +185,7 @@ function Alunos() {
           <Filtro label="Curso">
             <Select value={fCurso} onValueChange={setFCurso}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
+              <SelectContent ordenar>
                 <SelectItem value="todos">Todos os cursos</SelectItem>
                 {cursos.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
@@ -194,7 +194,7 @@ function Alunos() {
           <Filtro label="Turma">
             <Select value={fTurma} onValueChange={setFTurma}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
+              <SelectContent ordenar>
                 <SelectItem value="todos">Todas as turmas</SelectItem>
                 {turmas.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>

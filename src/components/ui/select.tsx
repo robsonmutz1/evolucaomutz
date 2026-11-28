@@ -60,10 +60,29 @@ const SelectScrollDownButton = React.forwardRef<
 ));
 SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
 
+const textoDe = (n: React.ReactNode): string =>
+  typeof n === "string" || typeof n === "number" ? String(n)
+    : Array.isArray(n) ? n.map(textoDe).join("")
+    : React.isValidElement<{ children?: React.ReactNode }>(n) ? textoDe(n.props.children) : "";
+const FIXOS = new Set(["todos", "todas", "nenhum", "nenhuma", "nao", "principal", ""]);
+/** Sorts option items A–Z (pt-BR, numeric aware); "all/none" options stay first and "+ add" actions stay last. */
+function ordenarItens(children: React.ReactNode) {
+  const topo: React.ReactNode[] = [], meio: React.ReactElement[] = [], fim: React.ReactNode[] = [];
+  for (const c of React.Children.toArray(children)) {
+    const v = React.isValidElement<{ value?: string }>(c) ? c.props.value : undefined;
+    if (v === undefined) topo.push(c);
+    else if (v.startsWith("__")) fim.push(c);
+    else if (FIXOS.has(v)) topo.push(c);
+    else meio.push(c as React.ReactElement);
+  }
+  meio.sort((a, b) => textoDe(a).localeCompare(textoDe(b), "pt-BR", { numeric: true, sensitivity: "base" }));
+  return [...topo, ...meio, ...fim];
+}
+
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & { ordenar?: boolean }
+>(({ className, children, position = "popper", ordenar = false, ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
@@ -84,7 +103,7 @@ const SelectContent = React.forwardRef<
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
         )}
       >
-        {children}
+        {ordenar ? ordenarItens(children) : children}
       </SelectPrimitive.Viewport>
       <SelectScrollDownButton />
     </SelectPrimitive.Content>

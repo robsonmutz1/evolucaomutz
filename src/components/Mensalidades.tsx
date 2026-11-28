@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { brl, formatData, formatMes, type Aluno } from '@/lib/alunos';
 import { dataBrasilia } from '@/lib/pedagogico';
 import { caixaQuery, salvarContaCaixa } from '@/lib/caixa.functions';
-import { rotuloForma, emAtraso, valorParaBaixa, gerarParcelas, rotuloParcela, vencimentoNoMes, type Parcela } from '@/lib/mensalidades';
+import { imprimirReciboMensalidade } from './reciboMensalidade';
+import { rotuloForma, emAtraso, valorParaBaixa, valorComDesconto, gerarParcelas, rotuloParcela, vencimentoNoMes, type Parcela } from '@/lib/mensalidades';
 import { alterarMensalidades, baixarMensalidade, estornarMensalidade, gerarMensalidades, mensalidadesQuery, situacaoMensalidades, opcoesPagamentoQuery, criarOpcaoPagamento } from '@/lib/mensalidades.functions';
 
 const tone = { aberta: 'bg-accent text-accent-foreground', atraso: 'bg-destructive/15 text-destructive', paga: 'bg-primary/15 text-primary', cancelada: 'bg-muted text-muted-foreground' };
@@ -35,6 +36,7 @@ export function BaixaForm({ p, aluno, onDone }: { p: Parcela; aluno?: Aluno | un
   const [data, setData] = useState(hoje);
   const [valorManual, setValor] = useState<string | null>(null);
   const valor = valorManual ?? String(valorParaBaixa(p, aluno, data));
+  const comDesconto = aluno ? valorComDesconto(p, aluno) : p.valor;
   const { data: opcoes } = useSuspenseQuery(opcoesPagamentoQuery);
   const qc = useQueryClient();
   const criarOpcao = useServerFn(criarOpcaoPagamento);
@@ -65,14 +67,17 @@ export function BaixaForm({ p, aluno, onDone }: { p: Parcela; aluno?: Aluno | un
   const [saving, setSaving] = useState(false);
   return <div className="grid gap-3 rounded-lg border bg-card p-3 sm:grid-cols-3 lg:grid-cols-6">
     <div className="space-y-1"><Label>Data do pagamento</Label><Input aria-label="Data do pagamento" type="date" lang="pt-BR" value={data} onChange={(e) => { setData(e.target.value); setValor(null); }} /></div>
-    <div className="space-y-1"><Label>Valor recebido (R$)</Label><Input aria-label="Valor recebido" type="number" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} /></div>
-    <div className="space-y-1"><Label>Forma</Label><Select value={forma} onValueChange={(v) => v === '__nova' ? void adicionar('forma') : setForma(v)}><SelectTrigger aria-label="Forma de pagamento"><SelectValue /></SelectTrigger><SelectContent>{[...new Set([...formas.filter((f) => f.toLowerCase() === 'boleto'), ...formas, forma])].map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}<SelectItem value="__nova">+ Adicionar forma</SelectItem></SelectContent></Select></div>
-    <div className="space-y-1"><Label>Banco / maquininha</Label><Select value={banco} onValueChange={(v) => v === '__nova' ? void adicionar('banco') : setBanco(v)}><SelectTrigger aria-label="Banco"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="nenhum">Não informado</SelectItem>{[...new Set([...bancos.filter((b) => b.toLowerCase() === 'cora'), ...bancos, ...(banco === 'nenhum' ? [] : [banco])])].map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}<SelectItem value="__nova">+ Adicionar banco / maquininha</SelectItem></SelectContent></Select></div>
-    <div className="space-y-1"><Label>Conta do caixa</Label><Select value={conta} onValueChange={(v) => v === '__nova' ? void adicionarConta() : setConta(v)}><SelectTrigger aria-label="Conta do caixa"><SelectValue /></SelectTrigger><SelectContent>{!principal && <SelectItem value="principal">Principal</SelectItem>}{contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}<SelectItem value="nenhuma">Sem conta</SelectItem><SelectItem value="__nova">+ Nova conta</SelectItem></SelectContent></Select></div>
+    <div className="space-y-1"><Label>Valor recebido (R$)</Label><Input aria-label="Valor recebido" type="number" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} />{comDesconto < p.valor && Number(valor) !== comDesconto && <Button type="button" size="sm" variant="link" className="h-auto p-0 text-xs" onClick={() => setValor(String(comDesconto))}>Aplicar desconto: {brl(comDesconto)}</Button>}</div>
+    <div className="space-y-1"><Label>Forma</Label><Select value={forma} onValueChange={(v) => v === '__nova' ? void adicionar('forma') : setForma(v)}><SelectTrigger aria-label="Forma de pagamento"><SelectValue /></SelectTrigger><SelectContent ordenar>{[...new Set([...formas.filter((f) => f.toLowerCase() === 'boleto'), ...formas, forma])].map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}<SelectItem value="__nova">+ Adicionar forma</SelectItem></SelectContent></Select></div>
+    <div className="space-y-1"><Label>Banco / maquininha</Label><Select value={banco} onValueChange={(v) => v === '__nova' ? void adicionar('banco') : setBanco(v)}><SelectTrigger aria-label="Banco"><SelectValue /></SelectTrigger><SelectContent ordenar><SelectItem value="nenhum">Não informado</SelectItem>{[...new Set([...bancos.filter((b) => b.toLowerCase() === 'cora'), ...bancos, ...(banco === 'nenhum' ? [] : [banco])])].map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}<SelectItem value="__nova">+ Adicionar banco / maquininha</SelectItem></SelectContent></Select></div>
+    <div className="space-y-1"><Label>Conta do caixa</Label><Select value={conta} onValueChange={(v) => v === '__nova' ? void adicionarConta() : setConta(v)}><SelectTrigger aria-label="Conta do caixa"><SelectValue /></SelectTrigger><SelectContent ordenar>{!principal && <SelectItem value="principal">Principal</SelectItem>}{contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}<SelectItem value="nenhuma">Sem conta</SelectItem><SelectItem value="__nova">+ Nova conta</SelectItem></SelectContent></Select></div>
     <div className="flex items-end gap-2"><Button type="button" disabled={saving} onClick={async () => {
       setSaving(true);
-      try { const contaId = conta === 'nenhuma' ? null : conta === 'principal' ? await novaConta('Principal') : conta; await baixar({ data: { id: p.id, data, valor: Number(valor), forma, banco: banco === 'nenhum' ? '' : banco, conta_id: contaId } }); await refresh(); toast.success('Baixa registrada e lançada como entrada no Financeiro'); onDone(); }
-      catch (e) { toast.error(e instanceof Error ? e.message : 'Não foi possível dar baixa.'); } finally { setSaving(false); }
+      const janela = window.open('', '_blank');
+      try { const contaId = conta === 'nenhuma' ? null : conta === 'principal' ? await novaConta('Principal') : conta; await baixar({ data: { id: p.id, data, valor: Number(valor), forma, banco: banco === 'nenhum' ? '' : banco, conta_id: contaId } });
+        imprimirReciboMensalidade(p, aluno, { data, valor: Number(valor), forma, banco: banco === 'nenhum' ? '' : banco, conta: contas.find((c) => c.id === contaId)?.nome ?? (contaId ? 'Principal' : null) }, janela);
+        await refresh(); toast.success('Baixa registrada, lançada no Financeiro e recibo gerado'); onDone(); }
+      catch (e) { janela?.close(); toast.error(e instanceof Error ? e.message : 'Não foi possível dar baixa.'); } finally { setSaving(false); }
     }}>{saving ? 'Salvando…' : 'Confirmar baixa'}</Button><Button type="button" variant="ghost" onClick={onDone}>Voltar</Button></div>
   </div>;
 }
@@ -160,7 +165,7 @@ function ParcelaLinha({ p, aluno, sel, onSel, baixa, setBaixa, mostrarAluno }: {
         : <td className="p-2"><input type="checkbox" aria-label={`Selecionar ${rotuloParcela(p)}`} disabled={p.situacao === 'paga'} checked={!!sel} onChange={(e) => onSel?.(e.target.checked)} /></td>}
       <td className="p-2">{rotuloParcela(p)}{p.observacao?.startsWith('Curso extra: ') && <div className="max-w-48 break-words text-xs text-muted-foreground">{p.observacao}</div>}</td><td className="p-2">{formatMes(p.referencia)}</td><td className="p-2">{formatData(p.vencimento)}</td>
       <td className="p-2">{brl(p.valor)}</td><td className="p-2"><Selo p={p} /></td><td className="p-2"><Pagamento p={p} /></td>
-      <td className="p-2 text-right whitespace-nowrap">{p.situacao === 'aberta' && !mostrarAluno && <EditarParcela p={p} />}{p.situacao === 'aberta' && !baixa && <Button type="button" size="sm" onClick={() => setBaixa(p.id)}>Dar baixa</Button>}{p.situacao === 'paga' && <Desfazer p={p} />}</td>
+      <td className="p-2 text-right whitespace-nowrap">{p.situacao === 'aberta' && !mostrarAluno && <EditarParcela p={p} />}{p.situacao === 'aberta' && !baixa && <Button type="button" size="sm" onClick={() => setBaixa(p.id)}>Dar baixa</Button>}{p.situacao === 'paga' && <Button type="button" size="sm" variant="outline" onClick={() => imprimirReciboMensalidade(p, aluno, { data: p.data_pagamento ?? '', valor: p.valor_pago ?? p.valor, forma: p.forma_pagamento ?? '', banco: p.banco })}>Recibo</Button>}{p.situacao === 'paga' && <Desfazer p={p} />}</td>
     </tr>
     {baixa && <tr><td colSpan={cols} className="p-2"><BaixaForm p={p} aluno={aluno} onDone={() => setBaixa(null)} /></td></tr>}
   </>;
@@ -213,7 +218,7 @@ export function PainelMensalidades({ alunos }: { alunos: Aluno[] }) {
       <Card label="Recebido neste mês" value={soma((p) => p.situacao === 'paga' && (p.data_pagamento ?? '').startsWith(mes), (p) => p.valor_pago ?? 0)} />
     </div>
     <div className="flex flex-wrap items-end gap-3">
-      <div className="space-y-1"><Label>Situação</Label><Select value={sit} onValueChange={(v) => setSit(v as typeof sit)}><SelectTrigger aria-label="Situação" className="w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="aberta">Em aberto</SelectItem><SelectItem value="atraso">Em atraso</SelectItem><SelectItem value="paga">Pagas</SelectItem><SelectItem value="cancelada">Canceladas</SelectItem><SelectItem value="todas">Todas</SelectItem></SelectContent></Select></div>
+      <div className="space-y-1"><Label>Situação</Label><Select value={sit} onValueChange={(v) => setSit(v as typeof sit)}><SelectTrigger aria-label="Situação" className="w-40"><SelectValue /></SelectTrigger><SelectContent ordenar><SelectItem value="aberta">Em aberto</SelectItem><SelectItem value="atraso">Em atraso</SelectItem><SelectItem value="paga">Pagas</SelectItem><SelectItem value="cancelada">Canceladas</SelectItem><SelectItem value="todas">Todas</SelectItem></SelectContent></Select></div>
       <div className="space-y-1"><Label>De</Label><Input aria-label="De" type="date" value={de} onChange={(e) => setDe(e.target.value)} /></div>
       <div className="space-y-1"><Label>Até</Label><Input aria-label="Até" type="date" value={ate} onChange={(e) => setAte(e.target.value)} /></div>
       <div className="min-w-48 flex-1 space-y-1"><Label>Aluno</Label><Input aria-label="Buscar aluno" placeholder="Nome ou código" value={busca} onChange={(e) => setBusca(e.target.value)} /></div>

@@ -73,7 +73,7 @@ export function ContasPagar() {
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1"><Label>Mês de vencimento</Label><Select value={mes} onValueChange={setMes}><SelectTrigger className="w-48" aria-label="Mês das contas"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos os meses</SelectItem>{meses.map((m) => <SelectItem key={m} value={m}>{formatMes(m)}</SelectItem>)}</SelectContent></Select></div>
-        <div className="space-y-1"><Label>Situação</Label><Select value={fStatus} onValueChange={(v) => setFStatus(v as typeof fStatus)}><SelectTrigger className="w-48" aria-label="Situação das contas"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todas">Todas</SelectItem>{(Object.keys(ROTULO) as StatusConta[]).map((k) => <SelectItem key={k} value={k}>{ROTULO[k][0]}</SelectItem>)}</SelectContent></Select></div>
+        <div className="space-y-1"><Label>Situação</Label><Select value={fStatus} onValueChange={(v) => setFStatus(v as typeof fStatus)}><SelectTrigger className="w-48" aria-label="Situação das contas"><SelectValue /></SelectTrigger><SelectContent ordenar><SelectItem value="todas">Todas</SelectItem>{(Object.keys(ROTULO) as StatusConta[]).map((k) => <SelectItem key={k} value={k}>{ROTULO[k][0]}</SelectItem>)}</SelectContent></Select></div>
       </div>
       <Button onClick={() => setForm(novo())}><Plus className="mr-1 h-4 w-4" />Nova conta a pagar</Button>
     </div>
@@ -111,7 +111,7 @@ export function ContasPagar() {
       {baixa && <div className="grid gap-3">
         <p className="text-sm text-muted-foreground">Vencimento {formatData(baixa.c.vencimento)} · {brl(baixa.c.valor)}</p>
         <div className="grid grid-cols-2 gap-3"><div className="min-w-0"><Label>Data do pagamento</Label><FinanceiroDatePicker label="Data do pagamento" value={baixa.data} onChange={(v) => setBaixa({ ...baixa, data: v })} /></div><div><Label htmlFor="cp-pago">Valor pago (R$)</Label><Input id="cp-pago" inputMode="decimal" value={baixa.valor} onChange={(e) => setBaixa({ ...baixa, valor: e.target.value })} /></div></div>
-        <div><Label>Conta de saída (de onde sai o dinheiro)</Label><Select value={baixa.conta} onValueChange={(v) => setBaixa({ ...baixa, conta: v })}><SelectTrigger aria-label="Conta de saída"><SelectValue placeholder="Selecione a conta" /></SelectTrigger><SelectContent>{contasAtivas.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent></Select></div>
+        <div><Label>Conta de saída (de onde sai o dinheiro)</Label><Select value={baixa.conta} onValueChange={(v) => setBaixa({ ...baixa, conta: v })}><SelectTrigger aria-label="Conta de saída"><SelectValue placeholder="Selecione a conta" /></SelectTrigger><SelectContent ordenar>{contasAtivas.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent></Select></div>
       </div>}
       <DialogFooter><Button variant="outline" onClick={() => setBaixa(null)}>Cancelar</Button><Button disabled={busy || !baixa?.conta} onClick={() => void confirmarBaixa()}>{busy ? 'Salvando…' : 'Confirmar pagamento'}</Button></DialogFooter></DialogContent></Dialog>
   </section>;

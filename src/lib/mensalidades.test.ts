@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diaSeguinteAoDesconto, gerarParcelas, gerarParcelasExtras, valorSugerido, valorParaBaixa, vencimentoNoMes, origensDosUltimos } from './mensalidades';
+import { diaSeguinteAoDesconto, gerarParcelas, gerarParcelasExtras, valorSugerido, valorParaBaixa, valorComDesconto, vencimentoNoMes, origensDosUltimos } from './mensalidades';
 const desc = { descontoTipo: 'percentual' as const, desconto: 10, diaLimiteDesconto: 5 };
 describe('mensalidades', () => {
   it('adiciona parcelas de outro curso sem substituir as mensalidades de informática de 150', () => {
@@ -34,7 +34,14 @@ describe('mensalidades', () => {
     expect(valorSugerido(p, desc, '2026-12-05')).toBe(180);
     expect(valorSugerido(p, desc, '2026-12-06')).toBe(200);
   });
-  it('matrícula não recebe desconto', () => { expect(valorSugerido({ tipo: 'matricula', referencia: '2026-12', valor: 50 }, desc, '2026-12-01')).toBe(50); });
+  it('matrícula recebe desconto até o dia limite', () => {
+    expect(valorSugerido({ tipo: 'matricula', referencia: '2026-12', valor: 200 }, { descontoTipo: 'valor', desconto: 50, diaLimiteDesconto: 5 }, '2026-12-05')).toBe(150);
+    expect(valorSugerido({ tipo: 'matricula', referencia: '2026-12', valor: 200 }, { descontoTipo: 'valor', desconto: 50, diaLimiteDesconto: 5 }, '2026-12-06')).toBe(200);
+  });
+  it('desconto termina no dia limite, mesmo com vencimento no dia seguinte', () => {
+    expect(valorParaBaixa({ tipo: 'mensalidade', referencia: '2026-12', vencimento: '2026-12-06', valor: 200 }, desc, '2026-12-06')).toBe(200);
+  });
+  it('valor com desconto em 1 clique ignora a data', () => { expect(valorComDesconto({ valor: 200 }, desc)).toBe(180); });
   it('baixa antecipada usa o desconto percentual do contrato', () => {
     expect(valorParaBaixa({ tipo: 'mensalidade', referencia: '2026-12', vencimento: '2026-12-06', valor: 200 }, desc, '2026-11-03')).toBe(180);
   });

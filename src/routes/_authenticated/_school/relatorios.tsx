@@ -68,8 +68,8 @@ function Relatorios() {
       <div className="space-y-2"><Label htmlFor="rel-de">De</Label><Input id="rel-de" type="date" value={de} onChange={(e) => setDe(e.target.value)} /></div>
       <div className="space-y-2"><Label htmlFor="rel-ate">Até</Label><Input id="rel-ate" type="date" value={ate} onChange={(e) => setAte(e.target.value)} /></div>
       {tipo !== 'financeiro' && <>
-        <div className="space-y-2"><Label>Curso</Label><Select value={curso} onValueChange={(v) => { setCurso(v); setTurma('todos'); }}><SelectTrigger aria-label="Curso do relatório"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos os cursos</SelectItem>{cursos.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-        <div className="space-y-2"><Label>Turma</Label><Select value={turma} onValueChange={setTurma}><SelectTrigger aria-label="Turma do relatório"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas as turmas</SelectItem>{turmas.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></div>
+        <div className="space-y-2"><Label>Curso</Label><Select value={curso} onValueChange={(v) => { setCurso(v); setTurma('todos'); }}><SelectTrigger aria-label="Curso do relatório"><SelectValue /></SelectTrigger><SelectContent ordenar><SelectItem value="todos">Todos os cursos</SelectItem>{cursos.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+        <div className="space-y-2"><Label>Turma</Label><Select value={turma} onValueChange={setTurma}><SelectTrigger aria-label="Turma do relatório"><SelectValue /></SelectTrigger><SelectContent ordenar><SelectItem value="todos">Todas as turmas</SelectItem>{turmas.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></div>
       </>}
     </div>
     {invalido ? <p role="alert" className="text-destructive">A data inicial deve ser anterior ou igual à data final.</p> : <section className="space-y-4">

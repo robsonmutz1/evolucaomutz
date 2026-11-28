@@ -33,6 +33,8 @@
 - Keep financial value/description drafts in form-local inputs and precompute catalog usage counts; this avoids rebuilding transaction tables for every keystroke, while isolated settlement/contract forms retain reactive calculations.
 - Group the visible financial list by launch date with a memoized client-safe integer-cent helper; preserve filters, ordering and rows. Daily net uses visible rows; monthly accumulated movement uses the full cached list from month start through each date, resets monthly and is independent of display order and filters, not an account balance.
 - Contas a pagar live in their own owner-only table; paying goes through a transactional RPC that creates one linked cash exit (estorno removes it), and recurring bills share a series UUID with pre-generated monthly due dates, so Financeiro and cash balances never double-count.
-- Provider payments use prestador_pagar_completo: lessons + next-month bus fares + extras in one cash exit with chosen account; receipt is rendered client-side from the stored payment breakdown.
+- Provider payments use prestador_pagar_completo (lessons + next-month fares + extras, one cash exit); receipts render from the stored breakdown.
 - Provider cash-entry date corrections synchronize both cash dates and the stored payment date through database triggers; invalidate controls after cash saves so receipts stay current, while preserving work-month, amount, type and paid lessons.
 - Energy controls and their linked cash exit stay synchronized both ways (energia_salvar updates the lancamento; a lancamentos trigger updates energia_registros), so one bill never shows two values.
+- Sort selects with `SelectContent ordenar`; skip chronological lists and CRM stages.
+- Tuition receipts render client-side, reusing ESCOLA.

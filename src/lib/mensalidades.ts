@@ -48,9 +48,15 @@ export function gerarParcelas(i: { primeiraCobranca: string; qtd: number; dia: n
     }
   return out;
 }
-/** Suggested amount: discount applies only to tuition paid up to the limit day of its own month (or earlier). */
+/** Amount with the contracted discount, regardless of payment date (tuition and enrollment alike). */
+export function valorComDesconto(p: Pick<Parcela, 'valor'>, a: { descontoTipo: 'percentual' | 'valor'; desconto: number }): number {
+  if (!a.desconto) return p.valor;
+  const d = a.descontoTipo === 'percentual' ? (p.valor * a.desconto) / 100 : a.desconto;
+  return Math.max(0, Math.round((p.valor - d) * 100) / 100);
+}
+/** Suggested amount: discount (tuition or enrollment) applies only when paid up to the configured limit day of its own month (or earlier). */
 export function valorSugerido(p: Pick<Parcela, 'tipo' | 'referencia' | 'valor'>, a: { descontoTipo: 'percentual' | 'valor'; desconto: number; diaLimiteDesconto: number }, dataPagamento: string): number {
-  if (p.tipo !== 'mensalidade' || !a.desconto || !a.diaLimiteDesconto) return p.valor;
+  if (!a.desconto || !a.diaLimiteDesconto) return p.valor;
   if (dataPagamento > vencimentoNoMes(p.referencia, a.diaLimiteDesconto)) return p.valor;
   const d = a.descontoTipo === 'percentual' ? (p.valor * a.desconto) / 100 : a.desconto;
   return Math.max(0, Math.round((p.valor - d) * 100) / 100);

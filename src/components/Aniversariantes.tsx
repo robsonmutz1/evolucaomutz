@@ -15,7 +15,7 @@ export function Aniversariantes({alunos,onStudent}:{alunos:Aluno[];onStudent:(a:
   const [f,setF]=useState(inicial);
   const set=(key:keyof FiltrosAniversario,value:string)=>setF(p=>({...p,[key]:value}));
   const lista=filtrarAniversariantes(alunos,f,hoje);
-  const pick=(key:keyof FiltrosAniversario,label:string,options:{value:string;label:string}[]) => <div className="min-w-0 space-y-1"><Label>{label}</Label><Select value={f[key]} onValueChange={v=>set(key,v)}><SelectTrigger aria-label={label} className="w-full"><SelectValue/></SelectTrigger><SelectContent>{options.map(o=><SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></div>;
+  const pick=(key:keyof FiltrosAniversario,label:string,options:{value:string;label:string}[]) => <div className="min-w-0 space-y-1"><Label>{label}</Label><Select value={f[key]} onValueChange={v=>set(key,v)}><SelectTrigger aria-label={label} className="w-full"><SelectValue/></SelectTrigger><SelectContent ordenar>{options.map(o=><SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></div>;
   const lugares=(key:'bairro'|'cidade')=>[...new Set(alunos.map(a=>a[key]).filter(Boolean))].sort().map(v=>({value:v,label:v}));
   return <section className="space-y-4 py-3">
     <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="flex items-center gap-2 text-xl font-semibold"><Gift className="size-5 text-primary"/>Aniversariantes <span className="text-sm text-muted-foreground">({lista.length})</span></h2><Button variant="outline" onClick={()=>setF({...inicial,mes:'todos'})}>Limpar filtros</Button></div>
